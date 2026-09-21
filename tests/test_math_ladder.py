@@ -51,14 +51,19 @@ def test_parse_int_list_and_arms():
     assert f["kind"] == "ours" and f["k_ttc"] == 0 and f["evict"] == 0
     k2 = parse_arm("frozen_k2")
     assert k2["k_ttc"] == 2 and k2["evict"] == 0
+    live = parse_arm("k5")
+    assert live["kind"] == "live" and live["k_ttc"] == 5
     e = parse_arm("frozen_k5_evict64")
     assert e["k_ttc"] == 5 and e["evict"] == 64
     assert arm_name(0, 0) == "frozen"
     assert arm_name(2, 64) == "frozen_k2_evict64"
     names = expand_ladder_arms([0, 2], [0, 64], None)
     assert names == [
-        "none", "real", "frozen", "frozen_evict64", "frozen_k2", "frozen_k2_evict64",
+        "none", "real", "frozen", "frozen_evict64", "frozen_k2", "k2",
+        "frozen_k2_evict64",
     ]
+    live_only = expand_ladder_arms([2, 5], [0], ["frozen_k2", "frozen_k5", "k2", "k5"])
+    assert live_only == ["frozen_k2", "k2", "frozen_k5", "k5"]
     gate = expand_ladder_arms([0], [0], ["none", "frozen", "real"])
     assert gate == ["none", "real", "frozen"]
 

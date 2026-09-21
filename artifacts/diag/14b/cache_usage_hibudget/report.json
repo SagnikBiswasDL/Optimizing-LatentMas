@@ -1,0 +1,160 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "k": 10,
+    "split": "test",
+    "n": 40,
+    "budgets": "1024,2048,4096",
+    "conditions": "real,shuffled,none",
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/diag/14b/cache_usage_hibudget",
+    "budgets_list": [
+      1024,
+      2048,
+      4096
+    ]
+  },
+  "n": 40,
+  "budgets": [
+    1024,
+    2048,
+    4096
+  ],
+  "conditions": [
+    "real",
+    "shuffled",
+    "none"
+  ],
+  "by_budget": {
+    "1024": {
+      "real": {
+        "acc": 0.675,
+        "ci": [
+          0.525,
+          0.825
+        ],
+        "n": 40,
+        "mean_tokens": 722.4
+      },
+      "shuffled": {
+        "acc": 0.625,
+        "ci": [
+          0.475,
+          0.775
+        ],
+        "n": 40,
+        "mean_tokens": 712.275
+      },
+      "none": {
+        "acc": 0.35,
+        "ci": [
+          0.2,
+          0.5
+        ],
+        "n": 40,
+        "mean_tokens": 916.825
+      },
+      "real_minus_shuffled": {
+        "mean_diff": 0.05,
+        "ci_lo": -0.05,
+        "ci_hi": 0.15,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.325,
+        "ci_lo": 0.175,
+        "ci_hi": 0.475,
+        "credible_positive": true,
+        "credible_negative": false
+      }
+    },
+    "2048": {
+      "real": {
+        "acc": 0.775,
+        "ci": [
+          0.65,
+          0.9
+        ],
+        "n": 40,
+        "mean_tokens": 882.8
+      },
+      "shuffled": {
+        "acc": 0.775,
+        "ci": [
+          0.65,
+          0.9
+        ],
+        "n": 40,
+        "mean_tokens": 867.0
+      },
+      "none": {
+        "acc": 0.7,
+        "ci": [
+          0.55,
+          0.825
+        ],
+        "n": 40,
+        "mean_tokens": 1329.75
+      },
+      "real_minus_shuffled": {
+        "mean_diff": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.075,
+        "ci_lo": 0.0,
+        "ci_hi": 0.175,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    },
+    "4096": {
+      "real": {
+        "acc": 0.8,
+        "ci": [
+          0.675,
+          0.9
+        ],
+        "n": 40,
+        "mean_tokens": 892.9
+      },
+      "shuffled": {
+        "acc": 0.775,
+        "ci": [
+          0.65,
+          0.9
+        ],
+        "n": 40,
+        "mean_tokens": 878.925
+      },
+      "none": {
+        "acc": 0.75,
+        "ci": [
+          0.6,
+          0.875
+        ],
+        "n": 40,
+        "mean_tokens": 1603.1
+      },
+      "real_minus_shuffled": {
+        "mean_diff": 0.025,
+        "ci_lo": 0.0,
+        "ci_hi": 0.075,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.05,
+        "ci_lo": 0.0,
+        "ci_hi": 0.125,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    }
+  }
+}

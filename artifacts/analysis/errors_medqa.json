@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "layer_index": 28,
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "medqa",
+    "split": "test"
+  },
+  "n": 200,
+  "accuracy": 0.745,
+  "n_correct": 149,
+  "n_wrong": 51,
+  "probe_auc": {
+    "planner": {
+      "auc_mean": 0.5676460862159729,
+      "auc_std": 0.09302341938018799,
+      "n_folds": 5
+    },
+    "critic": {
+      "auc_mean": 0.6303483843803406,
+      "auc_std": 0.06715711951255798,
+      "n_folds": 5
+    },
+    "refiner": {
+      "auc_mean": 0.6432143449783325,
+      "auc_std": 0.10880843549966812,
+      "n_folds": 5
+    },
+    "judger": {
+      "auc_mean": 0.7998467683792114,
+      "auc_std": 0.046606339514255524,
+      "n_folds": 5
+    }
+  },
+  "judger_tokens": {
+    "mean_correct": 846.4093959731543,
+    "mean_wrong": 1420.450980392157,
+    "mean_all": 992.79
+  },
+  "error_taxonomy": {
+    "parse_fail": 0,
+    "parse_fail_frac_of_wrong": 0.0,
+    "wrong_value": 51,
+    "wrong_value_frac_of_wrong": 1.0
+  }
+}

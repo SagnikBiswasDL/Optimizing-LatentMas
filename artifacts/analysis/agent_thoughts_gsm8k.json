@@ -1,0 +1,63 @@
+{
+  "task": "gsm8k",
+  "model": "Qwen/Qwen3-14B",
+  "n": 50,
+  "per_role": {
+    "planner": {
+      "counts": {
+        "execution": 1299,
+        "reflection": 169,
+        "transition": 16
+      },
+      "total_steps": 1484,
+      "fractions": {
+        "execution": 0.8753369272237197,
+        "reflection": 0.11388140161725067,
+        "transition": 0.01078167115902965
+      },
+      "non_execution_fraction": 0.12466307277628032
+    },
+    "critic": {
+      "counts": {
+        "execution": 1420,
+        "reflection": 140,
+        "transition": 58
+      },
+      "total_steps": 1618,
+      "fractions": {
+        "execution": 0.8776266996291718,
+        "reflection": 0.0865265760197775,
+        "transition": 0.03584672435105068
+      },
+      "non_execution_fraction": 0.12237330037082818
+    },
+    "refiner": {
+      "counts": {
+        "execution": 1502,
+        "reflection": 174,
+        "transition": 16
+      },
+      "total_steps": 1692,
+      "fractions": {
+        "execution": 0.8877068557919622,
+        "reflection": 0.10283687943262411,
+        "transition": 0.009456264775413711
+      },
+      "non_execution_fraction": 0.11229314420803782
+    },
+    "judger": {
+      "counts": {
+        "execution": 1473,
+        "reflection": 170,
+        "transition": 28
+      },
+      "total_steps": 1671,
+      "fractions": {
+        "execution": 0.881508078994614,
+        "reflection": 0.10173548773189707,
+        "transition": 0.016756433273488927
+      },
+      "non_execution_fraction": 0.118491921005386
+    }
+  }
+}

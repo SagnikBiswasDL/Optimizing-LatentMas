@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "layer_index": 28,
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "gsm8k",
+    "split": "train"
+  },
+  "roles": {
+    "planner": {
+      "path": "artifacts/seal_vectors/qwen3-14b/native_gsm8k/planner_native_layer28.pt",
+      "n": 800,
+      "n_correct": 754,
+      "n_incorrect": 46,
+      "raw_norm": 21.411766052246094,
+      "probe_auc": {
+        "auc_mean": 0.5384052991867065,
+        "auc_std": 0.11496377736330032,
+        "n_folds": 5
+      }
+    },
+    "critic": {
+      "path": "artifacts/seal_vectors/qwen3-14b/native_gsm8k/critic_native_layer28.pt",
+      "n": 800,
+      "n_correct": 754,
+      "n_incorrect": 46,
+      "raw_norm": 32.811466217041016,
+      "probe_auc": {
+        "auc_mean": 0.6214250326156616,
+        "auc_std": 0.056562867015600204,
+        "n_folds": 5
+      }
+    },
+    "refiner": {
+      "path": "artifacts/seal_vectors/qwen3-14b/native_gsm8k/refiner_native_layer28.pt",
+      "n": 800,
+      "n_correct": 754,
+      "n_incorrect": 46,
+      "raw_norm": 22.445270538330078,
+      "probe_auc": {
+        "auc_mean": 0.5910353064537048,
+        "auc_std": 0.07254211604595184,
+        "n_folds": 5
+      }
+    },
+    "judger": {
+      "path": "artifacts/seal_vectors/qwen3-14b/native_gsm8k/judger_native_layer28.pt",
+      "n": 800,
+      "n_correct": 754,
+      "n_incorrect": 46,
+      "raw_norm": 46.50708770751953,
+      "probe_auc": {
+        "auc_mean": 0.6921443939208984,
+        "auc_std": 0.14010164141654968,
+        "n_folds": 5
+      }
+    }
+  }
+}

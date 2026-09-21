@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "layer_index": 28,
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "arc_challenge",
+    "split": "train"
+  },
+  "n": 800,
+  "accuracy": 0.955,
+  "n_correct": 764,
+  "n_wrong": 36,
+  "probe_auc": {
+    "planner": {
+      "auc_mean": 0.5714486837387085,
+      "auc_std": 0.10373742878437042,
+      "n_folds": 5
+    },
+    "critic": {
+      "auc_mean": 0.5123036503791809,
+      "auc_std": 0.05712611973285675,
+      "n_folds": 5
+    },
+    "refiner": {
+      "auc_mean": 0.46160387992858887,
+      "auc_std": 0.06030125916004181,
+      "n_folds": 5
+    },
+    "judger": {
+      "auc_mean": 0.7270244359970093,
+      "auc_std": 0.039189670234918594,
+      "n_folds": 5
+    }
+  },
+  "judger_tokens": {
+    "mean_correct": 487.94240837696333,
+    "mean_wrong": 886.5,
+    "mean_all": 505.8775
+  },
+  "error_taxonomy": {
+    "parse_fail": 3,
+    "parse_fail_frac_of_wrong": 0.08333333333333333,
+    "wrong_value": 33,
+    "wrong_value_frac_of_wrong": 0.9166666666666666
+  }
+}

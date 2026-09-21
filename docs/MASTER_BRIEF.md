@@ -1,12 +1,12 @@
 # LatentMAS Steering — Master Research Brief (single self-contained doc)
 
-Updated: 2026-07-22. This is the one document to hand a research agent. It consolidates
+Updated: 2026-09-16. This is the one document to hand a research agent. It consolidates
 everything: the system, the full experiment log with exact numbers, the mechanism, the
 one positive method result, reusable infra, environment/repro, and prioritized open
 directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
 `DIAG_READOUT_FINDINGS.md`, `SCAFFOLD_RESULTS.md`, `RESULTS.md`, `KV_STEERING_FINDINGS.md`,
 `GATE1_STATUS.md`, `CES_LATENT_STEERING_FINDINGS.md`, `LATENT_STEERING_RESEARCH_HANDOFF.md`,
-`PAPER_OUTLINE.md`.
+`PAPER_OUTLINE.md`, `DELTABRIDGE_HANDOFF.md`.
 
 ---
 
@@ -28,7 +28,10 @@ directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
   (Gaussian matched to averaged real-cache per-channel statistics, full length) that
   reproduces full-LatentMAS accuracy and conciseness with **zero upstream compute**.
 - **What didn't work:** shrinking the scaffold to a few slots (learned m=64 → 0.50 vs fixed
-  full-length 0.54–0.60), so we save compute but not KV memory yet.
+  full-length 0.54–0.60), so we save compute but not KV memory yet. Mean-Replay of MATH-1k
+  matches Real on GSM8K/MATH but **not AIME**. DeltaBridge (one-token Real−Frozen residual
+  at L32) **beats Real on MATH** (85 vs 74) and **destroys AIME** (even uncompressed
+  `oracle_full`). Full write-up: `DELTABRIDGE_HANDOFF.md`.
 
 ---
 
@@ -133,6 +136,34 @@ Shrinking (14B MedQA b1024 n=40; real 0.675, none 0.350):
 - **learned m=64 slots** (distilled to full-LatentMAS behavior): **0.500** — trains (loss 0.08,
   grad flows) but below the fixed full-length synth. m=32/16 not run.
 
+### 2.12 Mean-Replay + DeltaBridge (14B greedy, 2026-09)
+
+Frozen 422-pos MATH-1k Mean-Replay (`artifacts/math_ladder/math1k/cache.pt`) vs Real K=10:
+
+| Task | Real K=10 | Frozen Mean-Replay | None |
+|---|---|---|---|
+| GSM8K n=100 | 92% | **92%** | 84% |
+| MATH n=100 | 74% | **76%** | 73% |
+| AIME24 n=30 | **66.7% (20/30)** | **56.7% (17/30)** | 53.3% |
+
+`frozen_k2`/`k5` on AIME stayed 56.7%. AIME’s extra 3 solves need instance-specific recurrent
+compute, not a shorter frozen prefix.
+
+**DeltaBridge oracle** (newline bridge token; residual at **L32 r=16**, first generate step
+only). Bank from MATH-train only. Full report: `docs/DELTABRIDGE_HANDOFF.md`.
+
+| Arm | MATH n=100 | GSM8K n=100 | AIME24 n=30 |
+|---|---|---|---|
+| zero (Frozen + dummy bridge) | 76% | 86% (dummy tax vs 92%) | **19/30 (63%)** |
+| shuffled projected | 80% | 90% | 10/30 |
+| oracle full \(d\) | 82% | 91% | **8/30** |
+| oracle rank-16 | **85%** (+11 vs Real) | **92%** | **6/30** (recovered 0, lost 13) |
+
+MATH: **go** — compressed residual beats Real and halves Judger tokens. AIME: **hard no**.
+`oracle_full` also collapsed, so this is not “rank too small.” Do **not** train `g_φ` for
+AIME. GPU stopped. Next bets in `DELTABRIDGE_HANDOFF.md` §3: scale/layer sweep of existing
+`eval_states.pt`, or MATH-only predicted residual as a separate claim.
+
 ---
 
 ## 3. Mechanism synthesis (what's true)
@@ -199,6 +230,15 @@ Shrinking (14B MedQA b1024 n=40; real 0.675, none 0.350):
 
 ## 6. Open questions & prioritized next directions
 
+**Lock-in (this week): Frozen + Judger SEAL (`scripts/run_frozen_seal.sh`).**
+Zero upstream + GSM8K SEAL coef 40 on the MATH-1k prefix. GSM8K n=40 → MATH n=40 →
+AIME n=6. Kill if accuracy drops. This is a latency result, not an AIME accuracy hunt.
+AIME one-role and DeltaBridge residual for AIME accuracy are **stopped**.
+
+**DeltaBridge (read `DELTABRIDGE_HANDOFF.md`).** Oracle residual at L32 destroyed AIME.
+Do not train the predictor. ε-scale / L28 of existing `eval_states.pt` is optional
+background, not the next GPU.
+
 **A. Harden the positive for a paper (low risk).** More seeds + n on the synthglobal≈real
 claim; a hard task (AIME) for the strongest budget-crossover; **measure the actual
 compute/latency/latent-forward savings**; accuracy–token Pareto (real vs synthglobal vs none).
@@ -228,6 +268,9 @@ with B (memory savings) + A (hardening) + D (generality).
 ## 7. Honest status line
 
 One paper-worthy positive (synthetic scaffold replaces upstream agents on 14B) + a clean,
-well-controlled mechanistic story. Not a hero SOTA; the "tiny learned scaffold matches real"
-outcome did not materialize. All numbers above are single-seed at n=40–150 unless stated —
-hardening (seeds/n/tasks + compute measurements) is the main gap before write-up.
+well-controlled mechanistic story. Mean-Replay extends that to a *type-level* math cache
+(Frozen=Real on GSM8K/MATH; Frozen misses Real on AIME). DeltaBridge’s MATH oracle beating
+Real is a second method-shaped result; the AIME one-token residual is an honest negative.
+Not a hero SOTA; the "tiny learned scaffold matches real" outcome did not materialize. All
+numbers above are single-seed at n=40–150 unless stated — hardening (seeds/n/tasks + compute
+measurements) is the main gap before write-up.

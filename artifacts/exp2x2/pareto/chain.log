@@ -1,0 +1,20 @@
+=== pareto_ladder started Tue Aug 11 18:31:58 UTC 2026 ===
+GPU 0: NVIDIA H200 (UUID: GPU-1fd0cd65-d341-1af6-7266-2be5b6d275c5)
+torch 2.8.0+cu128 tf 4.57.1 cuda True
+[pareto] START gsm8k_s42 budgets=16,32,64,128 judger=768 batch=16 Tue Aug 11 18:32:01 UTC 2026
+[pareto] FAIL gsm8k_s42 Tue Aug 11 18:32:06 UTC 2026
+[pareto] START math_s42 budgets=16,32,64,128 judger=2048 batch=12 Tue Aug 11 18:32:06 UTC 2026
+[pareto] FAIL math_s42 Tue Aug 11 18:32:12 UTC 2026
+[pareto] START medqa_s42 budgets=16,32,64,128 judger=1024 batch=12 Tue Aug 11 18:32:12 UTC 2026
+[pareto] FAIL medqa_s42 Tue Aug 11 18:32:16 UTC 2026
+=== PARETO_LADDER_DONE Tue Aug 11 18:32:16 UTC 2026 — STOP THE POD ===
+=== pareto_ladder started Tue Aug 11 18:34:05 UTC 2026 ===
+GPU 0: NVIDIA H200 (UUID: GPU-1fd0cd65-d341-1af6-7266-2be5b6d275c5)
+torch 2.8.0+cu128 tf 4.57.1 cuda True
+[pareto] START gsm8k_s42 budgets=16,32,64,128 judger=768 batch=16 Tue Aug 11 18:34:07 UTC 2026
+[pareto] DONE gsm8k_s42 Tue Aug 11 18:49:43 UTC 2026
+[pareto] START math_s42 budgets=16,32,64,128 judger=2048 batch=12 Tue Aug 11 18:49:43 UTC 2026
+[pareto] DONE math_s42 Tue Aug 11 19:40:26 UTC 2026
+[pareto] START medqa_s42 budgets=16,32,64,128 judger=1024 batch=12 Tue Aug 11 19:40:26 UTC 2026
+[pareto] DONE medqa_s42 Tue Aug 11 20:07:25 UTC 2026
+=== PARETO_LADDER_DONE Tue Aug 11 20:07:25 UTC 2026 — STOP THE POD ===

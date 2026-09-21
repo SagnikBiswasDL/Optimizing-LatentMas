@@ -1,0 +1,159 @@
+{
+  "meta": {
+    "task": "gsm8k",
+    "split": "test",
+    "n": 300,
+    "model": "Qwen/Qwen3-14B",
+    "layer": 28,
+    "seed": 42,
+    "coefs": [
+      40.0,
+      80.0
+    ]
+  },
+  "rows": [
+    {
+      "group": "control",
+      "roles": "",
+      "coef": 0.0,
+      "n": 300,
+      "accuracy": 0.9266666666666666,
+      "correct": 278,
+      "mean_output_tokens": 602.5266666666666,
+      "sec": 1845.5,
+      "sec_per_sample": 6.152
+    },
+    {
+      "group": "critic",
+      "roles": "critic",
+      "coef": 40.0,
+      "n": 300,
+      "accuracy": 0.9266666666666666,
+      "correct": 278,
+      "mean_output_tokens": 586.1966666666667,
+      "sec": 1760.8,
+      "sec_per_sample": 5.869
+    },
+    {
+      "group": "critic",
+      "roles": "critic",
+      "coef": 80.0,
+      "n": 300,
+      "accuracy": 0.9233333333333333,
+      "correct": 277,
+      "mean_output_tokens": 599.0366666666666,
+      "sec": 1744.0,
+      "sec_per_sample": 5.813
+    },
+    {
+      "group": "refiner",
+      "roles": "refiner",
+      "coef": 40.0,
+      "n": 300,
+      "accuracy": 0.9233333333333333,
+      "correct": 277,
+      "mean_output_tokens": 607.9066666666666,
+      "sec": 2012.8,
+      "sec_per_sample": 6.709
+    },
+    {
+      "group": "refiner",
+      "roles": "refiner",
+      "coef": 80.0,
+      "n": 300,
+      "accuracy": 0.9266666666666666,
+      "correct": 278,
+      "mean_output_tokens": 597.2133333333334,
+      "sec": 1942.0,
+      "sec_per_sample": 6.473
+    },
+    {
+      "group": "judger",
+      "roles": "judger",
+      "coef": 40.0,
+      "n": 300,
+      "accuracy": 0.92,
+      "correct": 276,
+      "mean_output_tokens": 622.8366666666667,
+      "sec": 1985.9,
+      "sec_per_sample": 6.62
+    },
+    {
+      "group": "judger",
+      "roles": "judger",
+      "coef": 80.0,
+      "n": 300,
+      "accuracy": 0.91,
+      "correct": 273,
+      "mean_output_tokens": 657.7366666666667,
+      "sec": 1910.0,
+      "sec_per_sample": 6.367
+    },
+    {
+      "group": "upstream3",
+      "roles": "planner|critic|refiner",
+      "coef": 40.0,
+      "n": 300,
+      "accuracy": 0.9233333333333333,
+      "correct": 277,
+      "mean_output_tokens": 602.2533333333333,
+      "sec": 1737.7,
+      "sec_per_sample": 5.792
+    },
+    {
+      "group": "upstream3",
+      "roles": "planner|critic|refiner",
+      "coef": 80.0,
+      "n": 300,
+      "accuracy": 0.9333333333333333,
+      "correct": 280,
+      "mean_output_tokens": 607.9666666666667,
+      "sec": 1824.1,
+      "sec_per_sample": 6.08
+    },
+    {
+      "group": "all",
+      "roles": "planner|critic|refiner|judger",
+      "coef": 40.0,
+      "n": 300,
+      "accuracy": 0.9266666666666666,
+      "correct": 278,
+      "mean_output_tokens": 627.2033333333334,
+      "sec": 1950.0,
+      "sec_per_sample": 6.5
+    },
+    {
+      "group": "all",
+      "roles": "planner|critic|refiner|judger",
+      "coef": 80.0,
+      "n": 300,
+      "accuracy": 0.92,
+      "correct": 276,
+      "mean_output_tokens": 678.0166666666667,
+      "sec": 2055.5,
+      "sec_per_sample": 6.852
+    },
+    {
+      "group": "judger_generic",
+      "roles": "judger",
+      "coef": 40.0,
+      "n": 300,
+      "accuracy": 0.9366666666666666,
+      "correct": 281,
+      "mean_output_tokens": 501.5833333333333,
+      "sec": 1494.3,
+      "sec_per_sample": 4.981
+    },
+    {
+      "group": "judger_generic",
+      "roles": "judger",
+      "coef": 80.0,
+      "n": 300,
+      "accuracy": 0.93,
+      "correct": 279,
+      "mean_output_tokens": 389.81333333333333,
+      "sec": 1189.5,
+      "sec_per_sample": 3.965
+    }
+  ]
+}

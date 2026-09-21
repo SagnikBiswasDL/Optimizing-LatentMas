@@ -1,0 +1,159 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "medqa",
+    "donor_task": null,
+    "k": 10,
+    "split": "test",
+    "n": 40,
+    "budgets": "1024",
+    "variants": "real,none,synth_r64,synth_r32,synth_r16,synth_r8,synth_l64_r16",
+    "stat_n": 8,
+    "stat_split": "train",
+    "synth_len": 0,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/diag/14b/grid_rank",
+    "budgets_list": [
+      1024
+    ]
+  },
+  "n": 40,
+  "by_budget": {
+    "1024": {
+      "real": {
+        "acc": 0.675,
+        "ci": [
+          0.525,
+          0.825
+        ],
+        "n": 40,
+        "mean_tokens": 722.4
+      },
+      "none": {
+        "acc": 0.35,
+        "ci": [
+          0.2,
+          0.5
+        ],
+        "n": 40,
+        "mean_tokens": 916.825
+      },
+      "synth_r64": {
+        "acc": 0.55,
+        "ci": [
+          0.4,
+          0.7
+        ],
+        "n": 40,
+        "mean_tokens": 859.9,
+        "minus_real": {
+          "mean_diff": -0.125,
+          "ci_lo": -0.25,
+          "ci_hi": 0.0,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "minus_none": {
+          "mean_diff": 0.2,
+          "ci_lo": 0.025,
+          "ci_hi": 0.375,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      },
+      "synth_r32": {
+        "acc": 0.525,
+        "ci": [
+          0.375,
+          0.675
+        ],
+        "n": 40,
+        "mean_tokens": 855.925,
+        "minus_real": {
+          "mean_diff": -0.15,
+          "ci_lo": -0.275,
+          "ci_hi": -0.025,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": 0.175,
+          "ci_lo": 0.025,
+          "ci_hi": 0.325,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      },
+      "synth_r16": {
+        "acc": 0.45,
+        "ci": [
+          0.3,
+          0.6
+        ],
+        "n": 40,
+        "mean_tokens": 881.175,
+        "minus_real": {
+          "mean_diff": -0.225,
+          "ci_lo": -0.375,
+          "ci_hi": -0.075,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": 0.1,
+          "ci_lo": -0.05,
+          "ci_hi": 0.25,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "synth_r8": {
+        "acc": 0.45,
+        "ci": [
+          0.3,
+          0.6
+        ],
+        "n": 40,
+        "mean_tokens": 893.5,
+        "minus_real": {
+          "mean_diff": -0.225,
+          "ci_lo": -0.35,
+          "ci_hi": -0.1,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": 0.1,
+          "ci_lo": -0.05,
+          "ci_hi": 0.25,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "synth_l64_r16": {
+        "acc": 0.475,
+        "ci": [
+          0.325,
+          0.625
+        ],
+        "n": 40,
+        "mean_tokens": 850.85,
+        "minus_real": {
+          "mean_diff": -0.2,
+          "ci_lo": -0.35,
+          "ci_hi": -0.05,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": 0.125,
+          "ci_lo": -0.05,
+          "ci_hi": 0.275,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      }
+    }
+  }
+}

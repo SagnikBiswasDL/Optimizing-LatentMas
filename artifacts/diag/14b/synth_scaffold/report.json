@@ -1,0 +1,113 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "medqa",
+    "donor_task": null,
+    "k": 10,
+    "split": "test",
+    "n": 40,
+    "budgets": "1024",
+    "variants": "real,none,shuffled,matched,synthglobal",
+    "stat_n": 8,
+    "stat_split": "train",
+    "synth_len": 0,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/diag/14b/synth_scaffold",
+    "budgets_list": [
+      1024
+    ]
+  },
+  "n": 40,
+  "by_budget": {
+    "1024": {
+      "real": {
+        "acc": 0.675,
+        "ci": [
+          0.525,
+          0.825
+        ],
+        "n": 40,
+        "mean_tokens": 722.4
+      },
+      "none": {
+        "acc": 0.35,
+        "ci": [
+          0.2,
+          0.5
+        ],
+        "n": 40,
+        "mean_tokens": 916.825
+      },
+      "shuffled": {
+        "acc": 0.625,
+        "ci": [
+          0.475,
+          0.775
+        ],
+        "n": 40,
+        "mean_tokens": 712.275,
+        "minus_real": {
+          "mean_diff": -0.05,
+          "ci_lo": -0.15,
+          "ci_hi": 0.05,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "minus_none": {
+          "mean_diff": 0.275,
+          "ci_lo": 0.125,
+          "ci_hi": 0.425,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      },
+      "matched": {
+        "acc": 0.6,
+        "ci": [
+          0.45,
+          0.75
+        ],
+        "n": 40,
+        "mean_tokens": 712.025,
+        "minus_real": {
+          "mean_diff": -0.075,
+          "ci_lo": -0.175,
+          "ci_hi": 0.025,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "minus_none": {
+          "mean_diff": 0.25,
+          "ci_lo": 0.125,
+          "ci_hi": 0.4,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      },
+      "synthglobal": {
+        "acc": 0.6,
+        "ci": [
+          0.45,
+          0.75
+        ],
+        "n": 40,
+        "mean_tokens": 701.2,
+        "minus_real": {
+          "mean_diff": -0.075,
+          "ci_lo": -0.225,
+          "ci_hi": 0.075,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "minus_none": {
+          "mean_diff": 0.25,
+          "ci_lo": 0.075,
+          "ci_hi": 0.4,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      }
+    }
+  }
+}

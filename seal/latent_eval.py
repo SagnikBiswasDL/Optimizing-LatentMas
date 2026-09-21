@@ -1,6 +1,7 @@
 """Shared Judger / silent-agent eval helpers (CPU-safe pieces, CUDA when present)."""
 from __future__ import annotations
 
+import os
 import time
 from types import SimpleNamespace
 from typing import Dict, List, Optional
@@ -183,6 +184,48 @@ def decode_batch(wrapper, judger_ids, judger_mask, caches, budget, temperature=0
         ntoks.append(cnt)
         eoss.append(eos)
     return texts, ntoks, eoss
+
+
+def attach_judger_seal(wrapper, vector_path: str, *, coef: float, layer_index: int = 28):
+    """Register the GSM8K SEAL residual on the Judger only. Starts disabled."""
+    from seal import SealSteerer
+
+    if not os.path.isfile(vector_path):
+        raise FileNotFoundError(vector_path)
+    wrapper.seal = SealSteerer.from_artifact(
+        vector_path, coef=float(coef), layer_index=int(layer_index),
+    )
+    wrapper.seal_active_roles = {"judger"}
+    wrapper.seal.register(wrapper.model)
+    wrapper.seal.disable()
+    print(
+        f"[SEAL] attached layer={wrapper.seal.layer_index} coef={wrapper.seal.coef} "
+        f"vector={vector_path}",
+        flush=True,
+    )
+    return wrapper.seal
+
+
+def decode_batch_maybe_seal(
+    wrapper, judger_ids, judger_mask, caches, budget,
+    temperature=0.0, top_p=1.0, seal_on: bool = False,
+):
+    armed = False
+    if seal_on:
+        seal = getattr(wrapper, "seal", None)
+        if seal is None:
+            raise RuntimeError("decode_batch_maybe_seal(seal_on=True) needs attach_judger_seal")
+        seal.set_active_role("judger")
+        seal.enable()
+        armed = True
+    try:
+        return decode_batch(
+            wrapper, judger_ids, judger_mask, caches, budget,
+            temperature=temperature, top_p=top_p,
+        )
+    finally:
+        if armed:
+            wrapper.seal.disable()
 
 
 def graded(text, gold, task):

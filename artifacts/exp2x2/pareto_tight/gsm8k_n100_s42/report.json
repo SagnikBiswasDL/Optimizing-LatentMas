@@ -1,0 +1,366 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "gsm8k",
+    "split": "test",
+    "k": 40,
+    "n": 100,
+    "judger_budget": 768,
+    "budgets": [
+      16,
+      24,
+      32,
+      48,
+      64,
+      128
+    ],
+    "sink": 4,
+    "importance": "key_norm",
+    "with_none": true,
+    "sample_items": true,
+    "batch_size": 16,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/exp2x2/pareto_tight/gsm8k_n100_s42",
+    "asc_vector": null,
+    "asc_coef": 40.0,
+    "asc_layer": -1,
+    "asc_apply_to": "last"
+  },
+  "n": 100,
+  "arms": [
+    "full",
+    "B16",
+    "B24",
+    "B32",
+    "B48",
+    "B64",
+    "B128",
+    "none"
+  ],
+  "per_arm": {
+    "full": {
+      "relay": "full",
+      "keep_budget": null,
+      "n": 100,
+      "acc": 0.87,
+      "acc_ci95": [
+        0.8,
+        0.93
+      ],
+      "mean_tokens": 486.38,
+      "tokens_ci95": [
+        455.08624999999995,
+        519.002
+      ],
+      "median_tokens": 448.5,
+      "mean_decode_s": 2.595285133384168,
+      "mean_e2e_s": 5.605258447043598,
+      "mean_relay_mb": 98.4828125,
+      "mean_relay_positions": 630.29,
+      "eos_rate": 0.85,
+      "mean_peak_mem_mb": 35402.0154296875,
+      "mean_compress_s": 0.0,
+      "mean_upstream_s": 3.0099733136594296
+    },
+    "B16": {
+      "relay": "evict16",
+      "keep_budget": 16,
+      "n": 100,
+      "acc": 0.79,
+      "acc_ci95": [
+        0.71,
+        0.87
+      ],
+      "mean_tokens": 563.19,
+      "tokens_ci95": [
+        531.9367500000001,
+        595.002
+      ],
+      "median_tokens": 548.0,
+      "mean_decode_s": 1.8835202890262008,
+      "mean_e2e_s": 4.901203694790602,
+      "mean_relay_mb": 2.5,
+      "mean_relay_positions": 16.0,
+      "eos_rate": 0.75,
+      "mean_peak_mem_mb": 33408.35974609375,
+      "mean_compress_s": 0.007710092104971409,
+      "mean_upstream_s": 3.0099733136594296
+    },
+    "B24": {
+      "relay": "evict24",
+      "keep_budget": 24,
+      "n": 100,
+      "acc": 0.79,
+      "acc_ci95": [
+        0.71,
+        0.87
+      ],
+      "mean_tokens": 539.28,
+      "tokens_ci95": [
+        505.138,
+        576.01025
+      ],
+      "median_tokens": 525.0,
+      "mean_decode_s": 1.8882824410125614,
+      "mean_e2e_s": 4.905260597094894,
+      "mean_relay_mb": 3.75,
+      "mean_relay_positions": 24.0,
+      "eos_rate": 0.75,
+      "mean_peak_mem_mb": 33430.201796875,
+      "mean_compress_s": 0.007004842422902584,
+      "mean_upstream_s": 3.0099733136594296
+    },
+    "B32": {
+      "relay": "evict32",
+      "keep_budget": 32,
+      "n": 100,
+      "acc": 0.8,
+      "acc_ci95": [
+        0.72,
+        0.87
+      ],
+      "mean_tokens": 515.08,
+      "tokens_ci95": [
+        476.9565,
+        551.0005
+      ],
+      "median_tokens": 506.5,
+      "mean_decode_s": 1.876304674819112,
+      "mean_e2e_s": 4.893332002684474,
+      "mean_relay_mb": 5.0,
+      "mean_relay_positions": 32.0,
+      "eos_rate": 0.77,
+      "mean_peak_mem_mb": 33450.67361328125,
+      "mean_compress_s": 0.007054014205932617,
+      "mean_upstream_s": 3.0099733136594296
+    },
+    "B48": {
+      "relay": "evict48",
+      "keep_budget": 48,
+      "n": 100,
+      "acc": 0.83,
+      "acc_ci95": [
+        0.75,
+        0.9
+      ],
+      "mean_tokens": 480.91,
+      "tokens_ci95": [
+        447.803,
+        515.2995
+      ],
+      "median_tokens": 452.0,
+      "mean_decode_s": 1.8525181762129068,
+      "mean_e2e_s": 4.869689336940646,
+      "mean_relay_mb": 7.5,
+      "mean_relay_positions": 48.0,
+      "eos_rate": 0.84,
+      "mean_peak_mem_mb": 33490.67666015625,
+      "mean_compress_s": 0.007197847068309784,
+      "mean_upstream_s": 3.0099733136594296
+    },
+    "B64": {
+      "relay": "evict64",
+      "keep_budget": 64,
+      "n": 100,
+      "acc": 0.87,
+      "acc_ci95": [
+        0.8,
+        0.93
+      ],
+      "mean_tokens": 454.26,
+      "tokens_ci95": [
+        417.816,
+        490.45225
+      ],
+      "median_tokens": 425.5,
+      "mean_decode_s": 1.875503204651177,
+      "mean_e2e_s": 4.894219524525106,
+      "mean_relay_mb": 10.0,
+      "mean_relay_positions": 64.0,
+      "eos_rate": 0.85,
+      "mean_peak_mem_mb": 33535.05478515625,
+      "mean_compress_s": 0.008743006214499473,
+      "mean_upstream_s": 3.0099733136594296
+    },
+    "B128": {
+      "relay": "evict128",
+      "keep_budget": 128,
+      "n": 100,
+      "acc": 0.87,
+      "acc_ci95": [
+        0.8,
+        0.93
+      ],
+      "mean_tokens": 483.88,
+      "tokens_ci95": [
+        453.54400000000004,
+        517.3675
+      ],
+      "median_tokens": 469.5,
+      "mean_decode_s": 1.977438024803996,
+      "mean_e2e_s": 4.995227224417031,
+      "mean_relay_mb": 20.0,
+      "mean_relay_positions": 128.0,
+      "eos_rate": 0.87,
+      "mean_peak_mem_mb": 33713.94380859375,
+      "mean_compress_s": 0.007815885953605176,
+      "mean_upstream_s": 3.0099733136594296
+    },
+    "none": {
+      "relay": "none",
+      "keep_budget": null,
+      "n": 100,
+      "acc": 0.71,
+      "acc_ci95": [
+        0.61,
+        0.8
+      ],
+      "mean_tokens": 582.01,
+      "tokens_ci95": [
+        548.34975,
+        618.1405
+      ],
+      "median_tokens": 587.0,
+      "mean_decode_s": 1.8695324094220995,
+      "mean_e2e_s": 4.879505723081529,
+      "mean_relay_mb": 0.0,
+      "mean_relay_positions": 0.0,
+      "eos_rate": 0.67,
+      "mean_peak_mem_mb": 33365.24294921875,
+      "mean_compress_s": 0.0,
+      "mean_upstream_s": 3.0099733136594296
+    }
+  },
+  "ladder": [
+    {
+      "arm": "full",
+      "keep_budget": null,
+      "acc": 0.87,
+      "acc_ci95_lo": 0.8,
+      "acc_ci95_hi": 0.93,
+      "d_acc_vs_full": 0.0,
+      "d_acc_ci95_lo": 0.0,
+      "d_acc_ci95_hi": 0.0,
+      "mean_tokens": 486.38,
+      "tokens_ci95_lo": 455.08624999999995,
+      "tokens_ci95_hi": 519.002,
+      "relay_mb": 98.4828125,
+      "relay_positions": 630.29,
+      "compress_ratio_vs_full": 1.0
+    },
+    {
+      "arm": "B16",
+      "keep_budget": 16,
+      "acc": 0.79,
+      "acc_ci95_lo": 0.71,
+      "acc_ci95_hi": 0.87,
+      "d_acc_vs_full": -0.08,
+      "d_acc_ci95_lo": -0.14,
+      "d_acc_ci95_hi": -0.03,
+      "mean_tokens": 563.19,
+      "tokens_ci95_lo": 531.9367500000001,
+      "tokens_ci95_hi": 595.002,
+      "relay_mb": 2.5,
+      "relay_positions": 16.0,
+      "compress_ratio_vs_full": 39.393125
+    },
+    {
+      "arm": "B24",
+      "keep_budget": 24,
+      "acc": 0.79,
+      "acc_ci95_lo": 0.71,
+      "acc_ci95_hi": 0.87,
+      "d_acc_vs_full": -0.08,
+      "d_acc_ci95_lo": -0.16,
+      "d_acc_ci95_hi": -0.01,
+      "mean_tokens": 539.28,
+      "tokens_ci95_lo": 505.138,
+      "tokens_ci95_hi": 576.01025,
+      "relay_mb": 3.75,
+      "relay_positions": 24.0,
+      "compress_ratio_vs_full": 26.262083333333333
+    },
+    {
+      "arm": "B32",
+      "keep_budget": 32,
+      "acc": 0.8,
+      "acc_ci95_lo": 0.72,
+      "acc_ci95_hi": 0.87,
+      "d_acc_vs_full": -0.07,
+      "d_acc_ci95_lo": -0.15,
+      "d_acc_ci95_hi": 0.0,
+      "mean_tokens": 515.08,
+      "tokens_ci95_lo": 476.9565,
+      "tokens_ci95_hi": 551.0005,
+      "relay_mb": 5.0,
+      "relay_positions": 32.0,
+      "compress_ratio_vs_full": 19.6965625
+    },
+    {
+      "arm": "B48",
+      "keep_budget": 48,
+      "acc": 0.83,
+      "acc_ci95_lo": 0.75,
+      "acc_ci95_hi": 0.9,
+      "d_acc_vs_full": -0.04,
+      "d_acc_ci95_lo": -0.1,
+      "d_acc_ci95_hi": 0.02,
+      "mean_tokens": 480.91,
+      "tokens_ci95_lo": 447.803,
+      "tokens_ci95_hi": 515.2995,
+      "relay_mb": 7.5,
+      "relay_positions": 48.0,
+      "compress_ratio_vs_full": 13.131041666666667
+    },
+    {
+      "arm": "B64",
+      "keep_budget": 64,
+      "acc": 0.87,
+      "acc_ci95_lo": 0.8,
+      "acc_ci95_hi": 0.93,
+      "d_acc_vs_full": 0.0,
+      "d_acc_ci95_lo": -0.06,
+      "d_acc_ci95_hi": 0.06,
+      "mean_tokens": 454.26,
+      "tokens_ci95_lo": 417.816,
+      "tokens_ci95_hi": 490.45225,
+      "relay_mb": 10.0,
+      "relay_positions": 64.0,
+      "compress_ratio_vs_full": 9.84828125
+    },
+    {
+      "arm": "B128",
+      "keep_budget": 128,
+      "acc": 0.87,
+      "acc_ci95_lo": 0.8,
+      "acc_ci95_hi": 0.93,
+      "d_acc_vs_full": 0.0,
+      "d_acc_ci95_lo": -0.08,
+      "d_acc_ci95_hi": 0.08,
+      "mean_tokens": 483.88,
+      "tokens_ci95_lo": 453.54400000000004,
+      "tokens_ci95_hi": 517.3675,
+      "relay_mb": 20.0,
+      "relay_positions": 128.0,
+      "compress_ratio_vs_full": 4.924140625
+    },
+    {
+      "arm": "none",
+      "keep_budget": null,
+      "acc": 0.71,
+      "acc_ci95_lo": 0.61,
+      "acc_ci95_hi": 0.8,
+      "d_acc_vs_full": -0.16,
+      "d_acc_ci95_lo": -0.25,
+      "d_acc_ci95_hi": -0.07,
+      "mean_tokens": 582.01,
+      "tokens_ci95_lo": 548.34975,
+      "tokens_ci95_hi": 618.1405,
+      "relay_mb": 0.0,
+      "relay_positions": 0.0,
+      "compress_ratio_vs_full": null
+    }
+  ],
+  "elapsed_s": 1888.0487222671509
+}

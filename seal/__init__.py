@@ -32,6 +32,14 @@ from .capture import (
     correctness_probe_auc,
 )
 from .kv_steer import KVCacheSteerer, iter_layer_kv, cache_seq_length
+from .delta_bridge import (
+    CoefPredictor,
+    ResidualInjector,
+    LayerRecorder,
+    fit_pca,
+    project_residual,
+    oracle_verdict,
+)
 
 __all__ = [
     "classify_step",
@@ -52,4 +60,10 @@ __all__ = [
     "KVCacheSteerer",
     "iter_layer_kv",
     "cache_seq_length",
+    "CoefPredictor",
+    "ResidualInjector",
+    "LayerRecorder",
+    "fit_pca",
+    "project_residual",
+    "oracle_verdict",
 ]

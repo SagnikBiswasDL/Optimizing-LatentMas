@@ -56,6 +56,9 @@ naively). We believe the mechanism design space is under-explored — see §6.
 | 4 | **KV-cache steering** of the handoff | latent handoff columns | improve/shorten | **FALSIFIED** for content columns: `handoff_last` too weak (~1/130 attn), `handoff_all` saturates → collapse (94.7%→72% at cv=1). `judger_token` (aggregation pos) works: −25 to −33% tokens (`KV_STEERING_FINDINGS.md`) |
 | 5 | **K-budget CES** (learned `v`, recover small-K) | upstream latent steps | recover acc at smaller K w/ compute savings | **STOPPED at Gate 1**: no operating point saves wall-clock (Judger CoT length dominates; more latent steps *shorten* Judger output). `GATE1_STATUS.md` |
 | 6 | **Learned CES "boost"** (this work) | upstream {P,C,R} latent steps | push acc **above** best-K | **NEGATIVE (destructive-only)**: see §3. `CES_LATENT_STEERING_FINDINGS.md` |
+| 7 | **DeltaBridge** (Frozen Mean-Replay + one-token Real−Frozen residual) | Judger first generate step, L32 r=16 | recover AIME’s extra K=10 solves without 33 forwards | **MATH go / AIME hard no.** Oracle rank-16 MATH 85% vs Real 74%; AIME 6/30 vs Frozen-class 19/30, `oracle_full` 8/30. Do not train `g_φ`. `DELTABRIDGE_HANDOFF.md` |
+| 8 | **One live K=10 role** on Frozen MATH-1k | one of {P,C,R} at K=10, then Judger | keep AIME recurrent depth, 33→11 forwards | **DONE, AIME no.** MATH n=20: Planner/Refiner 0.80, Critic 0.85 vs Frozen 0.60. AIME n=6/12 same 2/6 and 7/12 as Frozen (swap idx4/5). Extra AIME Real solves are not one-role. `artifacts/one_role/RESULTS.md` |
+| 9 | **Frozen + Judger SEAL** (lock-in) | Frozen MATH-1k prefix + GSM8K SEAL L28 coef 40 on Judger | latency / tokens, iso-acc | **THIS GPU.** `scripts/run_frozen_seal.sh`. Kill if GSM8K/MATH acc drops or AIME n=6 loses net solves. Do not hunt AIME accuracy. `docs/LOCK_IN.md` |
 
 **One-line synthesis:** three independent methods (residual SEAL, KV-cache, learned CES)
 all conclude the upstream latent channel is not a usable lever; the Judger is the locus.
@@ -249,7 +252,8 @@ controllable surface for reasoning quality; steering value lives at the text bou
 - **Results docs:** `RESULTS.md` (SEAL Judger + per-agent + native + probe),
   `KV_STEERING_FINDINGS.md`, `GATE1_STATUS.md`, `CES_LATENT_STEERING_FINDINGS.md`,
   `K_BUDGET_CES.md`, `PROGRESS.md`, `HANDOFF_LATENT_STEERING.md` (env/gotchas),
-  `EXPERIMENT_OVERVIEW.md`, `RESEARCH_PLAN.md`.
+  `EXPERIMENT_OVERVIEW.md`, `RESEARCH_PLAN.md`, **`DELTABRIDGE_HANDOFF.md`** (2026-09
+  Mean-Replay + oracle residual; read before any new GPU).
 - **On-pod artifacts (`/workspace/latentmas-baseline/artifacts/`):**
   `ces/boost_4b/` (last-token: pairs, train, dev report),
   `ces/boost_4b_tuned/` (grad-clipped train + dev),

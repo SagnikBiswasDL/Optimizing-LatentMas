@@ -1,0 +1,75 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-4B",
+    "ces_vector": "artifacts/ces/boost_4b/train_k10_L20/ces_latest.pt",
+    "k_full": 10,
+    "k_low": 10,
+    "max_samples": 80,
+    "split": "dev",
+    "max_new_tokens": 4096,
+    "temperature": 0.0,
+    "seed": 42,
+    "device": "cuda",
+    "ces_layer": 20,
+    "ces_coef": 1.0,
+    "skip_full": false,
+    "full_acc_hint": 0.83,
+    "mode": "boost",
+    "control": "negate",
+    "out_dir": "artifacts/ces/boost_4b/dev_k10"
+  },
+  "mode": "boost",
+  "n": 80,
+  "k": 10,
+  "layer": 20,
+  "coef": 1.0,
+  "vector_norm": 5.756734848022461,
+  "arms": {
+    "unsteered": {
+      "acc": 0.65,
+      "acc_ci": [
+        0.55,
+        0.7503124999999983
+      ],
+      "mean_tokens": 1079.5375,
+      "mean_latency": 24.12337637946475
+    },
+    "steered_pos": {
+      "acc": 0.6625,
+      "acc_ci": [
+        0.55,
+        0.7625
+      ],
+      "mean_tokens": 1035.4625,
+      "mean_latency": 23.280778972059487
+    },
+    "steered_neg": {
+      "acc": 0.65,
+      "acc_ci": [
+        0.5375,
+        0.75
+      ],
+      "mean_tokens": 1042.25,
+      "mean_latency": 23.410096637392417
+    }
+  },
+  "paired_vs_unsteered": {
+    "steered_pos": {
+      "mean_diff": 0.0125,
+      "ci_lo": -0.075,
+      "ci_hi": 0.1,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "steered_neg": {
+      "mean_diff": 0.0,
+      "ci_lo": -0.06281249999999998,
+      "ci_hi": 0.075,
+      "credible_positive": false,
+      "credible_negative": false
+    }
+  },
+  "zero_sanity_ok": null,
+  "latent_forwards": 33,
+  "decision": "NULL"
+}

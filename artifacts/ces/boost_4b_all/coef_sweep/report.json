@@ -1,0 +1,86 @@
+{
+  "model": "Qwen/Qwen3-4B",
+  "vector": "artifacts/ces/boost_4b_all/train/ces_latest.pt",
+  "layer": 20,
+  "apply_to": "all",
+  "vector_norm": 4.991607666015625,
+  "k": 10,
+  "split": "dev",
+  "n": 40,
+  "coefs": [
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    -8.0
+  ],
+  "arms": {
+    "unsteered": {
+      "acc": 0.65,
+      "n": 40,
+      "mean_tokens": 1054.425
+    },
+    "coef_1.0": {
+      "acc": 0.6,
+      "n": 40,
+      "mean_tokens": 962.075
+    },
+    "coef_2.0": {
+      "acc": 0.675,
+      "n": 40,
+      "mean_tokens": 1017.925
+    },
+    "coef_4.0": {
+      "acc": 0.625,
+      "n": 40,
+      "mean_tokens": 968.95
+    },
+    "coef_8.0": {
+      "acc": 0.6,
+      "n": 40,
+      "mean_tokens": 1005.125
+    },
+    "coef_-8.0": {
+      "acc": 0.0,
+      "n": 40,
+      "mean_tokens": 1946.125
+    }
+  },
+  "paired_vs_unsteered": {
+    "coef_1.0": {
+      "mean_diff": -0.05,
+      "ci_lo": -0.15,
+      "ci_hi": 0.05,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "coef_2.0": {
+      "mean_diff": 0.025,
+      "ci_lo": -0.075,
+      "ci_hi": 0.15,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "coef_4.0": {
+      "mean_diff": -0.025,
+      "ci_lo": -0.125,
+      "ci_hi": 0.075,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "coef_8.0": {
+      "mean_diff": -0.05,
+      "ci_lo": -0.15,
+      "ci_hi": 0.05,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "coef_-8.0": {
+      "mean_diff": -0.65,
+      "ci_lo": -0.775,
+      "ci_hi": -0.5,
+      "credible_positive": false,
+      "credible_negative": true
+    }
+  }
+}

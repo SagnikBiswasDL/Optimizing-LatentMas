@@ -1,0 +1,313 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "gsm8k",
+    "split": "test",
+    "k": 40,
+    "n": 20,
+    "judger_budget": 768,
+    "relay_budget": 16,
+    "sink": 4,
+    "rank": 8,
+    "importance": "key_norm",
+    "with_evict": true,
+    "asc_vector": "artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt",
+    "asc_coef": 40.0,
+    "asc_layer": -1,
+    "asc_apply_to": "last",
+    "smoke": false,
+    "batch_size": 20,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/exp2x2/dbg"
+  },
+  "n": 20,
+  "arms": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "run_asc": true,
+  "compressors": {
+    "obf": "obf budget=16 sink=4 importance=key_norm rank=8",
+    "evict": "evict budget=16 sink=4 importance=key_norm"
+  },
+  "per_arm": {
+    "A": {
+      "relay": "full",
+      "asc": false,
+      "n": 20,
+      "acc": 0.75,
+      "mean_tokens": 564.8,
+      "median_tokens": 566.5,
+      "mean_decode_s": 2.3718657374382013,
+      "mean_e2e_s": 5.548625724762678,
+      "mean_tok_per_s": 238.1247770837264,
+      "mean_relay_mb": 100.6484375,
+      "mean_relay_positions": 644.15,
+      "eos_rate": 0.65,
+      "mean_peak_mem_mb": 36936.07373046875
+    },
+    "B": {
+      "relay": "full",
+      "asc": true,
+      "n": 20,
+      "acc": 0.85,
+      "mean_tokens": 505.65,
+      "median_tokens": 484.0,
+      "mean_decode_s": 2.3837021216750145,
+      "mean_e2e_s": 5.560462108999491,
+      "mean_tok_per_s": 212.12801524239217,
+      "mean_relay_mb": 100.6484375,
+      "mean_relay_positions": 644.15,
+      "eos_rate": 0.85,
+      "mean_peak_mem_mb": 36936.07373046875
+    },
+    "C": {
+      "relay": "obf",
+      "asc": false,
+      "n": 20,
+      "acc": 0.6,
+      "mean_tokens": 614.0,
+      "median_tokens": 637.5,
+      "mean_decode_s": 1.5552337950095532,
+      "mean_e2e_s": 4.756515286862851,
+      "mean_tok_per_s": 394.7959477026593,
+      "mean_relay_mb": 3.75,
+      "mean_relay_positions": 24.0,
+      "eos_rate": 0.55,
+      "mean_peak_mem_mb": 34228.6455078125
+    },
+    "D": {
+      "relay": "obf",
+      "asc": true,
+      "n": 20,
+      "acc": 0.8,
+      "mean_tokens": 540.7,
+      "median_tokens": 555.5,
+      "mean_decode_s": 1.5635908946394923,
+      "mean_e2e_s": 4.764872386492788,
+      "mean_tok_per_s": 345.8065673404078,
+      "mean_relay_mb": 3.75,
+      "mean_relay_positions": 24.0,
+      "eos_rate": 0.8,
+      "mean_peak_mem_mb": 34228.6455078125
+    },
+    "E": {
+      "relay": "evict",
+      "asc": false,
+      "n": 20,
+      "acc": 0.8,
+      "mean_tokens": 600.15,
+      "median_tokens": 652.5,
+      "mean_decode_s": 1.5424040662124756,
+      "mean_e2e_s": 4.7259033998474465,
+      "mean_tok_per_s": 389.100374633819,
+      "mean_relay_mb": 2.5,
+      "mean_relay_positions": 16.0,
+      "eos_rate": 0.7,
+      "mean_peak_mem_mb": 34200.9130859375
+    },
+    "F": {
+      "relay": "evict",
+      "asc": true,
+      "n": 20,
+      "acc": 0.75,
+      "mean_tokens": 564.8,
+      "median_tokens": 574.5,
+      "mean_decode_s": 1.5579412149265406,
+      "mean_e2e_s": 4.741440548561514,
+      "mean_tok_per_s": 362.52972486296994,
+      "mean_relay_mb": 2.5,
+      "mean_relay_positions": 16.0,
+      "eos_rate": 0.75,
+      "mean_peak_mem_mb": 34200.9130859375
+    }
+  },
+  "interaction": {
+    "tokens": {
+      "compression_tax_noASC (C-A)": {
+        "mean_diff": 49.2,
+        "ci_lo": 17.397499999999997,
+        "ci_hi": 86.70125,
+        "n": 20,
+        "credible_positive": true,
+        "credible_negative": false
+      },
+      "ASC_effect_full (B-A)": {
+        "mean_diff": -59.15,
+        "ci_lo": -103.45875000000001,
+        "ci_hi": -19.895000000000024,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": true
+      },
+      "ASC_effect_obf (D-C)": {
+        "mean_diff": -73.3,
+        "ci_lo": -123.01,
+        "ci_hi": -28.03875000000006,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": true
+      },
+      "interaction ((D-C)-(B-A))": {
+        "mean_diff": -14.15,
+        "ci_lo": -70.165,
+        "ci_hi": 44.75124999999999,
+        "n": 20
+      },
+      "combined_vs_full (D-A)": {
+        "mean_diff": -24.1,
+        "ci_lo": -84.30499999999999,
+        "ci_hi": 29.85249999999999,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    },
+    "decode_s": {
+      "compression_tax_noASC (C-A)": {
+        "mean_diff": -0.8166319424286483,
+        "ci_lo": -0.8166319424286483,
+        "ci_hi": -0.8166319424286483,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": true
+      },
+      "ASC_effect_full (B-A)": {
+        "mean_diff": 0.01183638423681277,
+        "ci_lo": 0.01183638423681277,
+        "ci_hi": 0.01183638423681277,
+        "n": 20,
+        "credible_positive": true,
+        "credible_negative": false
+      },
+      "ASC_effect_obf (D-C)": {
+        "mean_diff": 0.008357099629938691,
+        "ci_lo": 0.008357099629938691,
+        "ci_hi": 0.008357099629938691,
+        "n": 20,
+        "credible_positive": true,
+        "credible_negative": false
+      },
+      "interaction ((D-C)-(B-A))": {
+        "mean_diff": -0.003479284606874078,
+        "ci_lo": -0.003479284606874078,
+        "ci_hi": -0.003479284606874078,
+        "n": 20
+      },
+      "combined_vs_full (D-A)": {
+        "mean_diff": -0.8082748427987096,
+        "ci_lo": -0.8082748427987096,
+        "ci_hi": -0.8082748427987096,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": true
+      }
+    },
+    "e2e_s": {
+      "compression_tax_noASC (C-A)": {
+        "mean_diff": -0.7921104378998276,
+        "ci_lo": -0.7962221715832125,
+        "ci_hi": -0.7840153925493356,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": true
+      },
+      "ASC_effect_full (B-A)": {
+        "mean_diff": 0.01183638423681277,
+        "ci_lo": 0.01183638423681277,
+        "ci_hi": 0.01183638423681277,
+        "n": 20,
+        "credible_positive": true,
+        "credible_negative": false
+      },
+      "ASC_effect_obf (D-C)": {
+        "mean_diff": 0.008357099629938247,
+        "ci_lo": 0.008357099629938247,
+        "ci_hi": 0.008357099629938247,
+        "n": 20,
+        "credible_positive": true,
+        "credible_negative": false
+      },
+      "interaction ((D-C)-(B-A))": {
+        "mean_diff": -0.003479284606874522,
+        "ci_lo": -0.003479284606874522,
+        "ci_hi": -0.003479284606874522,
+        "n": 20
+      },
+      "combined_vs_full (D-A)": {
+        "mean_diff": -0.7837533382698894,
+        "ci_lo": -0.7878650719532743,
+        "ci_hi": -0.7756582929193974,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": true
+      }
+    },
+    "acc": {
+      "compression_tax_noASC (C-A)": {
+        "mean_diff": -0.15,
+        "ci_lo": -0.35,
+        "ci_hi": 0.05,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "ASC_effect_full (B-A)": {
+        "mean_diff": 0.1,
+        "ci_lo": -0.05,
+        "ci_hi": 0.3,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "ASC_effect_obf (D-C)": {
+        "mean_diff": 0.2,
+        "ci_lo": 0.0,
+        "ci_hi": 0.45,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "interaction ((D-C)-(B-A))": {
+        "mean_diff": 0.1,
+        "ci_lo": -0.15,
+        "ci_hi": 0.3512499999999932,
+        "n": 20
+      },
+      "combined_vs_full (D-A)": {
+        "mean_diff": 0.05,
+        "ci_lo": -0.1,
+        "ci_hi": 0.2,
+        "n": 20,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    }
+  },
+  "correctness_flips": {
+    "C_vs_A (compression)": {
+      "n": 20,
+      "gained": 1,
+      "lost": 4,
+      "net": -3
+    },
+    "D_vs_C (ASC|obf)": {
+      "n": 20,
+      "gained": 5,
+      "lost": 1,
+      "net": 4
+    },
+    "D_vs_A (combined)": {
+      "n": 20,
+      "gained": 2,
+      "lost": 1,
+      "net": 1
+    }
+  },
+  "elapsed_s": 283.928946018219
+}

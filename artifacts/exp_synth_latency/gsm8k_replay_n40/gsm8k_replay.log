@@ -1,0 +1,40 @@
+===== REPLAY START Sat Sep  5 01:35:46 UTC 2026 =====
+[load] Qwen/Qwen3-14B task=gsm8k n=40 k=10 temp=0.0 top_p=1.0 train_pool=8 donor_task=gsm8k scaffold=replay select=heldout generate_bs=20
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:00, 17.65it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:00<00:00, 15.30it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:00<00:00, 15.25it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 17.20it/s]
+[precompute] pool=8 want=8 k=10 scaffold=replay select=heldout filter_correct=False
+[precompute] donor 1/8 kept=1/8 P=0.97s C=0.32s R=0.30s pos=485 75.8MB keep=True
+[precompute] donor 2/8 kept=2/8 P=0.29s C=0.30s R=0.29s pos=464 72.5MB keep=True
+[precompute] donor 3/8 kept=3/8 P=0.29s C=0.30s R=0.29s pos=551 86.1MB keep=True
+[precompute] donor 4/8 kept=4/8 P=0.29s C=0.30s R=0.29s pos=530 82.8MB keep=True
+[precompute] donor 5/8 kept=5/8 P=0.29s C=0.29s R=0.29s pos=449 70.2MB keep=True
+[precompute] donor 6/8 kept=6/8 P=0.28s C=0.30s R=0.29s pos=566 88.4MB keep=True
+[precompute] donor 7/8 kept=7/8 P=0.29s C=0.29s R=0.29s pos=542 84.7MB keep=True
+[precompute] donor 8/8 kept=8/8 P=0.30s C=0.30s R=0.29s pos=689 107.7MB keep=True
+[replay] planner mean-restore K=10 D=5120 l2=1.308 n=8
+[replay] critic mean-restore K=10 D=5120 l2=1.308 n=8
+[replay] refiner mean-restore K=10 D=5120 l2=1.308 n=8
+[replay] type prefill: Solve a grade-school math word problem using elementary arithmetic. Show brief s...
+[precompute] done in 9.2s  kind=replay n=8 chosen=None pos=446 69.7MB
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[latency] items 1-20/40 B=20 P_batch=0.55s C_batch=0.61s R_batch=0.60s J_lat=63.08s J_ours=56.03s e2e/item 3.24/2.89 elapsed=166s
+[latency] items 21-40/40 B=20 P_batch=0.51s C_batch=0.56s R_batch=0.56s J_lat=58.48s J_ours=54.46s e2e/item 3.01/2.80 elapsed=325s
+
+=== PER-AGENT LATENCY (mean sec/item at generate_bs=20) ===
+method             P       C       R      up    load  Judger     e2e     tok     acc
+latentmas       0.03    0.03    0.03    0.08   0.000    3.04    3.12   568.6   0.900
+ours            0.00    0.00    0.00    0.00   0.081    2.76    2.84   611.9   0.900
+none            0.00    0.00    0.00    0.00   0.000    2.14    2.14   674.3   0.800
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s            -0.277 [-0.299,-0.254] n=40
+  ours_minus_latentmas_e2e_s               -0.280 [-0.302,-0.258] n=40
+  ours_minus_latentmas_tokens              +43.250 [-5.531,+90.928] n=40
+  ours_minus_latentmas_correct             +0.000 [-0.125,+0.125] n=40
+  ours_minus_latentmas_upstream_s          -0.085 [-0.086,-0.084] n=40
+
+[precompute] 9.2s total  amortized 0.229s / test item  ours e2e+amort 3.07s
+
+[done] /workspace/latentmas-baseline/artifacts/exp_synth_latency/gsm8k_replay_n40/report.json
+EXP_SYNTH_LATENCY_DONE
+===== REPLAY END Sat Sep  5 01:42:27 UTC 2026 exit=0 =====

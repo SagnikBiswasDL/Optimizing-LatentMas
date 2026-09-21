@@ -1,0 +1,115 @@
+{
+  "meta": {
+    "task": "arc_challenge",
+    "split": "test",
+    "n": 200,
+    "model": "Qwen/Qwen3-14B",
+    "layer": 28,
+    "seed": 42,
+    "coefs": [
+      40.0,
+      80.0
+    ]
+  },
+  "rows": [
+    {
+      "group": "control",
+      "roles": "",
+      "coef": 0.0,
+      "n": 200,
+      "accuracy": 0.945,
+      "correct": 189,
+      "mean_output_tokens": 511.495,
+      "sec": 1054.0,
+      "sec_per_sample": 5.27
+    },
+    {
+      "group": "judger",
+      "roles": "judger",
+      "coef": 40.0,
+      "n": 200,
+      "accuracy": 0.955,
+      "correct": 191,
+      "mean_output_tokens": 522.475,
+      "sec": 1119.4,
+      "sec_per_sample": 5.597
+    },
+    {
+      "group": "judger",
+      "roles": "judger",
+      "coef": 80.0,
+      "n": 200,
+      "accuracy": 0.95,
+      "correct": 190,
+      "mean_output_tokens": 568.655,
+      "sec": 1150.5,
+      "sec_per_sample": 5.753
+    },
+    {
+      "group": "upstream3",
+      "roles": "planner|critic|refiner",
+      "coef": 40.0,
+      "n": 200,
+      "accuracy": 0.955,
+      "correct": 191,
+      "mean_output_tokens": 521.255,
+      "sec": 1053.7,
+      "sec_per_sample": 5.268
+    },
+    {
+      "group": "upstream3",
+      "roles": "planner|critic|refiner",
+      "coef": 80.0,
+      "n": 200,
+      "accuracy": 0.95,
+      "correct": 190,
+      "mean_output_tokens": 500.535,
+      "sec": 839.7,
+      "sec_per_sample": 4.199
+    },
+    {
+      "group": "all",
+      "roles": "planner|critic|refiner|judger",
+      "coef": 40.0,
+      "n": 200,
+      "accuracy": 0.935,
+      "correct": 187,
+      "mean_output_tokens": 533.575,
+      "sec": 1247.2,
+      "sec_per_sample": 6.236
+    },
+    {
+      "group": "all",
+      "roles": "planner|critic|refiner|judger",
+      "coef": 80.0,
+      "n": 200,
+      "accuracy": 0.945,
+      "correct": 189,
+      "mean_output_tokens": 561.85,
+      "sec": 1012.9,
+      "sec_per_sample": 5.065
+    },
+    {
+      "group": "judger_generic",
+      "roles": "judger",
+      "coef": 40.0,
+      "n": 200,
+      "accuracy": 0.935,
+      "correct": 187,
+      "mean_output_tokens": 399.915,
+      "sec": 810.8,
+      "sec_per_sample": 4.054
+    },
+    {
+      "group": "judger_generic",
+      "roles": "judger",
+      "coef": 80.0,
+      "n": 200,
+      "accuracy": 0.925,
+      "correct": 185,
+      "mean_output_tokens": 323.765,
+      "sec": 575.6,
+      "sec_per_sample": 2.878
+    }
+  ]
+}

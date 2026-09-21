@@ -1,0 +1,21 @@
+=== night_aggressive started Wed Aug  5 05:21:12 UTC 2026 ===
+[night] waiting for compress_confirm...
+[night] found artifacts/exp2x2/compress_confirm/STOP_POD
+[night] START aime_gate1_sanity Wed Aug  5 06:39:13 UTC 2026
+[night] DONE aime_gate1_sanity Wed Aug  5 09:04:13 UTC 2026
+[night] START medqa_b128_s42 Wed Aug  5 09:04:13 UTC 2026
+[night] DONE medqa_b128_s42 Wed Aug  5 09:49:48 UTC 2026
+[night] START medqa_b64_s42 Wed Aug  5 09:49:48 UTC 2026
+[night] DONE medqa_b64_s42 Wed Aug  5 10:35:21 UTC 2026
+[night] START medqa_b32_s42 Wed Aug  5 10:35:21 UTC 2026
+[night] DONE medqa_b32_s42 Wed Aug  5 11:20:50 UTC 2026
+[night] START math_b128_s42 Wed Aug  5 11:20:50 UTC 2026
+[night] DONE math_b128_s42 Wed Aug  5 12:43:52 UTC 2026
+[night] START gsm8k_b16_s7 Wed Aug  5 12:43:52 UTC 2026
+[night] DONE gsm8k_b16_s7 Wed Aug  5 13:03:34 UTC 2026
+[night] START medqa_x_gsm8k_s42 Wed Aug  5 13:03:34 UTC 2026
+[night] DONE medqa_x_gsm8k_s42 Wed Aug  5 13:47:28 UTC 2026
+=== NIGHT_AGGRESSIVE_DONE Wed Aug  5 13:47:28 UTC 2026 — STOP THE POD ===
+API key not found
+Error: API key not found
+[night] runpodctl stop failed — STOP MANUALLY

@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "task": "medqa",
+    "split": "test",
+    "n": 300,
+    "model": "Qwen/Qwen3-14B",
+    "seed": 42,
+    "latent_steps": 40,
+    "latent_space_realign": false
+  },
+  "rows": [
+    {
+      "config": "judger_only",
+      "roles": "judger",
+      "n_upstream": 0,
+      "latent_forwards": 0,
+      "n": 300,
+      "accuracy": 0.7366666666666667,
+      "correct": 221,
+      "wrong": 79,
+      "no_answer": 0,
+      "mean_output_tokens": 883.3966666666666,
+      "total_sec": 1718.2,
+      "sec_per_sample": 5.727
+    },
+    {
+      "config": "planner_judger",
+      "roles": "planner|judger",
+      "n_upstream": 1,
+      "latent_forwards": 41,
+      "n": 300,
+      "accuracy": 0.7133333333333334,
+      "correct": 214,
+      "wrong": 86,
+      "no_answer": 0,
+      "mean_output_tokens": 1112.0733333333333,
+      "total_sec": 2293.2,
+      "sec_per_sample": 7.644
+    },
+    {
+      "config": "planner_critic_judger",
+      "roles": "planner|critic|judger",
+      "n_upstream": 2,
+      "latent_forwards": 82,
+      "n": 300,
+      "accuracy": 0.7033333333333334,
+      "correct": 211,
+      "wrong": 89,
+      "no_answer": 0,
+      "mean_output_tokens": 1006.79,
+      "total_sec": 2898.5,
+      "sec_per_sample": 9.662
+    },
+    {
+      "config": "full",
+      "roles": "planner|critic|refiner|judger",
+      "n_upstream": 3,
+      "latent_forwards": 123,
+      "n": 300,
+      "accuracy": 0.7166666666666667,
+      "correct": 215,
+      "wrong": 85,
+      "no_answer": 0,
+      "mean_output_tokens": 996.6533333333333,
+      "total_sec": 3502.5,
+      "sec_per_sample": 11.675
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "config": {
+    "task": "math",
+    "n": 2,
+    "mode": "smoke",
+    "seed": 42
+  },
+  "ok": true,
+  "reason": "exact match on 2 items",
+  "pass_a": [
+    {
+      "idx": 0,
+      "pass": "a",
+      "correct": false,
+      "pred": "3",
+      "tokens": 256,
+      "eos": false,
+      "cache_pos": 422,
+      "load_s": 0.04296419396996498
+    },
+    {
+      "idx": 1,
+      "pass": "a",
+      "correct": false,
+      "pred": "1",
+      "tokens": 256,
+      "eos": false,
+      "cache_pos": 422,
+      "load_s": 0.12274417653679848
+    }
+  ],
+  "pass_b": [
+    {
+      "idx": 0,
+      "pass": "b",
+      "correct": false,
+      "pred": "3",
+      "tokens": 256,
+      "eos": false,
+      "cache_pos": 422,
+      "load_s": 0.03177390620112419
+    },
+    {
+      "idx": 1,
+      "pass": "b",
+      "correct": false,
+      "pred": "1",
+      "tokens": 256,
+      "eos": false,
+      "cache_pos": 422,
+      "load_s": 0.03202100470662117
+    }
+  ],
+  "recommend": "go"
+}

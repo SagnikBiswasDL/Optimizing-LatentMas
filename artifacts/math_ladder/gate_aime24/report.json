@@ -1,0 +1,315 @@
+{
+  "config": {
+    "task": "aime2024",
+    "n": 30,
+    "k": 10,
+    "k_ttc": "0",
+    "evict_budget": "0",
+    "generate_bs": 1,
+    "judger_budget": 8192,
+    "cache": "/workspace/latentmas-baseline/artifacts/math_ladder/math1k/cache.pt",
+    "seed": 42
+  },
+  "precompute": {
+    "n_donors": 1000,
+    "k": 10,
+    "scaffold": "replay",
+    "donor_task": "math",
+    "t_precompute_s": 988.3447715970688,
+    "n_pos": 422,
+    "mb": 65.9375,
+    "type_question": "Solve a mathematics problem. Reason carefully. Put the final answer in \\boxed{}.",
+    "model_name": "Qwen/Qwen3-14B"
+  },
+  "arms": {
+    "real": {
+      "n": 30,
+      "acc": 0.6666666666666666,
+      "k_ttc": 10,
+      "evict": 0,
+      "planner_s": {
+        "mean": 0.3130734338890761,
+        "ci_lo": 0.2868665026652161,
+        "ci_hi": 0.3607751282067814,
+        "n": 30
+      },
+      "critic_s": {
+        "mean": 0.29725933633744717,
+        "ci_lo": 0.29250276962683225,
+        "ci_hi": 0.3025493775525441,
+        "n": 30
+      },
+      "refiner_s": {
+        "mean": 0.29006832391023635,
+        "ci_lo": 0.2859257900105634,
+        "ci_hi": 0.2946071198842643,
+        "n": 30
+      },
+      "upstream_s": {
+        "mean": 0.9004010941367596,
+        "ci_lo": 0.86783952058875,
+        "ci_hi": 0.953250390898902,
+        "n": 30
+      },
+      "cache_load_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "judger_s": {
+        "mean": 143.51594838149225,
+        "ci_lo": 125.13305817393896,
+        "ci_hi": 160.69090911526814,
+        "n": 30
+      },
+      "e2e_s": {
+        "mean": 144.416349475629,
+        "ci_lo": 126.03618124455642,
+        "ci_hi": 161.56425703782818,
+        "n": 30
+      },
+      "tokens": {
+        "mean": 5926.8,
+        "ci_lo": 5184.594166666667,
+        "ci_hi": 6639.348333333333,
+        "n": 30
+      },
+      "cache_mb": {
+        "mean": 108.296875,
+        "ci_lo": 98.3734375,
+        "ci_hi": 120.55117187499998,
+        "n": 30
+      },
+      "cache_pos": {
+        "mean": 693.1,
+        "ci_lo": 629.59,
+        "ci_hi": 771.5274999999998,
+        "n": 30
+      },
+      "upstream_forwards": {
+        "mean": 33.0,
+        "ci_lo": 33.0,
+        "ci_hi": 33.0,
+        "n": 30
+      }
+    },
+    "frozen": {
+      "n": 30,
+      "acc": 0.5666666666666667,
+      "k_ttc": 0,
+      "evict": 0,
+      "planner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "critic_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "refiner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "upstream_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "cache_load_s": {
+        "mean": 0.08590937374780576,
+        "ci_lo": 0.06967242361977696,
+        "ci_hi": 0.10551209036144425,
+        "n": 30
+      },
+      "judger_s": {
+        "mean": 147.64774198145605,
+        "ci_lo": 128.86441136447831,
+        "ci_hi": 165.2491969186397,
+        "n": 30
+      },
+      "e2e_s": {
+        "mean": 147.73365135520388,
+        "ci_lo": 128.95458111363698,
+        "ci_hi": 165.3360487619011,
+        "n": 30
+      },
+      "tokens": {
+        "mean": 6035.7,
+        "ci_lo": 5272.480833333334,
+        "ci_hi": 6765.7649999999985,
+        "n": 30
+      },
+      "cache_mb": {
+        "mean": 65.9375,
+        "ci_lo": 65.9375,
+        "ci_hi": 65.9375,
+        "n": 30
+      },
+      "cache_pos": {
+        "mean": 422.0,
+        "ci_lo": 422.0,
+        "ci_hi": 422.0,
+        "n": 30
+      },
+      "upstream_forwards": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      }
+    },
+    "none": {
+      "n": 30,
+      "acc": 0.5333333333333333,
+      "k_ttc": 0,
+      "evict": 0,
+      "planner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "critic_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "refiner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "upstream_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "cache_load_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "judger_s": {
+        "mean": 175.8377277207716,
+        "ci_lo": 161.98665541097793,
+        "ci_hi": 188.85934447996473,
+        "n": 30
+      },
+      "e2e_s": {
+        "mean": 175.8377277207716,
+        "ci_lo": 161.98665541097793,
+        "ci_hi": 188.85934447996473,
+        "n": 30
+      },
+      "tokens": {
+        "mean": 7236.666666666667,
+        "ci_lo": 6664.3425,
+        "ci_hi": 7779.665,
+        "n": 30
+      },
+      "cache_mb": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "cache_pos": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "upstream_forwards": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      }
+    }
+  },
+  "paired": {
+    "frozen_minus_real_e2e_s": {
+      "mean": 3.3173018795748552,
+      "ci_lo": -7.881430097587097,
+      "ci_hi": 14.607518467078528,
+      "n": 30
+    },
+    "frozen_minus_real_tokens": {
+      "mean": 108.9,
+      "ci_lo": -358.57,
+      "ci_hi": 587.2741666666665,
+      "n": 30
+    },
+    "frozen_minus_real_correct": {
+      "mean": -0.1,
+      "ci_lo": -0.26666666666666666,
+      "ci_hi": 0.03333333333333333,
+      "n": 30
+    },
+    "frozen_minus_real_upstream_s": {
+      "mean": -0.9004010941367596,
+      "ci_lo": -0.953250390898902,
+      "ci_hi": -0.86783952058875,
+      "n": 30
+    },
+    "frozen_minus_real_cache_mb": {
+      "mean": -42.359375,
+      "ci_lo": -54.613671875,
+      "ci_hi": -32.43593750000001,
+      "n": 30
+    },
+    "none_minus_real_e2e_s": {
+      "mean": 31.4213782451426,
+      "ci_lo": 20.05401311518508,
+      "ci_hi": 44.402671672917975,
+      "n": 30
+    },
+    "none_minus_real_tokens": {
+      "mean": 1309.8666666666666,
+      "ci_lo": 838.6633333333334,
+      "ci_hi": 1843.2391666666663,
+      "n": 30
+    },
+    "none_minus_real_correct": {
+      "mean": -0.13333333333333333,
+      "ci_lo": -0.26666666666666666,
+      "ci_hi": -0.03333333333333333,
+      "n": 30
+    },
+    "none_minus_real_upstream_s": {
+      "mean": -0.9004010941367596,
+      "ci_lo": -0.953250390898902,
+      "ci_hi": -0.86783952058875,
+      "n": 30
+    },
+    "none_minus_real_cache_mb": {
+      "mean": -108.296875,
+      "ci_lo": -120.551171875,
+      "ci_hi": -98.37343750000001,
+      "n": 30
+    }
+  },
+  "precompute_amortized_per_query_s": 32.94482571990229,
+  "gate": {
+    "frozen_acc": 0.5666666666666667,
+    "real_acc": 0.6666666666666666,
+    "none_acc": 0.5333333333333333,
+    "frozen_minus_real_acc": -0.1,
+    "ci_lo": -0.26666666666666666,
+    "ci_hi": 0.03333333333333333,
+    "recommend": "run_small_k",
+    "reason": "frozen misses Real; run Planner/Critic/Refiner at K in {2,5} on top of the cache"
+  }
+}

@@ -1,0 +1,11 @@
+=== hard_suite started Mon Aug  3 21:16:01 UTC 2026 ===
+GPU 0: NVIDIA H200 (UUID: GPU-548bdb19-16ef-78d0-d79a-d21d49a15e76)
+[hard] MATH n=60 donor=medqa Mon Aug  3 21:16:01 UTC 2026
+[hard] MATH done Mon Aug  3 22:40:21 UTC 2026
+[hard] AIME2024 n=30 Mon Aug  3 22:40:21 UTC 2026
+[hard] AIME done Tue Aug  4 06:44:41 UTC 2026
+=== HARD_SUITE_DONE Tue Aug  4 06:44:41 UTC 2026 — POD CAN BE STOPPED ===
+Runpod config file not found, please run `runpodctl config` to create it
+API key not found
+Error: API key not found
+[hard] runpodctl stop failed — STOP MANUALLY

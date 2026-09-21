@@ -87,6 +87,15 @@ ttc () {
     --generate_bs 1 --judger_budget 8192
 }
 
+aime_signal () {
+  [[ -f "$CACHE" ]] || { echo "missing $CACHE — run: $0 build" >&2; exit 2; }
+  # New arms only. Gate already has none / frozen / real on the same 30 items.
+  run_job aime_signal "${REPO}/artifacts/math_ladder/aime_signal" \
+    --mode eval --cache "$CACHE" --task aime2024 --n 30 \
+    --k_ttc 2,5 --arms frozen_k2,frozen_k5,k2,k5 \
+    --generate_bs 4 --judger_budget 8192
+}
+
 evict () {
   [[ -f "$CACHE" ]] || { echo "missing $CACHE — run: $0 build" >&2; exit 2; }
   local kttc=${K_TTC:-0}
@@ -115,7 +124,8 @@ case "$stage" in
   gate) gate ;;
   ttc) ttc ;;
   evict) evict ;;
+  aime_signal) aime_signal ;;
   all) build && gate && ttc && evict ;;
-  *) echo "usage: $0 build|gate|ttc|evict|all" >&2; exit 2 ;;
+  *) echo "usage: $0 build|gate|ttc|evict|aime_signal|all" >&2; exit 2 ;;
 esac
 echo "[ladder] DONE $stage $(date)" | tee -a "$LOG"

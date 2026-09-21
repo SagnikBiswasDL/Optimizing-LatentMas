@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "layer_index": 28,
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "gsm8k",
+    "split": "train"
+  },
+  "n": 800,
+  "accuracy": 0.9425,
+  "n_correct": 754,
+  "n_wrong": 46,
+  "probe_auc": {
+    "planner": {
+      "auc_mean": 0.5384052991867065,
+      "auc_std": 0.11496377736330032,
+      "n_folds": 5
+    },
+    "critic": {
+      "auc_mean": 0.6214250326156616,
+      "auc_std": 0.056562867015600204,
+      "n_folds": 5
+    },
+    "refiner": {
+      "auc_mean": 0.5910353064537048,
+      "auc_std": 0.07254211604595184,
+      "n_folds": 5
+    },
+    "judger": {
+      "auc_mean": 0.6921443939208984,
+      "auc_std": 0.14010164141654968,
+      "n_folds": 5
+    }
+  },
+  "judger_tokens": {
+    "mean_correct": 557.5583554376658,
+    "mean_wrong": 939.8913043478261,
+    "mean_all": 579.5425
+  },
+  "error_taxonomy": {
+    "parse_fail": 1,
+    "parse_fail_frac_of_wrong": 0.021739130434782608,
+    "wrong_value": 45,
+    "wrong_value_frac_of_wrong": 0.9782608695652174
+  }
+}

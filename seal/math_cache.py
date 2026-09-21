@@ -34,6 +34,7 @@ UNIFIED_MATH_PROMPT = (
 
 ROLES = ("planner", "critic", "refiner")
 _ARM_OURS = re.compile(r"^frozen(?:_k(\d+))?(?:_evict(\d+))?$")
+_ARM_LIVE = re.compile(r"^k(\d+)$")
 
 
 def parse_int_list(raw: str, default: Sequence[int] = (0,)) -> List[int]:
@@ -58,17 +59,25 @@ def arm_name(k_ttc: int = 0, evict: int = 0) -> str:
 def parse_arm(name: str) -> Dict[str, Any]:
     """Map an arm label to {kind, k_ttc, evict}.
 
-    kind is ``none`` / ``real`` / ``ours``. Ours is the precomputed prefix,
-    optionally plus residual silent-agent steps and plain-H eviction.
+    kind is ``none`` / ``real`` / ``ours`` / ``live``.
+    Ours is the precomputed prefix, optionally plus residual silent-agent
+    steps and plain-H eviction. Live is Planner/Critic/Refiner at K from
+    scratch (no frozen prefix), e.g. ``k2`` / ``k5``.
     """
     name = str(name).strip()
     if name in ("none", "real"):
         return {"kind": name, "k_ttc": 0, "evict": 0, "name": name}
+    live = _ARM_LIVE.fullmatch(name)
+    if live:
+        k = int(live.group(1))
+        if k <= 0:
+            raise ValueError(f"live arm {name!r} needs K>=1")
+        return {"kind": "live", "k_ttc": k, "evict": 0, "name": name}
     m = _ARM_OURS.fullmatch(name)
     if not m:
         raise ValueError(
             f"unknown arm {name!r}; expected none, real, frozen, "
-            f"frozen_k2, frozen_evict64, frozen_k2_evict64, ..."
+            f"frozen_k2, k2, k5, frozen_evict64, frozen_k2_evict64, ..."
         )
     return {
         "kind": "ours",
@@ -89,6 +98,8 @@ def expand_ladder_arms(
     bs = [int(x) for x in evict_budgets] or [0]
     for k in ks:
         names.append(arm_name(k, 0))
+        if k > 0:
+            names.append(f"k{k}")
         for b in bs:
             if b > 0:
                 names.append(arm_name(k, b))

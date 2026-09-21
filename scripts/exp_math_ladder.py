@@ -288,7 +288,9 @@ def run_eval(args):
     t_wall = time.time()
     bs = max(1, int(args.generate_bs))
     ours_specs = [s for s in specs if s["kind"] == "ours"]
+    live_specs = [s for s in specs if s["kind"] == "live"]
     k_needed = sorted({int(s["k_ttc"]) for s in ours_specs})
+    k_live = sorted({int(s["k_ttc"]) for s in live_specs})
     want_real = any(s["kind"] == "real" for s in specs)
     want_none = any(s["kind"] == "none" for s in specs)
 
@@ -434,6 +436,67 @@ def run_eval(args):
                     "cache_mb": float(kv_mb(used[b])),
                     "upstream_forwards": fwds,
                     "evict_stats": evict_stats,
+                })
+            del texts
+            torch.cuda.empty_cache()
+
+        live_by_k: Dict[int, Any] = {}
+        live_times: Dict[int, Dict[str, float]] = {}
+        for k_res in k_live:
+            past, up_t, _ = build_upstream_timed(
+                wrapper, questions, k_res, ns, up_agents,
+                latent_steps=k_res,
+            )
+            live_by_k[k_res] = [to_cpu(p) for p in split_past(past, B)]
+            live_times[k_res] = {
+                "planner": up_t.get("planner", 0.0),
+                "critic": up_t.get("critic", 0.0),
+                "refiner": up_t.get("refiner", 0.0),
+                "upstream": up_t["upstream"],
+            }
+            del past
+            torch.cuda.empty_cache()
+
+        for spec in live_specs:
+            k_res = int(spec["k_ttc"])
+            used = live_by_k[k_res]
+            ut = live_times[k_res]
+            per_up = ut["upstream"] / B
+            per_p = ut["planner"] / B
+            per_c = ut["critic"] / B
+            per_r = ut["refiner"] / B
+            reset_peak()
+            sync()
+            td_live = time.perf_counter()
+            texts, ntoks, eoss = decode_batch(
+                wrapper, jids, jmask,
+                [to_dev(deep_clone(c), wrapper.device) for c in used],
+                args.judger_budget, temperature=args.temperature, top_p=args.top_p)
+            sync()
+            t_j = time.perf_counter() - td_live
+            per_j = t_j / B
+            fwds = 3 * (k_res + 1)
+            for b, it in enumerate(batch):
+                batch_rows.append({
+                    "idx": it.get("idx", start + b),
+                    "method": spec["name"],
+                    "k_ttc": k_res,
+                    "evict": 0,
+                    "batch_size": B,
+                    "planner_s": per_p,
+                    "critic_s": per_c,
+                    "refiner_s": per_r,
+                    "upstream_s": per_up,
+                    "cache_load_s": 0.0,
+                    "judger_s": per_j,
+                    "e2e_s": per_up + per_j,
+                    "tokens": int(ntoks[b]),
+                    "eos": bool(eoss[b]),
+                    "correct": bool(graded(texts[b], golds[b], args.task)),
+                    "pred": pred_short(texts[b]),
+                    "cache_pos": int(num_positions(used[b])),
+                    "cache_mb": float(kv_mb(used[b])),
+                    "upstream_forwards": fwds,
                 })
             del texts
             torch.cuda.empty_cache()

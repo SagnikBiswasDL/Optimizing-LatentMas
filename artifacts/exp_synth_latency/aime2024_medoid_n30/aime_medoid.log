@@ -1,0 +1,121 @@
+===== AIME MEDOID START Mon Sep  7 01:51:34 UTC 2026 =====
+Generating train split:   0%|          | 0/1744 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 1744/1744 [00:00<00:00, 48360.83 examples/s]
+Generating test split:   0%|          | 0/1187 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1187/1187 [00:00<00:00, 158864.00 examples/s]
+Generating train split:   0%|          | 0/771 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 771/771 [00:00<00:00, 110094.59 examples/s]
+Generating test split:   0%|          | 0/474 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 474/474 [00:00<00:00, 84148.82 examples/s]
+Generating train split:   0%|          | 0/870 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 870/870 [00:00<00:00, 62351.25 examples/s]
+Generating test split:   0%|          | 0/479 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 479/479 [00:00<00:00, 66356.36 examples/s]
+Generating train split:   0%|          | 0/1295 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 1295/1295 [00:00<00:00, 138434.69 examples/s]
+Generating test split:   0%|          | 0/903 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 903/903 [00:00<00:00, 120777.34 examples/s]
+Generating train split:   0%|          | 0/869 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 869/869 [00:00<00:00, 115008.53 examples/s]
+Generating test split:   0%|          | 0/540 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 540/540 [00:00<00:00, 94505.72 examples/s]
+Generating train split:   0%|          | 0/1205 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 1205/1205 [00:00<00:00, 131985.91 examples/s]
+Generating test split:   0%|          | 0/871 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 871/871 [00:00<00:00, 155238.97 examples/s]
+Generating train split:   0%|          | 0/746 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 746/746 [00:00<00:00, 94157.59 examples/s]
+Generating test split:   0%|          | 0/546 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 546/546 [00:00<00:00, 77965.82 examples/s]
+[load] donor_level=5 kept 2302/7496
+[load] Qwen/Qwen3-14B task=aime2024 n=30 k=10 temp=0.0 top_p=1.0 train_pool=2302 donor_task=math scaffold=medoid_replay select=heldout generate_bs=8
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:00, 15.77it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:00<00:00, 11.47it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:00<00:00, 12.20it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 14.05it/s]
+[medoid] subjects=7 want_per=8 min=3 k=10 algebra:436, intermediate_algebra:429, geometry:421, number_theory:311, counting_probability:276, prealgebra:252, precalculus:177
+[medoid] subject=algebra using 8/436
+[precompute] algebra donor 1/8 P=0.95s C=0.31s R=0.28s pos=683
+[precompute] algebra donor 2/8 P=0.28s C=0.28s R=0.28s pos=710
+[precompute] algebra donor 3/8 P=0.28s C=0.28s R=0.28s pos=563
+[precompute] algebra donor 4/8 P=0.28s C=0.28s R=0.27s pos=548
+[precompute] algebra donor 5/8 P=0.28s C=0.28s R=0.28s pos=680
+[precompute] algebra donor 6/8 P=0.28s C=0.28s R=0.28s pos=623
+[precompute] algebra donor 7/8 P=0.27s C=0.28s R=0.27s pos=623
+[precompute] algebra donor 8/8 P=0.28s C=0.28s R=0.28s pos=473
+[medoid] algebra pick=0 dist=2.624 prefill=Solve a contest mathematics problem in algebra. Reason carefully. Put ...
+[medoid] subject=intermediate_algebra using 8/429
+[precompute] intermediate_algebra donor 1/8 P=0.29s C=0.29s R=0.28s pos=944
+[precompute] intermediate_algebra donor 2/8 P=0.28s C=0.28s R=0.28s pos=515
+[precompute] intermediate_algebra donor 3/8 P=0.27s C=0.28s R=0.27s pos=683
+[precompute] intermediate_algebra donor 4/8 P=0.27s C=0.28s R=0.28s pos=635
+[precompute] intermediate_algebra donor 5/8 P=0.27s C=0.28s R=0.27s pos=557
+[precompute] intermediate_algebra donor 6/8 P=0.27s C=0.28s R=0.27s pos=710
+[precompute] intermediate_algebra donor 7/8 P=0.28s C=0.28s R=0.28s pos=653
+[precompute] intermediate_algebra donor 8/8 P=0.28s C=0.28s R=0.28s pos=506
+[medoid] intermediate_algebra pick=7 dist=2.628 prefill=Solve a contest mathematics problem in intermediate algebra. Reason ca...
+[medoid] subject=geometry using 8/421
+[precompute] geometry donor 1/8 P=0.28s C=0.28s R=0.28s pos=626
+[precompute] geometry donor 2/8 P=0.27s C=0.28s R=0.28s pos=461
+[precompute] geometry donor 3/8 P=0.28s C=0.28s R=0.28s pos=1088
+[precompute] geometry donor 4/8 P=0.27s C=0.28s R=0.28s pos=491
+[precompute] geometry donor 5/8 P=0.28s C=0.28s R=0.27s pos=608
+[precompute] geometry donor 6/8 P=0.27s C=0.29s R=0.28s pos=515
+[precompute] geometry donor 7/8 P=0.29s C=0.30s R=0.30s pos=1658
+[precompute] geometry donor 8/8 P=0.28s C=0.28s R=0.28s pos=1118
+[medoid] geometry pick=3 dist=2.628 prefill=Solve a contest mathematics problem in geometry. Reason carefully. Put...
+[medoid] subject=number_theory using 8/311
+[precompute] number_theory donor 1/8 P=0.27s C=0.28s R=0.27s pos=548
+[precompute] number_theory donor 2/8 P=0.27s C=0.28s R=0.27s pos=482
+[precompute] number_theory donor 3/8 P=0.27s C=0.28s R=0.28s pos=437
+[precompute] number_theory donor 4/8 P=0.27s C=0.28s R=0.28s pos=569
+[precompute] number_theory donor 5/8 P=0.27s C=0.28s R=0.28s pos=506
+[precompute] number_theory donor 6/8 P=0.28s C=0.29s R=0.27s pos=524
+[precompute] number_theory donor 7/8 P=0.27s C=0.28s R=0.28s pos=692
+[precompute] number_theory donor 8/8 P=0.27s C=0.28s R=0.27s pos=545
+[medoid] number_theory pick=5 dist=2.722 prefill=Solve a contest mathematics problem in number theory. Reason carefully...
+[medoid] subject=counting_probability using 8/276
+[precompute] counting_probability donor 1/8 P=0.27s C=0.28s R=0.28s pos=470
+[precompute] counting_probability donor 2/8 P=0.28s C=0.28s R=0.27s pos=578
+[precompute] counting_probability donor 3/8 P=0.28s C=0.28s R=0.28s pos=503
+[precompute] counting_probability donor 4/8 P=0.27s C=0.28s R=0.28s pos=584
+[precompute] counting_probability donor 5/8 P=0.28s C=0.28s R=0.28s pos=1022
+[precompute] counting_probability donor 6/8 P=0.27s C=0.28s R=0.28s pos=803
+[precompute] counting_probability donor 7/8 P=0.28s C=0.28s R=0.28s pos=581
+[precompute] counting_probability donor 8/8 P=0.27s C=0.28s R=0.27s pos=668
+[medoid] counting_probability pick=2 dist=2.667 prefill=Solve a contest mathematics problem in counting probability. Reason ca...
+[medoid] subject=prealgebra using 8/252
+[precompute] prealgebra donor 1/8 P=0.27s C=0.28s R=0.28s pos=512
+[precompute] prealgebra donor 2/8 P=0.27s C=0.28s R=0.27s pos=497
+[precompute] prealgebra donor 3/8 P=0.31s C=0.33s R=0.33s pos=2726
+[precompute] prealgebra donor 4/8 P=0.27s C=0.28s R=0.28s pos=671
+[precompute] prealgebra donor 5/8 P=0.27s C=0.27s R=0.28s pos=455
+[precompute] prealgebra donor 6/8 P=0.27s C=0.27s R=0.28s pos=425
+[precompute] prealgebra donor 7/8 P=0.27s C=0.28s R=0.28s pos=413
+[precompute] prealgebra donor 8/8 P=0.27s C=0.28s R=0.27s pos=524
+[medoid] prealgebra pick=5 dist=2.723 prefill=Solve a contest mathematics problem in prealgebra. Reason carefully. P...
+[medoid] subject=precalculus using 8/177
+[precompute] precalculus donor 1/8 P=0.27s C=0.28s R=0.28s pos=794
+[precompute] precalculus donor 2/8 P=0.27s C=0.29s R=0.28s pos=749
+[precompute] precalculus donor 3/8 P=0.27s C=0.28s R=0.28s pos=494
+[precompute] precalculus donor 4/8 P=0.27s C=0.28s R=0.29s pos=632
+[precompute] precalculus donor 5/8 P=0.31s C=0.31s R=0.31s pos=608
+[precompute] precalculus donor 6/8 P=0.31s C=0.32s R=0.31s pos=728
+[precompute] precalculus donor 7/8 P=0.33s C=0.32s R=0.32s pos=827
+[precompute] precalculus donor 8/8 P=0.31s C=0.30s R=0.28s pos=773
+[medoid] precalculus pick=1 dist=2.797 prefill=Solve a contest mathematics problem in precalculus. Reason carefully. ...
+[precompute] medoid bank done in 55.8s  subjects=['algebra', 'intermediate_algebra', 'geometry', 'number_theory', 'counting_probability', 'prealgebra', 'precalculus'] default=algebra
+[assign] algebra:1, intermediate_algebra:14, geometry:5, number_theory:2, counting_probability:2, prealgebra:0, precalculus:6  unlabeled_nn=30
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[latency] items 1-8/30 B=8 P_batch=0.39s C_batch=0.42s R_batch=0.42s J_lat=667.14s J_ours=629.58s e2e/item 83.55/78.83 elapsed=1889s
+[autostop] watching exp_synth_latency Mon Sep  7 02:33:02 UTC 2026
+[latency] items 9-16/30 B=8 P_batch=0.40s C_batch=0.42s R_batch=0.42s J_lat=656.35s J_ours=627.28s e2e/item 82.20/78.51 elapsed=3763s
+[latency] items 17-24/30 B=8 P_batch=0.44s C_batch=0.46s R_batch=0.47s J_lat=685.03s J_ours=634.25s e2e/item 85.80/79.40 elapsed=5679s
+[latency] items 25-30/30 B=6 P_batch=0.48s C_batch=0.51s R_batch=0.51s J_lat=579.05s J_ours=504.96s e2e/item 96.76/84.27 elapsed=7243s
+
+=== PER-AGENT LATENCY (mean sec/item at generate_bs=8) ===
+method             P       C       R      up    load  Judger     e2e     tok     acc
+latentmas       0.06    0.06    0.06    0.18   0.000   86.25   86.43  6114.4   0.333
+ours            0.00    0.00    0.00    0.00   0.117   79.87   79.99  6184.9   0.300
+none            0.00    0.00    0.00    0.00   0.000   74.99   74.99  7082.7   0.333
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s            -6.383 [-7.584,-5.366] n=30
+  ours_minus_latentmas_e2e_s               -6.445 [-7.661,-5.418] n=30
+  ours_minus_latentmas_tokens              +70.533 [-563.816,+674.607] n=30
+  ours_minus_latentmas_correct             -0.033 [-0.167,+0.100] n=30
+  ours_minus_latentmas_upstream_s          -0.179 [-0.193,-0.167] n=30
+
+[precompute] 55.8s total  amortized 1.859s / test item  ours e2e+amort 81.84s
+
+[done] /workspace/latentmas-baseline/artifacts/exp_synth_latency/aime2024_medoid_n30/report.json
+EXP_SYNTH_LATENCY_DONE
+===== AIME MEDOID END Mon Sep  7 03:54:23 UTC 2026 exit=0 =====
+[autostop] job gone Mon Sep  7 03:54:31 UTC 2026
+[autostop] stopping pod s022y9nm70b2jc
+pod "s022y9nm70b2jc" stopped
+[autostop] stop requested Mon Sep  7 03:54:32 UTC 2026
