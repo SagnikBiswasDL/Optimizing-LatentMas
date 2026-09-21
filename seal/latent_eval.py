@@ -137,7 +137,10 @@ def pad_caches_left(caches, device):
     return from_legacy(layers), past_mask, pmax
 
 
-def decode_batch(wrapper, judger_ids, judger_mask, caches, budget, temperature=0.0, top_p=1.0):
+def decode_batch(
+    wrapper, judger_ids, judger_mask, caches, budget,
+    temperature=0.0, top_p=1.0, top_k: Optional[int] = None,
+):
     device = wrapper.device
     jids = judger_ids.to(device)
     jmask = judger_mask.to(device)
@@ -161,6 +164,8 @@ def decode_batch(wrapper, judger_ids, judger_mask, caches, budget, temperature=0
     if sample:
         gen_kwargs["temperature"] = float(temperature)
         gen_kwargs["top_p"] = float(top_p)
+        if top_k is not None:
+            gen_kwargs["top_k"] = int(top_k)
     if cache_position is not None:
         gen_kwargs["cache_position"] = cache_position
     out = wrapper.model.generate(**gen_kwargs)
@@ -208,7 +213,7 @@ def attach_judger_seal(wrapper, vector_path: str, *, coef: float, layer_index: i
 
 def decode_batch_maybe_seal(
     wrapper, judger_ids, judger_mask, caches, budget,
-    temperature=0.0, top_p=1.0, seal_on: bool = False,
+    temperature=0.0, top_p=1.0, top_k: Optional[int] = None, seal_on: bool = False,
 ):
     armed = False
     if seal_on:
@@ -221,7 +226,7 @@ def decode_batch_maybe_seal(
     try:
         return decode_batch(
             wrapper, judger_ids, judger_mask, caches, budget,
-            temperature=temperature, top_p=top_p,
+            temperature=temperature, top_p=top_p, top_k=top_k,
         )
     finally:
         if armed:
@@ -322,3 +327,78 @@ def build_upstream_timed(
             out_latents[agent.role] = squeeze_latents(emb)
     times["upstream"] = sum(times[a.role] for a in agents)
     return past, times, peaks
+
+
+@torch.no_grad()
+def build_upstream_segments(
+    wrapper,
+    questions: List[str],
+    k,
+    ns,
+    agents,
+    *,
+    start_past=None,
+    reset_between: bool = False,
+    prefix_each=None,
+):
+    """Silent-agent pass that records per-role sequence spans.
+
+    ``reset_between=True`` is Jiayi isolated / line-4: each role starts from
+    ``prefix_each`` (frozen c') or empty, and we keep only *that role's write*.
+    The returned ``writes`` dict is concatenated at the Judger.
+
+    Default (reset_between=False) is growing Real: one tape, spans into c1/c2/c3.
+    """
+    from prompts import build_agent_message_sequential_latent_mas
+    from seal.segment_kv import concat_seq, slice_seq
+
+    k_use = int(k)
+    times: Dict[str, float] = {}
+    peaks: Dict[str, float] = {}
+    spans: List[Dict] = []
+    writes: Dict[str, object] = {}
+    past = start_past
+    growing = None if reset_between else start_past
+
+    for agent in agents:
+        if reset_between:
+            past = None if prefix_each is None else deep_clone(prefix_each)
+        else:
+            past = growing
+        before = 0 if past is None else num_positions(past)
+        messages = [
+            build_agent_message_sequential_latent_mas(
+                role=agent.role, question=q, context="", method="latent_mas", args=ns)
+            for q in questions
+        ]
+        _, ids, mask, _ = wrapper.prepare_chat_batch(messages, add_generation_prompt=True)
+        reset_peak()
+        sync()
+        t0 = time.perf_counter()
+        past = wrapper.generate_latent_batch(
+            ids,
+            attention_mask=mask,
+            latent_steps=k_use,
+            past_key_values=past,
+            role=agent.role,
+        )
+        sync()
+        times[agent.role] = time.perf_counter() - t0
+        peaks[agent.role] = peak_mb()
+        after = num_positions(past)
+        spans.append({"role": agent.role, "start": int(before), "end": int(after)})
+        writes[agent.role] = slice_seq(past, before, after)
+        if not reset_between:
+            growing = past
+    times["upstream"] = sum(times[a.role] for a in agents)
+    if reset_between:
+        merged = concat_seq([writes.get(a.role) for a in agents])
+        # re-index spans onto the concatenated judger prefix
+        spans = []
+        cur = 0
+        for agent in agents:
+            n = 0 if writes.get(agent.role) is None else num_positions(writes[agent.role])
+            spans.append({"role": agent.role, "start": cur, "end": cur + n})
+            cur += n
+        return merged, times, peaks, spans, writes
+    return growing, times, peaks, spans, writes
