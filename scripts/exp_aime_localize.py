@@ -32,6 +32,7 @@ from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 import torch
 
+T_START = time.time()
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
@@ -234,7 +235,13 @@ def persist_small(args) -> None:
             tdst = os.path.join(dest, "texts")
             os.makedirs(tdst, exist_ok=True)
             for fn in os.listdir(tsrc):
-                shutil.copy2(os.path.join(tsrc, fn), os.path.join(tdst, fn))
+                s = os.path.join(tsrc, fn)
+                d = os.path.join(tdst, fn)
+                # Generations are immutable once written, so skip ones already
+                # mirrored: this runs after every batch and the set only grows.
+                if os.path.isfile(d) and os.path.getsize(d) == os.path.getsize(s):
+                    continue
+                shutil.copy2(s, d)
     except Exception as exc:  # never let mirroring kill a sweep
         print(f"[persist] failed: {exc}", flush=True)
 
@@ -477,6 +484,16 @@ def run_views(args) -> None:
     tapes = list_tapes(args)
     if not tapes:
         raise SystemExit(f"no tapes in {tape_root(args)} — run --mode collect")
+    # Scope a decode to a subset of the collected tapes. Deliberately a separate
+    # flag from --indices, which selects what to *collect* and defaults to a
+    # curated six; reusing it here would silently shrink every sweep to those six.
+    if args.view_indices and str(args.view_indices).strip():
+        want = set(parse_indices(args.view_indices, 0))
+        tapes = [t for t in tapes if int(t["idx"]) in want]
+        if not tapes:
+            raise SystemExit(f"no tapes match --view_indices {args.view_indices}")
+        print(f"[views] scoped to {len(tapes)} tapes: "
+              f"{sorted(int(t['idx']) for t in tapes)}", flush=True)
     ns = make_ns(args)
     wrapper = maybe_load_model(args, ns)
     arms = [a.strip() for a in args.view_arms.split(",") if a.strip()]
@@ -534,6 +551,16 @@ def run_views(args) -> None:
                 already.add((int(tape["idx"]), method))
             del caches
             torch.cuda.empty_cache()
+            # Mirror every batch, not every arm: an arm is ~20 minutes of GPU
+            # time and pod-local disk does not survive a stop.
+            persist_small(args)
+            if args.time_budget_s and time.time() - T_START > float(args.time_budget_s):
+                print(
+                    f"[views] time budget {args.time_budget_s:.0f}s reached — stopping "
+                    f"after {method}. Completed arms are persisted; rerun to resume.",
+                    flush=True,
+                )
+                return
         # refresh the check-in and mirror it off ephemeral disk after every arm
         try:
             write_report(args)
@@ -1218,6 +1245,9 @@ def main():
     ap.add_argument("--task", default="aime2024")
     ap.add_argument("--n", type=int, default=6)
     ap.add_argument("--indices", default="0,1,2,4,10,18")
+    ap.add_argument("--view_indices", default="",
+                    help="Restrict --mode views to these already-collected tapes. "
+                         "Empty means every tape on disk.")
     ap.add_argument("--k", type=int, default=10)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--generate_bs", type=int, default=1)
@@ -1232,6 +1262,10 @@ def main():
     ap.add_argument("--view_arms", default=",".join(VIEW_ARMS))
     ap.add_argument("--cache", default="")
     ap.add_argument("--seal_vector", default="")
+    ap.add_argument("--time_budget_s", type=float, default=0.0,
+                    help="Stop cleanly between batches once this many seconds have "
+                         "elapsed. Arms are ordered by value, so a truncated run "
+                         "still yields the arms that matter most.")
     ap.add_argument("--method_tag", default="",
                     help="Suffix appended to row method names, leaving the cache "
                          "view untouched. Lets one arm be re-decoded and compared.")

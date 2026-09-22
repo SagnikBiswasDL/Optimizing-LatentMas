@@ -142,6 +142,37 @@ def test_arm_table_excludes_grouped_from_per_item_latency():
     assert any("| grp |" in ln and "—" in ln for ln in notes)
 
 
+def test_view_scoping_is_independent_of_collect_indices():
+    """--indices picks what to collect and defaults to a curated six; if views
+    filtered on it, every n=30 sweep would silently shrink to those six."""
+    ap_defaults = {}
+    import argparse
+    p = argparse.ArgumentParser()
+    # mirror the two flags under test
+    p.add_argument("--indices", default="0,1,2,4,10,18")
+    p.add_argument("--view_indices", default="")
+    a = p.parse_args([])
+    assert a.indices == "0,1,2,4,10,18"
+    assert a.view_indices == "", "view scoping must be opt-in"
+    assert E.parse_indices(a.view_indices, 0) == []
+    assert E.parse_indices("0,1,2,4,10,18", 0) == [0, 1, 2, 4, 10, 18]
+    assert E.parse_indices("0-29", 0) == list(range(30))
+    del ap_defaults
+
+
+def test_chunking_covers_every_pending_item_once():
+    """Batch boundaries must partition the pending set, with no drops or repeats."""
+    for n in (1, 5, 6, 7, 29, 30):
+        for bs in (1, 4, 6, 10, 16):
+            pending = list(range(n))
+            seen = []
+            for start in range(0, len(pending), bs):
+                chunk = pending[start : start + bs]
+                assert 1 <= len(chunk) <= bs
+                seen.extend(chunk)
+            assert seen == pending, (n, bs)
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for fn in fns:

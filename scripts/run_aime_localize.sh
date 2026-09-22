@@ -3,6 +3,7 @@
 # then role-budgeted eviction. Restart-safe. GPU from `collect` onward.
 #
 #   bash scripts/run_aime_localize.sh smoke
+#   bash scripts/run_aime_localize.sh blitz     # fixed GPU window, value-ordered. START HERE.
 #   bash scripts/run_aime_localize.sh parity    # ~6 min: certify grouped decode. RUN FIRST.
 #   bash scripts/run_aime_localize.sh sweep     # ~1.5h: n=30, real/none/seal40/seal60
 #   bash scripts/run_aime_localize.sh localize30   # ~1.7h: n=30 localization arms
@@ -196,7 +197,7 @@ parity () {
   run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
   run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real
   run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real \
-    --decode_bs "$DECODE_BS" --method_tag "bs${DECODE_BS}"
+    --decode_bs "$DECODE_BS" --method_tag "bs${DECODE_BS}" --view_indices "$idx"
   run_py --mode compare --compare_arms "real,real__bs${DECODE_BS}"
   run_py --mode report
 }
@@ -247,6 +248,49 @@ aime25_sweep () {
   run_py --mode report
   ROOT_DIR=$save
   LOG=$save_log
+}
+
+# One command for a fixed GPU window. Arms run in value order and the sweep
+# stops cleanly between batches when the budget expires, so whatever finished is
+# complete and persisted rather than half-written. BLITZ_MIN sets the window.
+blitz () {
+  local arms=${BLITZ_ARMS:-real,none,real_seal40,real_seal60}
+  local mins=${BLITZ_MIN:-80}
+  need_seal_vector "$arms" || return 1
+  autotune_bs
+  echo "[localize] blitz n=$N bs=$DECODE_BS arms=$arms budget=${mins}min" | tee -a "$LOG"
+  # Tapes first: cheap, and every decode below needs them.
+  run_py --mode collect --task aime2024 --n "$N" --indices "0-$((N - 1))" \
+    --judger_budget 8192
+  # Certify grouped decode against the committed n=1 rows before trusting it.
+  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real \
+    --decode_bs "$DECODE_BS" --method_tag "bs${DECODE_BS}" \
+    --view_indices "${INDICES:-0,1,2,4,10,18}" || true
+  run_py --mode compare --compare_arms "real,real__bs${DECODE_BS}" || true
+  # The data run, time-boxed.
+  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms "$arms" \
+    --decode_bs "$DECODE_BS" --seal_vector "$SEAL_VECTOR" \
+    --seal_layer "${SEAL_LAYER:-28}" --time_budget_s "$((mins * 60))"
+  run_py --mode report
+  run_py --mode budget --task aime2024 --budget_arms "$arms" || true
+  run_py --mode loops --task aime2024 --budget_arms "$arms" || true
+}
+
+# Pick a decode batch size that fits. KV is ~160KiB/token for Qwen3-14B, so a
+# sequence at budget 8192 plus its upstream tape costs ~1.4GB; leave the weights
+# ~30GB and half the remainder as headroom for activations and fragmentation.
+autotune_bs () {
+  [[ -n ${DECODE_BS_FIXED:-} ]] && { DECODE_BS=$DECODE_BS_FIXED; return 0; }
+  local total
+  total=$("$PY" -c 'import torch;print(int(torch.cuda.get_device_properties(0).total_memory//2**20))' 2>/dev/null) || return 0
+  [[ -z $total ]] && return 0
+  local avail=$(( (total - 30000) / 2 ))
+  local bs=$(( avail / 1400 ))
+  (( bs < 1 )) && bs=1
+  (( bs > N )) && bs=$N
+  (( bs > 16 )) && bs=16   # past this the straggler dominates, not throughput
+  DECODE_BS=$bs
+  echo "[localize] autotune: ${total}MB GPU -> DECODE_BS=$DECODE_BS" | tee -a "$LOG"
 }
 
 focus () {
@@ -301,6 +345,7 @@ case "$stage" in
   smoke) smoke ;;
   quick) quick ;;
   seal) seal ;;
+  blitz) blitz ;;
   parity) parity ;;
   sweep) sweep ;;
   localize30) localize30 ;;
@@ -315,7 +360,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist
