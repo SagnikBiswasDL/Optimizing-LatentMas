@@ -4,6 +4,7 @@
 #
 #   bash scripts/run_aime_localize.sh smoke
 #   bash scripts/run_aime_localize.sh quick     # ~20 min: Real arm + token-budget curve
+#   bash scripts/run_aime_localize.sh seal      # ~25 min: Judger SEAL coef sweep on AIME
 #   bash scripts/run_aime_localize.sh focus     # items 0,1,2,4,10,18, all arms (~3h)
 #   bash scripts/run_aime_localize.sh full      # n=30
 #   bash scripts/run_aime_localize.sh qwen      # Real decode at Qwen thinking sampler
@@ -78,6 +79,23 @@ persist () {
     || cp -r "$ROOT_DIR"/* "$PERSIST_DIR"/ 2>/dev/null || true
 }
 
+# Pull previously-persisted results back in so a fresh pod does not re-decode
+# work we already paid for. Never clobbers newer local files; tapes are not
+# restored (they regenerate in seconds).
+restore () {
+  [[ -n $PERSIST_DIR && -d $PERSIST_DIR ]] || return 0
+  mkdir -p "$ROOT_DIR/texts" 2>/dev/null || true
+  for f in rows.jsonl agent_times.jsonl; do
+    [[ -f "$PERSIST_DIR/$f" && ! -f "$ROOT_DIR/$f" ]] && cp "$PERSIST_DIR/$f" "$ROOT_DIR/$f"
+  done
+  if [[ -d $PERSIST_DIR/texts ]]; then
+    cp -n "$PERSIST_DIR"/texts/*.txt "$ROOT_DIR/texts/" 2>/dev/null || true
+  fi
+  local n=0
+  [[ -f "$ROOT_DIR/rows.jsonl" ]] && n=$(wc -l < "$ROOT_DIR/rows.jsonl")
+  echo "[localize] restored $n prior rows from $PERSIST_DIR" | tee -a "$LOG"
+}
+
 run_py () {
   echo "[localize] $* $(date)" | tee -a "$LOG"
   if "$PY" -u scripts/exp_aime_localize.py --out_dir "$ROOT_DIR" --tape_dir "$TAPE_DIR" \
@@ -128,6 +146,23 @@ quick () {
   run_py --mode loops --task aime2024 --budget_arms real
 }
 
+# SEAL at the Judger on AIME. This is the only lever aimed at the 99.4% of wall
+# clock that the Judger decode owns, and it is already validated on GSM8K
+# (coef 40 => -17% tokens at 95.0% vs 93.3% control). Coefficients ride in the
+# arm name, so the whole sweep runs in a single model load.
+seal () {
+  if [[ ! -f "$SEAL_VECTOR" ]]; then
+    echo "[localize] no SEAL vector at $SEAL_VECTOR" | tee -a "$LOG"; return 1
+  fi
+  local idx=${INDICES:-0,1,2,4,10,18}
+  local arms=${SEAL_ARMS:-real,real_seal40,real_seal60}
+  run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
+  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms "$arms" \
+    --seal_vector "$SEAL_VECTOR" --seal_layer "${SEAL_LAYER:-28}"
+  run_py --mode report
+  run_py --mode loops --task aime2024 --budget_arms "$arms"
+}
+
 focus () {
   local idx=${INDICES:-0,1,2,4,10,18}
   run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
@@ -175,9 +210,11 @@ aime25 () {
 }
 
 stage=${1:-quick}
+[[ $stage != smoke ]] && restore
 case "$stage" in
   smoke) smoke ;;
   quick) quick ;;
+  seal) seal ;;
   focus) focus ;;
   full) full ;;
   qwen) qwen ;;
@@ -187,7 +224,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 quick|smoke|focus|full|qwen|aime25|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 quick|seal|smoke|focus|full|qwen|aime25|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist

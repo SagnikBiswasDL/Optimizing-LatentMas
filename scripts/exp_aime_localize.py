@@ -23,6 +23,7 @@ import argparse
 import io
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -91,6 +92,22 @@ VIEW_ARMS = (
     "latents",
     "shuf",
 )
+
+
+_SEAL_ARM = re.compile(r"^(?P<base>.+)_seal(?P<coef>\d+(?:\.\d+)?)$")
+
+
+def parse_arm(name: str):
+    """`real_seal40` -> ("real", 40.0); plain arms -> (name, None).
+
+    Encoding the coefficient in the arm name keeps each setting a distinct,
+    restart-safe row and lets one process sweep coefficients without reloading
+    the model — the steering hook is attached once and armed per decode.
+    """
+    m = _SEAL_ARM.match(name)
+    if m:
+        return m.group("base"), float(m.group("coef"))
+    return name, None
 
 
 def parse_indices(raw: str, n: int) -> List[int]:
@@ -276,6 +293,7 @@ def view_cache(name: str, tape: Dict, others: Sequence[Dict], args) -> Any:
     past = tape["past"]
     spans = tape["spans"]
     k = int(tape.get("k") or args.k)
+    name, _coef = parse_arm(name)  # SEAL arms reuse their base arm's cache view
     if name == "none":
         return None, None
     if name == "real":
@@ -358,12 +376,23 @@ def list_tapes(args) -> List[Dict]:
         return []
     out = []
     for name in sorted(os.listdir(d)):
-        if name.endswith(".pt"):
-            out.append(load_tape(os.path.join(d, name)))
+        if not name.endswith(".pt"):
+            continue
+        path = os.path.join(d, name)
+        # Truncated/zero-byte tapes are a real artifact of the network-mount
+        # corruption; skip them loudly rather than dying on torch.load.
+        if os.path.getsize(path) == 0:
+            print(f"[tapes] skip empty {path}", flush=True)
+            continue
+        try:
+            out.append(load_tape(path))
+        except Exception as exc:
+            print(f"[tapes] skip unreadable {path}: {exc}", flush=True)
     return out
 
 
-def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict]) -> Dict:
+def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict],
+               seal_on: Optional[bool] = None) -> Dict:
     jids, jmask = judger_tensors(wrapper, [it["question"]], ns)
     caches = [None if cache is None else to_dev(deep_clone(cache), wrapper.device)]
     reset_peak()
@@ -373,7 +402,7 @@ def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict])
         wrapper, jids, jmask, caches, args.judger_budget,
         temperature=args.temperature, top_p=args.top_p,
         top_k=args.top_k if float(args.temperature) > 0 else None,
-        seal_on=bool(args.seal_on and method.endswith("_seal")),
+        seal_on=bool(args.seal_on and "_seal" in method) if seal_on is None else bool(seal_on),
     )
     sync()
     t_j = time.perf_counter() - t0
@@ -415,12 +444,24 @@ def run_views(args) -> None:
         raise SystemExit(f"no tapes in {tape_root(args)} — run --mode collect")
     ns = make_ns(args)
     wrapper = maybe_load_model(args, ns)
+    arms = [a.strip() for a in args.view_arms.split(",") if a.strip()]
+    needs_seal = any(parse_arm(a)[1] is not None for a in arms)
     if args.seal_vector:
         attach_judger_seal(wrapper, args.seal_vector, coef=args.seal_coef,
                            layer_index=args.seal_layer)
+    elif needs_seal:
+        raise SystemExit("SEAL arms requested but --seal_vector is empty")
     already = seen_keys(load_rows(args.out_dir))
-    arms = [a.strip() for a in args.view_arms.split(",") if a.strip()]
     for name in arms:
+        base, coef = parse_arm(name)
+        if coef is not None:
+            # one attached hook, retuned per arm — no reload between coefficients.
+            # role_coefs shadows .coef inside _resolve, so update it too.
+            wrapper.seal.coef = float(coef)
+            rc = getattr(wrapper.seal, "role_coefs", None)
+            if isinstance(rc, dict) and "judger" in rc:
+                rc["judger"] = float(coef)
+            print(f"[views] SEAL armed coef={coef} layer={args.seal_layer}", flush=True)
         for tape in tapes:
             it = {"idx": tape["idx"], "question": tape["question"], "gold": tape["gold"]}
             method = name
@@ -431,9 +472,11 @@ def run_views(args) -> None:
                 print(f"[views] skip {key}", flush=True)
                 continue
             cache, extra = view_cache(name, tape, tapes, args)
-            row = decode_one(wrapper, ns, args, it, cache, method, extra)
+            row = decode_one(wrapper, ns, args, it, cache, method, extra,
+                             seal_on=coef is not None)
+            row["seal_coef"] = coef
             times = tape.get("times") or {}
-            paid = PAID_ROLES.get(name, UP_ROLES)
+            paid = PAID_ROLES.get(base, UP_ROLES)
             row["upstream_s"] = float(sum(float(times.get(r) or 0.0) for r in paid))
             row["paid_roles"] = list(paid)
             append_row(args.out_dir, row)

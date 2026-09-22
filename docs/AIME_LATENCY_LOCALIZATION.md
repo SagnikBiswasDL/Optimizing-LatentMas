@@ -63,8 +63,8 @@ precisely where we earn nothing. Mean latency is being set by failures, not by
 successes.
 
 This is the low-hanging fruit, and it lives entirely in the Judger's token
-budget. But the two obvious interventions are **not** equally good, and the
-arithmetic matters:
+budget. **Both obvious interventions have now been measured and both are dead.**
+See §2b. The arithmetic that predicted it:
 
 **A hard token cap is nearly worthless here.** The boxed answer sits at the very
 end of a healthy CoT, so any cap below an item's length destroys its answer. The
@@ -85,10 +85,60 @@ onset position, tokens saved, and a `would_lose_solve` flag that fires when the
 abort point precedes a correct answer — that flag is the guard against a detector
 tuned too aggressively.
 
-The detector's machinery is tested; its **threshold is uncalibrated** because it
-has never seen a real degenerate AIME tail. Calibrating it is the first thing the
-next GPU session should produce. Success criterion: fires on items 1 and 2, fires
-on neither of the four solves.
+## 2b. Both token-budget interventions came back negative (2026-09-22)
+
+Second pod, `quick` stage, 18 minutes. **The §1 result replicated exactly** —
+Judger 155.4s of a 156.4s item (99.36%), silent agents 1.00s, 42.4 tok/s, 4/6
+correct with all of `{4,10,18}` kept, and identical per-item token counts. Greedy
+decode is deterministic here, so the latency decomposition is confirmed on two
+independent runs.
+
+**The hard cap is bad, as predicted** (`BUDGET.md`):
+
+| budget | acc | Δacc | mean tokens | est judger_s | speedup |
+|---:|---:|---:|---:|---:|---:|
+| 8192 | 0.667 | +0.000 | 6590 | 155.4 | 1.00x |
+| 6144 | 0.500 | −0.167 | 5504 | 129.8 | 1.20x |
+| 4096 | 0.167 | −0.500 | 3846 | 90.7 | 1.71x |
+| 3072 | 0.167 | −0.500 | 2993 | 70.6 | 2.20x |
+| 2048 | 0.000 | −0.667 | 2048 | 48.3 | 3.22x |
+
+You buy 1.2x for a third of the solves. **Option closed.**
+
+**The loop detector fired on nothing at all** — zero onsets across all six items
+at 8-gram / 256-window / 0.80. The non-terminating items are *not* degenerate, so
+there is no repetition to abort and the 26% saving does not exist. Reading the
+generations shows what they are actually doing:
+
+- **item 1** (gold 113) is cut mid-arithmetic, converting `625/36` to a common
+  denominator. No answer in sight.
+- **item 2** (gold 371, i.e. probability 115/256) had derived 109/256 and was
+  checking whether 109 and 256 are coprime when the budget ran out. It was
+  executing carefully on a **wrong subset count**, so more budget would not have
+  saved it.
+
+Both are honest failures that happen to be expensive, not detectable waste.
+**Option closed.**
+
+## 2c. What the generations say the waste actually is
+
+Not repetition — **verbosity**. The text is dense with reflection and transition
+moves (`But wait, there's a mistake here`, `let's check with another approach`,
+`Alternatively, compute...`) and with fraction arithmetic spelled out digit by
+digit. That is a *thought-type mix* problem, not a stopping problem, and it is
+exactly what the existing Judger SEAL vector targets:
+`mean(exec) − mean(reflection+transition)` at layer 28, which on GSM8K gives
+−17% tokens at 95.0% (vs 93.3% control) at coef 40, and −30% at coef 60.
+
+SEAL at the Judger is therefore the one proven lever pointed at the 99.4%, and it
+has never been run on AIME. `bash scripts/run_aime_localize.sh seal` sweeps
+coef 40 and 60 against the `real` baseline in a single model load (~25 min; the
+`real` arm is restored from `PERSIST_DIR` rather than re-decoded).
+
+Success criterion: token reduction at unchanged accuracy on `{0,4,10,18}`. The
+risk is specific and worth stating up front — SEAL suppresses reflection, and
+AIME may need reflection more than GSM8K does, in which case accuracy drops and
+this closes too.
 
 ## 3. Accuracy (tracked in parallel, so we don't buy speed with solves)
 
@@ -149,21 +199,22 @@ stopped and are the likely cause of the credit burn. Delete the duplicates; the
 The sweep is restart-safe (`rows.jsonl` keys on `(idx, method)`), tapes regenerate
 in well under a minute, and `views` is arm-major so partial runs are readable.
 
-Run `bash scripts/run_aime_localize.sh quick` — one ~20 minute stage that does all
-of the below and writes a `DONE_quick` sentinel to `PERSIST_DIR` so you know when
-it is safe to stop the pod.
+Run `bash scripts/run_aime_localize.sh seal` — ~25 minutes, writes a `DONE_seal`
+sentinel to `PERSIST_DIR` so you know when it is safe to stop the pod.
 
-1. `collect` (~40s for 6 items) then `views --view_arms real` (~15 min) to confirm
-   parity with the numbers above and, critically, to save the generations.
-2. `--mode loops` — calibrate the degenerate-tail detector. **Highest value per
-   GPU second: it is the only thing targeting the 99.4%, and the 26% saving is
-   real if the threshold separates items {1,2} from {0,4,10,18}.**
-3. `--mode budget` — the cap curve, to close that option with a number rather
-   than an argument.
-4. Only then the localization arms (`c3`, `c23`, `isolated`, `evict_seg`), at
+1. **Judger SEAL coef sweep** (§2c) — the only remaining latency lever. 12
+   decodes: `real_seal40` and `real_seal60`. The `real` baseline is restored from
+   `PERSIST_DIR`, so you are not paying for it twice.
+2. If SEAL holds accuracy, widen to n=30 on AIME-2024 and sweep coef 20/40/60/80
+   for a tokens-vs-accuracy frontier. If it costs accuracy, the AIME latency story
+   is **closed on all three levers** and the honest move is to stop selling
+   LatentMAS on AIME latency and argue it on accuracy or KV memory instead.
+3. Only then the localization arms (`c3`, `c23`, `isolated`, `evict_seg`), at
    n=30 if they are worth it at all. Reframe them as accuracy/memory questions;
    they are no longer a latency story.
 
-Operational: both analysis modes are CPU-only and run off saved `texts/`, so once
-step 1 has persisted you can stop the pod and iterate on the detector locally for
-free. That is the whole point of saving generations.
+Operational: `restore` pulls `rows.jsonl`, `agent_times.jsonl` and `texts/` back
+from `PERSIST_DIR` at stage start and never clobbers newer local files, so
+completed decodes carry across pods. `--mode budget` and `--mode loops` are
+CPU-only and run off saved `texts/`, so you can stop the pod and iterate on
+analysis locally for free. That is the whole point of saving generations.

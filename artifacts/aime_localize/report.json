@@ -1,0 +1,94 @@
+{
+  "task": "aime2024",
+  "critical": [
+    4,
+    10,
+    18
+  ],
+  "n_rows": 6,
+  "arms": {
+    "real": {
+      "n": 6,
+      "acc": 0.6666666666666666,
+      "tokens": {
+        "mean": 6591.166666666667,
+        "ci_lo": 4915.5,
+        "ci_hi": 7913.833333333333,
+        "n": 6
+      },
+      "cache_pos": {
+        "mean": 698.5,
+        "ci_lo": 604.0,
+        "ci_hi": 819.0,
+        "n": 6
+      },
+      "judger_s": 155.41995410931608,
+      "upstream_s": 0.9976107720285654,
+      "e2e_s": 156.41756488134465,
+      "eos_rate": 0.6666666666666666,
+      "tok_per_s": 42.40875442564285,
+      "correct_idx": [
+        0,
+        4,
+        10,
+        18
+      ],
+      "critical_kept": [
+        4,
+        10,
+        18
+      ],
+      "critical_lost": [],
+      "paid_roles": [
+        "planner",
+        "critic",
+        "refiner"
+      ]
+    }
+  },
+  "pairing": {
+    "real": {
+      "recovered_vs_none": [
+        0,
+        4,
+        10,
+        18
+      ],
+      "lost_vs_real": [],
+      "kept_vs_real": [
+        0,
+        4,
+        10,
+        18
+      ]
+    }
+  },
+  "per_agent": {
+    "planner": {
+      "n": 6,
+      "seconds": 0.40887301104764145,
+      "positions": 210.16666666666666,
+      "peak_mb": 29623.645345052082
+    },
+    "critic": {
+      "n": 6,
+      "seconds": 0.2995241954922676,
+      "positions": 251.16666666666666,
+      "peak_mb": 28656.724690755207
+    },
+    "refiner": {
+      "n": 6,
+      "seconds": 0.28921356548865634,
+      "positions": 237.16666666666666,
+      "peak_mb": 28755.695719401043
+    },
+    "judger": {
+      "n": 6,
+      "seconds": 155.41995410931608,
+      "positions": 6591.166666666667,
+      "peak_mb": 0.0
+    }
+  },
+  "recommend": "collect_views",
+  "reason": "need real / none / c3 before calling a hop wasteful"
+}

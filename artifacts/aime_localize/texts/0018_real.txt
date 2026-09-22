@@ -1,0 +1,440 @@
+<think>
+Okay, let's try to solve this problem step by step. First, I need to understand what's being asked here. We have points O, A, and B in the coordinate plane. O is the origin, A is (1/2, 0), and B is (0, sqrt(3)/2). The family F consists of all segments PQ of unit length in the first quadrant where P is on the x-axis and Q is on the y-axis. The problem states there's a unique point C on segment AB (other than A and B) that isn't on any segment from F except AB itself. We need to find OC² as a reduced fraction p/q and then compute p+q.
+
+First, I should visualize the setup. Points A and B are in the first quadrant. The segment AB connects (1/2, 0) to (0, sqrt(3)/2). The family F includes all unit-length segments from the x-axis to the y-axis. So each segment PQ in F has P = (x, 0) and Q = (0, y) such that the distance between P and Q is 1. The equation for that distance would be sqrt(x² + y²) = 1, so x² + y² = 1. Therefore, for any such segment PQ, the coordinates of P and Q must satisfy this equation.
+
+Now, the point C is on AB but not on any other segment from F except AB itself. So AB is part of F? Wait, AB's length: Let's check. The distance between A and B is sqrt[(1/2 - 0)^2 + (0 - sqrt(3)/2)^2] = sqrt[(1/4) + (3/4)] = sqrt(1) = 1. Oh, so AB is a unit-length segment from A to B, which is in F. Therefore, AB is one of the segments in F. But the problem says that C is on AB and not on any other segment from F except AB. So C is not on any other PQ in F except AB.
+
+So the task is to find the point C on AB (other than A and B) that is not on any other PQ in F. Then compute OC².
+
+So, how do we find such a point C?
+
+First, parametrize AB. Let's find the parametric equations for AB. Since A is (1/2, 0) and B is (0, sqrt(3)/2), the vector from A to B is (-1/2, sqrt(3)/2). So any point C on AB can be written as A + t*(vector AB), where t is between 0 and 1. So coordinates of C would be (1/2 - (1/2)t, 0 + (sqrt(3)/2)t) = ( (1 - t)/2 , (sqrt(3) t)/2 ), where t ∈ [0,1]. When t=0, it's A, t=1, it's B.
+
+Now, we need to find the value of t (not 0 or 1) such that C is not on any other segment PQ in F except AB. So, for this point C, there should be no other PQ in F (other than AB) that contains C.
+
+Alternatively, the point C is on AB and lies on exactly one segment from F (which is AB itself). So, for all other segments PQ in F (other than AB), C is not on them.
+
+Therefore, the problem reduces to finding the point C on AB such that there's no other PQ in F (other than AB) that passes through C. Then compute OC².
+
+So, how do we find such a point?
+
+First, let's think about the set of all segments PQ in F. Each such segment is determined by a point P on the x-axis (x, 0) and Q on the y-axis (0, y) with x² + y² = 1. The equation of the line PQ can be found. Then, for a given point C on AB, we need to check if there exists another PQ (other than AB) that contains C.
+
+Alternatively, for the point C on AB, if there exists a PQ in F (other than AB) that contains C, then C is not the desired point. The unique point C is the one that is not on any such PQ except AB.
+
+Therefore, we need to find the point C on AB such that the only PQ in F containing C is AB itself.
+
+To find this, perhaps we can parametrize the line AB and find the condition that for the point C on AB, there is no other PQ in F passing through it.
+
+Let me formalize this.
+
+Let me denote the coordinates of C as ( (1 - t)/2 , (sqrt(3) t)/2 ), where t ∈ (0,1).
+
+Now, suppose that this point C lies on some segment PQ in F. Then, PQ is a segment from (x, 0) to (0, y) with x² + y² = 1, and the line PQ passes through C.
+
+So, the equation of line PQ can be written as x/a + y/b = 1, where a and b are the intercepts. Here, since P is (a, 0) and Q is (0, b), so the equation is x/a + y/b = 1. Also, since PQ has length 1, we have a² + b² = 1.
+
+So, substituting the coordinates of C into the line equation:
+
+[( (1 - t)/2 ) / a ] + [ (sqrt(3) t / 2 ) / b ] = 1.
+
+But also, a² + b² = 1.
+
+So, for the point C to lie on PQ, there must exist a and b such that:
+
+( (1 - t)/2 ) / a + ( sqrt(3) t / 2 ) / b = 1,
+
+and
+
+a² + b² = 1.
+
+But since AB itself is a segment in F, when a = 1/2 and b = sqrt(3)/2, which satisfies (1/2)^2 + (sqrt(3)/2)^2 = 1/4 + 3/4 = 1. So that's the AB segment. So, for the point C, we need to ensure that there are no other (a, b) pairs (other than a=1/2, b=sqrt(3)/2) that satisfy the above equations.
+
+Therefore, the problem reduces to solving for t such that the system of equations:
+
+( (1 - t)/2 ) / a + ( sqrt(3) t / 2 ) / b = 1,
+
+a² + b² = 1,
+
+has only the solution (a, b) = (1/2, sqrt(3)/2).
+
+Alternatively, for the given t, the system has only one solution (a, b) which is the AB segment. Therefore, the point C is such that the system has only that solution.
+
+But how do we find such t?
+
+Alternatively, perhaps we can think of the set of all lines PQ in F (i.e., lines connecting (a, 0) to (0, b) with a² + b² = 1) and find the envelope of these lines. The point C is the point on AB that is not on any of these lines except AB itself. So, perhaps the point C is the intersection of AB with the envelope of the family F.
+
+Alternatively, maybe we can parametrize the lines PQ in F and find the condition for C to lie on them.
+
+Let me try to parametrize the lines PQ. Let me consider that for each a > 0, b > 0 with a² + b² = 1, the line PQ is x/a + y/b = 1. So, for each such a and b, this line is part of F.
+
+Now, for a given point C on AB, we can find the set of (a, b) that satisfy the line equation. If there's only one such (a, b) (which is the AB case), then C is the desired point.
+
+Alternatively, for the point C, the equation ( (1 - t)/2 ) / a + ( sqrt(3) t / 2 ) / b = 1 must have only one solution (a, b) with a² + b² = 1.
+
+But solving this system seems complicated. Maybe we can use substitution. Let me denote x = (1 - t)/2 and y = (sqrt(3) t)/2. Then, the equation becomes x/a + y/b = 1, with a² + b² = 1.
+
+We can express this as x/a + y/b = 1. Let me try to solve for b in terms of a or vice versa.
+
+Alternatively, since a² + b² = 1, we can parametrize a and b using trigonometric functions. Let me set a = cosθ and b = sinθ, where θ ∈ (0, π/2) because a and b are positive. Then, the line equation becomes x / cosθ + y / sinθ = 1.
+
+So, substituting x and y:
+
+[(1 - t)/2] / cosθ + [ (sqrt(3) t)/2 ] / sinθ = 1.
+
+This equation must hold for some θ. For the point C to be on AB and not on any other PQ in F except AB, this equation should have only one solution θ, which corresponds to the AB segment. The AB segment corresponds to θ where a = 1/2 and b = sqrt(3)/2. Let's check what θ that is. Since a = cosθ = 1/2, θ = π/3. So, θ = π/3 corresponds to AB.
+
+Therefore, for the point C, the equation [(1 - t)/2] / cosθ + [ (sqrt(3) t)/2 ] / sinθ = 1 should have only θ = π/3 as a solution. So, we need to find t such that this equation has only θ = π/3 as a solution.
+
+Alternatively, if we consider that for other θ, the equation does not hold. Therefore, the equation [(1 - t)/2] / cosθ + [ (sqrt(3) t)/2 ] / sinθ = 1 should have only one solution θ = π/3. To find such t, we can consider that this equation is satisfied for θ = π/3, and that for other θ, it's not satisfied. However, since we need uniqueness, perhaps there's a condition where the equation has a double root at θ = π/3, meaning that the equation is tangent to the curve at that point. This might be the case where the point C lies on the envelope of the family of lines PQ.
+
+Alternatively, think of this as an equation in θ. Let me denote:
+
+Let me write the equation as:
+
+[(1 - t)/2] * secθ + [ (sqrt(3) t)/2 ] * cscθ = 1.
+
+Let me denote this as:
+
+A secθ + B cscθ = 1, where A = (1 - t)/2 and B = (sqrt(3) t)/2.
+
+We can rewrite this equation as:
+
+A / cosθ + B / sinθ = 1.
+
+Multiply both sides by sinθ cosθ to eliminate denominators:
+
+A sinθ + B cosθ = sinθ cosθ.
+
+So:
+
+A sinθ + B cosθ - sinθ cosθ = 0.
+
+This is a trigonometric equation in θ. For the point C, this equation should have only one solution θ = π/3. To find such t, we can consider that θ = π/3 is a solution, and that the equation has no other solutions. However, solving this equation for general θ seems complex. Maybe we can use the fact that θ = π/3 is a solution and find the condition for it to be the only solution.
+
+First, substitute θ = π/3 into the equation:
+
+A sin(π/3) + B cos(π/3) - sin(π/3) cos(π/3) = 0.
+
+Compute each term:
+
+sin(π/3) = sqrt(3)/2, cos(π/3) = 1/2.
+
+So:
+
+A*(sqrt(3)/2) + B*(1/2) - (sqrt(3)/2)*(1/2) = 0.
+
+Multiply through by 2:
+
+A*sqrt(3) + B - sqrt(3)/2 = 0.
+
+Substitute A = (1 - t)/2 and B = (sqrt(3) t)/2:
+
+[(1 - t)/2] * sqrt(3) + [ (sqrt(3) t)/2 ] - sqrt(3)/2 = 0.
+
+Multiply all terms by 2 to eliminate denominators:
+
+(1 - t) sqrt(3) + sqrt(3) t - sqrt(3) = 0.
+
+Simplify:
+
+sqrt(3) [ (1 - t) + t - 1 ] = sqrt(3) [ 0 ] = 0. Which is 0 = 0. So this holds for any t. That makes sense because θ = π/3 is always a solution corresponding to AB. But we need to ensure that there are no other solutions for θ. Therefore, the equation A sinθ + B cosθ - sinθ cosθ = 0 should have only θ = π/3 as a solution. To find such t, we need to ensure that this equation has a unique solution θ = π/3. This likely occurs when the equation is tangent to the curve at θ = π/3, meaning that θ = π/3 is a double root. Therefore, we can take the derivative of the equation with respect to θ and set it to zero at θ = π/3.
+
+Let me denote the function f(θ) = A sinθ + B cosθ - sinθ cosθ. We want f(θ) = 0 to have a double root at θ = π/3. Therefore, f(π/3) = 0 and f’(π/3) = 0.
+
+We already know f(π/3) = 0 for any t. Now compute f’(θ):
+
+f’(θ) = A cosθ - B sinθ - [cos²θ - sin²θ].
+
+Wait, let's compute derivative step by step:
+
+f(θ) = A sinθ + B cosθ - sinθ cosθ.
+
+So derivative:
+
+f’(θ) = A cosθ - B sinθ - [cos²θ - sin²θ] ?
+
+Wait, derivative of sinθ cosθ is cos²θ - sin²θ? Wait, no. Let me compute derivative of sinθ cosθ:
+
+d/dθ [sinθ cosθ] = cosθ * cosθ + sinθ * (-sinθ) = cos²θ - sin²θ. Yes, that's correct.
+
+So f’(θ) = A cosθ - B sinθ - (cos²θ - sin²θ).
+
+Now, set θ = π/3 and f’(π/3) = 0.
+
+Compute f’(π/3):
+
+First, compute A cos(π/3) - B sin(π/3) - [cos²(π/3) - sin²(π/3)].
+
+We know cos(π/3) = 1/2, sin(π/3) = sqrt(3)/2.
+
+So:
+
+A*(1/2) - B*(sqrt(3)/2) - [ (1/2)^2 - (sqrt(3)/2)^2 ].
+
+Compute each term:
+
+First term: A*(1/2) = [(1 - t)/2] * (1/2) = (1 - t)/4.
+
+Second term: -B*(sqrt(3)/2) = - [ (sqrt(3) t)/2 ] * (sqrt(3)/2 ) = - [ (3 t)/4 ].
+
+Third term: - [ (1/4) - (3/4) ] = - [ -2/4 ] = - [ -1/2 ] = 1/2.
+
+Putting it all together:
+
+(1 - t)/4 - (3t)/4 + 1/2 = 0.
+
+Combine terms:
+
+[ (1 - t) - 3t ] / 4 + 1/2 = [1 - 4t]/4 + 1/2 = (1 - 4t)/4 + 2/4 = (1 - 4t + 2)/4 = (3 - 4t)/4 = 0.
+
+Set equal to zero:
+
+(3 - 4t)/4 = 0 ⇒ 3 - 4t = 0 ⇒ t = 3/4.
+
+So, t = 3/4. Therefore, the point C corresponds to t = 3/4.
+
+Now, let's find the coordinates of C. Recall that C is ( (1 - t)/2 , (sqrt(3) t)/2 ). Substituting t = 3/4:
+
+x-coordinate: (1 - 3/4)/2 = (1/4)/2 = 1/8.
+
+y-coordinate: (sqrt(3) * 3/4)/2 = (3 sqrt(3))/8.
+
+Therefore, C is (1/8, 3√3/8).
+
+Now, compute OC². Since O is (0,0), OC² is (1/8)^2 + (3√3/8)^2.
+
+Calculate:
+
+(1/64) + (9 * 3)/64 = 1/64 + 27/64 = 28/64 = 7/16.
+
+Wait, 28/64 simplifies to 7/16. So OC² = 7/16. Therefore, p = 7, q = 16, and p + q = 23.
+
+But wait, let me check the calculation again:
+
+(1/8)^2 = 1/64.
+
+(3√3/8)^2 = 9 * 3 / 64 = 27/64.
+
+Adding them: 1 + 27 = 28, over 64. 28/64 reduces to 7/16. Yes, correct. So 7 + 16 = 23.
+
+But let me verify if this is correct. Let me check if the point C=(1/8, 3√3/8) is indeed not on any other segment PQ in F except AB.
+
+Suppose there exists another segment PQ in F (other than AB) that contains C. Then, there exist a and b with a² + b² = 1, a ≠ 1/2, b ≠ sqrt(3)/2, such that x/a + y/b = 1, where x = 1/8, y = 3√3/8.
+
+So:
+
+(1/8)/a + (3√3/8)/b = 1.
+
+Multiply both sides by 8:
+
+1/a + 3√3 / b = 8.
+
+But also, a² + b² = 1.
+
+We need to check if there are solutions (a, b) other than a=1/2, b= sqrt(3)/2.
+
+Let me check if with t=3/4, the equation has only one solution. Earlier, we derived that when t=3/4, the equation has a double root at θ=π/3, implying that there are no other solutions. Therefore, this point C is unique and not on any other PQ in F except AB. Hence, the answer should be 7/16, so p+q=23.
+
+But let me check if there's a mistake in the derivative approach. The logic was that for the equation f(θ)=0 to have a unique solution at θ=π/3, it must be a double root, hence f’(π/3)=0. This gives t=3/4. That seems correct.
+
+Alternatively, maybe there's another way to approach this problem. For example, considering the envelope of the family of lines PQ in F. The envelope of a family of curves is a curve that is tangent to each member of the family at some point. In this case, the envelope of the lines PQ would be a curve such that each line PQ is tangent to it. The point C might be the intersection of AB with this envelope, except for AB itself.
+
+The envelope of the family of lines x/a + y/b = 1 with a² + b² = 1 can be found using the method of envelopes. The envelope satisfies the equations:
+
+F(a, x, y) = x/a + y/b - 1 = 0,
+
+and
+
+dF/da = -x/a² - (dy/da)/b = 0.
+
+Wait, but since a and b are related by a² + b² = 1, we can use that to eliminate variables. Alternatively, parametrize a and b as before with θ, so a = cosθ, b = sinθ. Then, the envelope condition would involve solving for θ such that the line is tangent to the envelope curve. However, this might be more complex.
+
+Alternatively, using the condition for envelope: For the family of curves F(x, y, θ) = x cosθ + y sinθ - cosθ sinθ = 0 (since x/a + y/b = 1 becomes x cosθ + y sinθ = cosθ sinθ, because a=cosθ, b=sinθ). Wait, original equation is x/a + y/b = 1, which with a=cosθ, b=sinθ becomes x / cosθ + y / sinθ = 1. Multiply both sides by cosθ sinθ: x sinθ + y cosθ = cosθ sinθ. So F(x, y, θ) = x sinθ + y cosθ - cosθ sinθ = 0.
+
+The envelope is found by solving F(x, y, θ) = 0 and dF/dθ = 0.
+
+Compute dF/dθ:
+
+d/dθ [x sinθ + y cosθ - cosθ sinθ] = x cosθ - y sinθ - [ -sinθ sinθ + cosθ cosθ ].
+
+Wait:
+
+d/dθ [x sinθ] = x cosθ,
+
+d/dθ [y cosθ] = -y sinθ,
+
+d/dθ [ -cosθ sinθ ] = - [ -sinθ sinθ + cosθ cosθ ] = sin²θ - cos²θ.
+
+So overall:
+
+dF/dθ = x cosθ - y sinθ + sin²θ - cos²θ = 0.
+
+So the envelope conditions are:
+
+x sinθ + y cosθ - cosθ sinθ = 0,
+
+and
+
+x cosθ - y sinθ + sin²θ - cos²θ = 0.
+
+We can solve these equations for x and y in terms of θ. Let me denote these as equations (1) and (2).
+
+Equation (1): x sinθ + y cosθ = cosθ sinθ.
+
+Equation (2): x cosθ - y sinθ = cos²θ - sin²θ.
+
+Let me write this as a system of linear equations in x and y:
+
+sinθ * x + cosθ * y = cosθ sinθ,
+
+cosθ * x - sinθ * y = cos²θ - sin²θ.
+
+Let me solve this system. Let me denote:
+
+Equation (1): A x + B y = C,
+
+Equation (2): D x + E y = F,
+
+where A = sinθ, B = cosθ, C = cosθ sinθ,
+
+D = cosθ, E = -sinθ, F = cos²θ - sin²θ.
+
+Using Cramer's rule or matrix inversion. Let me write the matrix:
+
+| A   B |   |x|   = |C|
+| D   E |   |y|     |F|
+
+The determinant of the coefficient matrix is:
+
+Δ = A E - B D = sinθ*(-sinθ) - cosθ*cosθ = -sin²θ - cos²θ = - (sin²θ + cos²θ) = -1.
+
+So determinant is -1.
+
+Then, x = [C E - B F] / Δ,
+
+y = [A F - C D] / Δ.
+
+Compute x:
+
+C E - B F = (cosθ sinθ)(-sinθ) - cosθ*(cos²θ - sin²θ)
+
+= -cosθ sin²θ - cosθ (cos²θ - sin²θ)
+
+= -cosθ [ sin²θ + cos²θ - sin²θ ]
+
+Wait, expanding:
+
+= -cosθ sin²θ - cos³θ + cosθ sin²θ
+
+= (-cosθ sin²θ + cosθ sin²θ) - cos³θ
+
+= 0 - cos³θ = -cos³θ.
+
+Therefore, x = (-cos³θ) / (-1) = cos³θ.
+
+Similarly, compute y:
+
+A F - C D = sinθ*(cos²θ - sin²θ) - cosθ sinθ * cosθ
+
+= sinθ cos²θ - sin³θ - cos²θ sinθ
+
+= (sinθ cos²θ - cos²θ sinθ) - sin³θ
+
+= 0 - sin³θ = -sin³θ.
+
+Thus, y = (-sin³θ)/(-1) = sin³θ.
+
+Therefore, the envelope is given by x = cos³θ, y = sin³θ. This is the parametric equation of the astroid curve.
+
+So, the envelope of the family of lines PQ is the astroid x = cos³θ, y = sin³θ. Therefore, the point C lies on AB and also on this astroid, except for the point AB itself. Wait, but AB is part of the family F, so the intersection of AB with the astroid (other than AB's endpoints) would be the point C.
+
+Therefore, to find point C, we need to find the intersection of AB with the astroid x = cos³θ, y = sin³θ, other than A and B.
+
+So, parametrize AB as before: ( (1 - t)/2, (sqrt(3) t)/2 ). This should satisfy x = cos³θ and y = sin³θ for some θ. Also, since AB is from A to B, which corresponds to θ = π/3 (as before), but we need another intersection point.
+
+Alternatively, since AB is the line from (1/2, 0) to (0, sqrt(3)/2), which can be parametrized as x = (1 - t)/2, y = (sqrt(3) t)/2, t ∈ [0,1].
+
+We need to find t such that x = cos³θ and y = sin³θ for some θ, and also that (x, y) lies on AB.
+
+But since AB is already part of the family F, which corresponds to θ = π/3, which gives x = cos³(π/3) = (1/2)^3 = 1/8, y = sin³(π/3) = (sqrt(3)/2)^3 = (3 sqrt(3))/8. Wait, but that's the point C we found earlier! Wait, but when θ = π/3, cosθ = 1/2, so x = (1/2)^3 = 1/8, and y = (sqrt(3)/2)^3 = 3√3/8. Which is exactly the point C we found earlier. But AB is the segment from A (t=0) to B (t=1). However, when t=3/4, we get x=1/8, y=3√3/8, which is the same as the envelope point. Therefore, this suggests that the point C is the intersection of AB with the astroid, which is unique (other than AB's endpoints). Therefore, this confirms our previous result.
+
+Therefore, OC² = (1/8)^2 + (3√3/8)^2 = 1/64 + 27/64 = 28/64 = 7/16, so p + q = 7 + 16 = 23.
+
+This seems consistent. Therefore, the answer should be 23.
+</think>
+
+To solve the problem, we proceed as follows:
+
+---
+
+### **Step 1: Understand the Geometry and Parametrize the Segment AB**
+
+- Points:  
+  $ O = (0, 0) $, $ A = \left(\frac{1}{2}, 0\right) $, $ B = \left(0, \frac{\sqrt{3}}{2}\right) $.  
+- Segment $ \overline{AB} $ has length 1, as verified by the distance formula:  
+  $$
+  AB = \sqrt{\left(\frac{1}{2}\right)^2 + \left(\frac{\sqrt{3}}{2}\right)^2} = \sqrt{\frac{1}{4} + \frac{3}{4}} = 1.
+  $$
+- Parametrize $ \overline{AB} $:  
+  Let $ C = \left(\frac{1 - t}{2}, \frac{\sqrt{3}t}{2}\right) $, where $ t \in [0, 1] $.
+
+---
+
+### **Step 2: Characterize the Family $ \mathcal{F} $ of Segments**
+
+- Each segment $ \overline{PQ} \in \mathcal{F} $ has endpoints $ P = (a, 0) $, $ Q = (0, b) $, with $ a^2 + b^2 = 1 $ (unit length).  
+- The line $ PQ $ has equation:  
+  $$
+  \frac{x}{a} + \frac{y}{b} = 1.
+  $$
+
+---
+
+### **Step 3: Determine When a Point $ C $ Lies on a Segment $ \overline{PQ} \in \mathcal{F} $**
+
+- For $ C = \left(\frac{1 - t}{2}, \frac{\sqrt{3}t}{2}\right) $, substitute into the line equation:  
+  $$
+  \frac{(1 - t)/2}{a} + \frac{(\sqrt{3}t)/2}{b} = 1.
+  $$
+- This must be satisfied for some $ a, b $ with $ a^2 + b^2 = 1 $, and $ (a, b) \neq \left(\frac{1}{2}, \frac{\sqrt{3}}{2}\right) $ (to exclude $ \overline{AB} $).
+
+---
+
+### **Step 4: Use the Envelope of the Family $ \mathcal{F} $**
+
+- The envelope of the family $ \mathcal{F} $ is the astroid:  
+  $$
+  x = \cos^3\theta, \quad y = \sin^3\theta.
+  $$
+- The point $ C $ lies on both $ \overline{AB} $ and the astroid, but not on any other segment in $ \mathcal{F} $.
+
+---
+
+### **Step 5: Solve for the Unique Intersection Point $ C $**
+
+- Set $ \left(\frac{1 - t}{2}, \frac{\sqrt{3}t}{2}\right) = (\cos^3\theta, \sin^3\theta) $.
+- Solve for $ t $ and $ \theta $, ensuring the point lies on both curves and is not $ A $ or $ B $.
+- This leads to $ t = \frac{3}{4} $, giving:  
+  $$
+  C = \left(\frac{1}{8}, \frac{3\sqrt{3}}{8}\right).
+  $$
+
+---
+
+### **Step 6: Compute $ OC^2 $ and Simplify**
+
+- Compute $ OC^2 $:  
+  $$
+  OC^2 = \left(\frac{1}{8}\right)^2 + \left(\frac{3\sqrt{3}}{8}\right)^2 = \frac{1}{64} + \frac{27}{64} = \frac{28}{64} = \frac{7}{16}.
+  $$
+- Thus, $ p = 7 $, $ q = 16 $, and $ p + q = 23 $.
+
+---
+
+### **Final Answer**
+
+$$
+\boxed{23}
+$$

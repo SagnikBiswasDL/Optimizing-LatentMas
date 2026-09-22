@@ -1,0 +1,67 @@
+{
+  "real": {
+    "n": 6,
+    "tok_per_s": 42.40875442564285,
+    "total_tokens": 39542,
+    "saved_tokens": 0,
+    "saved_frac": 0.0,
+    "saved_seconds": 0.0,
+    "would_lose_solves": [],
+    "items": [
+      {
+        "idx": 0,
+        "correct": true,
+        "eos": true,
+        "tokens": 2599,
+        "loop_onset": null,
+        "saved_tokens": 0,
+        "would_lose_solve": false
+      },
+      {
+        "idx": 1,
+        "correct": false,
+        "eos": false,
+        "tokens": 8191,
+        "loop_onset": null,
+        "saved_tokens": 0,
+        "would_lose_solve": false
+      },
+      {
+        "idx": 2,
+        "correct": false,
+        "eos": false,
+        "tokens": 8192,
+        "loop_onset": null,
+        "saved_tokens": 0,
+        "would_lose_solve": false
+      },
+      {
+        "idx": 4,
+        "correct": true,
+        "eos": true,
+        "tokens": 7652,
+        "loop_onset": null,
+        "saved_tokens": 0,
+        "would_lose_solve": false
+      },
+      {
+        "idx": 10,
+        "correct": true,
+        "eos": true,
+        "tokens": 5847,
+        "loop_onset": null,
+        "saved_tokens": 0,
+        "would_lose_solve": false
+      },
+      {
+        "idx": 18,
+        "correct": true,
+        "eos": true,
+        "tokens": 7061,
+        "loop_onset": null,
+        "saved_tokens": 0,
+        "would_lose_solve": false
+      }
+    ]
+  }
+}
