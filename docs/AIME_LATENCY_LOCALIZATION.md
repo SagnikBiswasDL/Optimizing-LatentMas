@@ -199,19 +199,51 @@ stopped and are the likely cause of the credit burn. Delete the duplicates; the
 The sweep is restart-safe (`rows.jsonl` keys on `(idx, method)`), tapes regenerate
 in well under a minute, and `views` is arm-major so partial runs are readable.
 
-Run `bash scripts/run_aime_localize.sh seal` — ~25 minutes, writes a `DONE_seal`
-sentinel to `PERSIST_DIR` so you know when it is safe to stop the pod.
+### The throughput fix that makes everything else affordable
 
-1. **Judger SEAL coef sweep** (§2c) — the only remaining latency lever. 12
-   decodes: `real_seal40` and `real_seal60`. The `real` baseline is restored from
-   `PERSIST_DIR`, so you are not paying for it twice.
-2. If SEAL holds accuracy, widen to n=30 on AIME-2024 and sweep coef 20/40/60/80
-   for a tokens-vs-accuracy frontier. If it costs accuracy, the AIME latency story
-   is **closed on all three levers** and the honest move is to stop selling
-   LatentMAS on AIME latency and argue it on accuracy or KV memory instead.
-3. Only then the localization arms (`c3`, `c23`, `isolated`, `evict_seg`), at
-   n=30 if they are worth it at all. Reframe them as accuracy/memory questions;
-   they are no longer a latency story.
+Every number above was produced one item at a time. `decode_batch` already
+supports true batching — it left-pads ragged KV caches and builds the matching
+mask — and `decode_one` was simply calling it with a batch of one. Per decode
+step the cost is dominated by streaming 14B weights through memory, so a batch
+amortizes that across items and buys roughly **4x more data per GPU-hour**.
+
+The catch is that `generate()` runs until every sequence in the batch finishes, so
+a group costs `max(tokens)` steps rather than `sum(tokens)`, and **per-item wall
+clock stops being observable** — a 2600-token item sharing a batch with a
+runaway 8192-token one looks like it took just as long. So grouped rows store
+`batch_s`/`batch_size` and a **null `judger_s`**, and the per-item latency table
+skips them rather than dividing by batch size and quietly inventing numbers. The
+arm tables also carry `wall_s` (from `batch_s/batch_size`, which sums back to
+true wall clock either way), so cost is still reported correctly for grouped runs.
+**Any run whose purpose is latency must use `--decode_bs 1`.**
+
+Greedy decoding *should* be batch-invariant, but padding the cache and the
+different GEMM shapes a batch takes can perturb logits enough to flip a tie, and
+once two runs diverge they stay diverged. `--mode compare` diffs two arms'
+saved generations byte-for-byte to settle it, and the `parity` stage runs it
+against the six items whose exact token counts we already have. **Run `parity`
+before trusting any batched number.** If it is not fully identical, batched
+results remain valid on their own terms but stop being drop-in comparable to the
+n=1 baseline, and that has to be said wherever they are quoted.
+
+### Order of operations
+
+1. `bash scripts/run_aime_localize.sh parity` — ~6 min. Certifies grouped
+   decoding and measures the actual speedup. Gates everything below.
+2. `bash scripts/run_aime_localize.sh sweep` — ~1.5 h. n=30 AIME-2024 for
+   `real`, `none`, `real_seal40`, `real_seal60`: 120 decodes that would have cost
+   ~5 h unbatched. This is the main data yield. It answers three things at once —
+   the real accuracy of the method at a defensible n, whether the cache matters
+   at all (`none`), and whether SEAL buys tokens without costing accuracy.
+3. `bash scripts/run_aime_localize.sh localize30` — ~1.7 h. The localization arms
+   at n=30, now framed as accuracy/KV-memory rather than latency.
+4. `bash scripts/run_aime_localize.sh aime25_sweep` — ~1.5 h. Held-out AIME 2025,
+   into its own `out_dir`. Only worth it once AIME-2024 says something.
+
+n=6 is the reason several earlier conclusions had to be walked back; at that size
+one item is 17 accuracy points. Everything above is n=30 for that reason.
+`restore` pulls completed rows back from `PERSIST_DIR` at stage start, so these
+stages can be run across several pods without repaying for finished decodes.
 
 Operational: `restore` pulls `rows.jsonl`, `agent_times.jsonl` and `texts/` back
 from `PERSIST_DIR` at stage start and never clobbers newer local files, so

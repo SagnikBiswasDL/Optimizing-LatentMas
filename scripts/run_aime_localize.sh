@@ -3,6 +3,10 @@
 # then role-budgeted eviction. Restart-safe. GPU from `collect` onward.
 #
 #   bash scripts/run_aime_localize.sh smoke
+#   bash scripts/run_aime_localize.sh parity    # ~6 min: certify grouped decode. RUN FIRST.
+#   bash scripts/run_aime_localize.sh sweep     # ~1.5h: n=30, real/none/seal40/seal60
+#   bash scripts/run_aime_localize.sh localize30   # ~1.7h: n=30 localization arms
+#   bash scripts/run_aime_localize.sh aime25_sweep # ~1.5h: held-out AIME 2025
 #   bash scripts/run_aime_localize.sh quick     # ~20 min: Real arm + token-budget curve
 #   bash scripts/run_aime_localize.sh seal      # ~25 min: Judger SEAL coef sweep on AIME
 #   bash scripts/run_aime_localize.sh focus     # items 0,1,2,4,10,18, all arms (~3h)
@@ -10,7 +14,10 @@
 #   bash scripts/run_aime_localize.sh qwen      # Real decode at Qwen thinking sampler
 #   bash scripts/run_aime_localize.sh aime25    # same table on AIME 2025
 #
-# Env: CACHE= path to math1k/cache.pt for isolated_frozen (Jiayi line 4).
+# Env: N= items per stage (default 30).  DECODE_BS= Judger decodes per batch
+#        (default 6; set 1 when the run's purpose is per-item latency).
+#      SWEEP_ARMS= / LOC_ARMS= override the arm lists.
+#      CACHE= path to math1k/cache.pt for isolated_frozen (Jiayi line 4).
 #      SEAL_VECTOR= gsm8k L28 vector for isolated_frozen_seal.
 #      TAPE_DIR= local disk for big KV tapes (network mounts corrupt them).
 #      PERSIST_DIR= durable dir for small artifacts; also where DONE_<stage>
@@ -57,6 +64,12 @@ CACHE=${CACHE:-${REPO}/artifacts/math_ladder/math1k/cache.pt}
 SEAL_VECTOR=${SEAL_VECTOR:-${REPO}/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt}
 K=${K:-10}
 SEED=${SEED:-42}
+N=${N:-30}
+# Judger decodes per generate() call. Grouping multiplies throughput ~4x because
+# the per-step cost is dominated by streaming the weights. KV is ~160KiB/token,
+# so batch 6 at budget 8192 is ~9GB on top of the weights — room to raise this on
+# an H200. Keep it at 1 for any run whose purpose is per-item latency.
+DECODE_BS=${DECODE_BS:-6}
 LOG=${LOG:-${ROOT_DIR}/localize.log}
 mkdir -p "$ROOT_DIR"
 
@@ -135,6 +148,19 @@ smoke () {
   run_py --mode smoke
 }
 
+# Fail before the 40s model load rather than after it: a missing steering vector
+# is the one setup error that only surfaces at attach time.
+need_seal_vector () {
+  case "$1" in
+    *seal*) ;;
+    *) return 0 ;;
+  esac
+  if [[ ! -f "$SEAL_VECTOR" ]]; then
+    echo "[localize] arms '$1' need a SEAL vector; none at $SEAL_VECTOR" | tee -a "$LOG"
+    return 1
+  fi
+}
+
 # Cheap-first: the only arm that targets the 99.4% (Judger decode). ~20 min on
 # an H200 — collect is seconds, 6 real decodes dominate, budget replay is CPU.
 quick () {
@@ -151,16 +177,76 @@ quick () {
 # (coef 40 => -17% tokens at 95.0% vs 93.3% control). Coefficients ride in the
 # arm name, so the whole sweep runs in a single model load.
 seal () {
-  if [[ ! -f "$SEAL_VECTOR" ]]; then
-    echo "[localize] no SEAL vector at $SEAL_VECTOR" | tee -a "$LOG"; return 1
-  fi
   local idx=${INDICES:-0,1,2,4,10,18}
   local arms=${SEAL_ARMS:-real,real_seal40,real_seal60}
+  need_seal_vector "$arms" || return 1
   run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
   run_py --mode views --task aime2024 --judger_budget 8192 --view_arms "$arms" \
     --seal_vector "$SEAL_VECTOR" --seal_layer "${SEAL_LAYER:-28}"
   run_py --mode report
   run_py --mode loops --task aime2024 --budget_arms "$arms"
+}
+
+# Certify grouped decoding against the unbatched baseline before any batched
+# sweep is trusted. Re-decodes the six items we already have exact numbers for,
+# as one batch, under the label real__bs<N>, then diffs the text byte-for-byte.
+# Cheap (~6 min) and it gates everything below.
+parity () {
+  local idx=${INDICES:-0,1,2,4,10,18}
+  run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
+  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real
+  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real \
+    --decode_bs "$DECODE_BS" --method_tag "bs${DECODE_BS}"
+  run_py --mode compare --compare_arms "real,real__bs${DECODE_BS}"
+  run_py --mode report
+}
+
+# The data run. n=30 on AIME 2024, grouped decode, accuracy-and-tokens arms:
+# `real` (the method), `none` (does the cache matter at all), and the SEAL coefs
+# (the one latency lever left). Roughly 20 min per arm at DECODE_BS=6 versus
+# ~78 min unbatched, so this is ~4x more data per GPU-hour.
+sweep () {
+  local arms=${SWEEP_ARMS:-real,none,real_seal40,real_seal60}
+  need_seal_vector "$arms" || return 1
+  run_py --mode collect --task aime2024 --n "$N" --indices "0-$((N - 1))" \
+    --judger_budget 8192
+  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms "$arms" \
+    --decode_bs "$DECODE_BS" --seal_vector "$SEAL_VECTOR" \
+    --seal_layer "${SEAL_LAYER:-28}"
+  run_py --mode report
+  run_py --mode budget --task aime2024 --budget_arms "$arms"
+  run_py --mode loops --task aime2024 --budget_arms "$arms"
+}
+
+# The localization arms at n=30. No longer a latency story (see
+# docs/AIME_LATENCY_LOCALIZATION.md) — these answer which upstream writes the
+# Judger actually reads, as an accuracy and KV-memory question.
+localize30 () {
+  local arms=${LOC_ARMS:-c1,c2,c3,c23,evict_seg}
+  run_py --mode collect --task aime2024 --n "$N" --indices "0-$((N - 1))" \
+    --judger_budget 8192
+  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms "$arms" \
+    --decode_bs "$DECODE_BS"
+  run_py --mode report
+}
+
+# Held-out generalization: the same table on AIME 2025, into its own out_dir.
+aime25_sweep () {
+  local out="${ROOT_DIR}_aime25"
+  local save=$ROOT_DIR save_log=$LOG
+  mkdir -p "$out"
+  ROOT_DIR=$out
+  LOG=$out/localize.log
+  local arms=${SWEEP_ARMS:-real,none,real_seal40,real_seal60}
+  need_seal_vector "$arms" || { ROOT_DIR=$save; LOG=$save_log; return 1; }
+  run_py --mode collect --task aime2025 --n "$N" --indices "0-$((N - 1))" \
+    --judger_budget 8192
+  run_py --mode views --task aime2025 --judger_budget 8192 --view_arms "$arms" \
+    --decode_bs "$DECODE_BS" --seal_vector "$SEAL_VECTOR" \
+    --seal_layer "${SEAL_LAYER:-28}"
+  run_py --mode report
+  ROOT_DIR=$save
+  LOG=$save_log
 }
 
 focus () {
@@ -215,6 +301,11 @@ case "$stage" in
   smoke) smoke ;;
   quick) quick ;;
   seal) seal ;;
+  parity) parity ;;
+  sweep) sweep ;;
+  localize30) localize30 ;;
+  aime25_sweep) aime25_sweep ;;
+  compare) run_py --mode compare --compare_arms "${COMPARE_ARMS:?set COMPARE_ARMS=A,B}" ;;
   focus) focus ;;
   full) full ;;
   qwen) qwen ;;
@@ -224,7 +315,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 quick|seal|smoke|focus|full|qwen|aime25|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist

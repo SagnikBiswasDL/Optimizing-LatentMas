@@ -391,49 +391,84 @@ def list_tapes(args) -> List[Dict]:
     return out
 
 
-def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict],
-               seal_on: Optional[bool] = None) -> Dict:
-    jids, jmask = judger_tensors(wrapper, [it["question"]], ns)
-    caches = [None if cache is None else to_dev(deep_clone(cache), wrapper.device)]
+def decode_group(wrapper, ns, args, items: Sequence[Dict], caches: Sequence[Any],
+                 method: str, extras: Optional[Sequence[Optional[Dict]]] = None,
+                 seal_on: Optional[bool] = None) -> List[Dict]:
+    """Decode a group of items in one generate() call.
+
+    generate() runs until every sequence in the batch finishes, so a group costs
+    max(tokens) steps rather than sum(tokens). That is still a large throughput
+    win because the per-step cost is dominated by streaming the weights, which
+    the batch amortizes across items.
+
+    The cost is that per-item wall clock is no longer observable: a short item
+    sharing a batch with a runaway one appears to take as long as the runaway.
+    Grouped rows therefore carry batch_s/batch_size and a null judger_s, and the
+    latency tables skip them. Use --decode_bs 1 whenever latency is the question.
+    """
+    n = len(items)
+    have = [c is not None for c in caches]
+    if any(have) and not all(have):
+        raise ValueError("cannot batch cached and cacheless items together")
+    questions = [it["question"] for it in items]
+    jids, jmask = judger_tensors(wrapper, questions, ns)
+    dev_caches = [None if c is None else to_dev(deep_clone(c), wrapper.device) for c in caches]
+    if seal_on is None:
+        seal_on = bool(args.seal_on and "_seal" in method)
     reset_peak()
     sync()
     t0 = time.perf_counter()
     texts, ntoks, eoss = decode_batch_maybe_seal(
-        wrapper, jids, jmask, caches, args.judger_budget,
+        wrapper, jids, jmask, dev_caches, args.judger_budget,
         temperature=args.temperature, top_p=args.top_p,
         top_k=args.top_k if float(args.temperature) > 0 else None,
-        seal_on=bool(args.seal_on and "_seal" in method) if seal_on is None else bool(seal_on),
+        seal_on=bool(seal_on),
     )
     sync()
-    t_j = time.perf_counter() - t0
-    gold = it.get("gold") or ""
-    row = {
-        "idx": int(it["idx"]),
-        "method": method,
-        "task": args.task,
-        "correct": bool(graded(texts[0], gold, args.task)),
-        "pred": pred_short(texts[0]),
-        "tokens": int(ntoks[0]),
-        "eos": bool(eoss[0]),
-        "judger_s": float(t_j),
-        "cache_pos": 0 if cache is None else int(num_positions(cache)),
-        "cache_mb": 0.0 if cache is None else float(kv_mb(cache)),
-        "critical": int(it["idx"]) in CRITICAL,
-    }
-    if extra:
-        row["extra"] = extra
-    # Full generation is kept so `--mode budget` can replay truncation offline
-    # instead of re-decoding on the GPU.
+    t_batch = time.perf_counter() - t0
+    del dev_caches
     tdir = os.path.join(args.out_dir, "texts")
     os.makedirs(tdir, exist_ok=True)
-    with open(os.path.join(tdir, f"{int(it['idx']):04d}_{method}.txt"), "w") as f:
-        f.write(texts[0])
-    print(
-        f"[decode] idx={row['idx']} {method} acc={int(row['correct'])} "
-        f"tok={row['tokens']} pos={row['cache_pos']} {t_j:.1f}s pred={row['pred']!r}",
-        flush=True,
-    )
-    return row
+    rows: List[Dict] = []
+    for b, it in enumerate(items):
+        cache = caches[b]
+        row = {
+            "idx": int(it["idx"]),
+            "method": method,
+            "task": args.task,
+            "correct": bool(graded(texts[b], it.get("gold") or "", args.task)),
+            "pred": pred_short(texts[b]),
+            "tokens": int(ntoks[b]),
+            "eos": bool(eoss[b]),
+            # Per-item timing is only meaningful when the item had the GPU alone.
+            "judger_s": float(t_batch) if n == 1 else None,
+            "batch_size": n,
+            "batch_s": float(t_batch),
+            "cache_pos": 0 if cache is None else int(num_positions(cache)),
+            "cache_mb": 0.0 if cache is None else float(kv_mb(cache)),
+            "critical": int(it["idx"]) in CRITICAL,
+        }
+        extra = (extras or [None] * n)[b]
+        if extra:
+            row["extra"] = extra
+        # Full generation is kept so `--mode budget` can replay truncation offline
+        # instead of re-decoding on the GPU.
+        with open(os.path.join(tdir, f"{int(it['idx']):04d}_{method}.txt"), "w") as f:
+            f.write(texts[b])
+        rows.append(row)
+    tag = f"{t_batch:.1f}s" if n == 1 else f"{t_batch:.1f}s/B{n}"
+    for row in rows:
+        print(
+            f"[decode] idx={row['idx']} {method} acc={int(row['correct'])} "
+            f"tok={row['tokens']} pos={row['cache_pos']} {tag} pred={row['pred']!r}",
+            flush=True,
+        )
+    return rows
+
+
+def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict],
+               seal_on: Optional[bool] = None) -> Dict:
+    return decode_group(wrapper, ns, args, [it], [cache], method, [extra], seal_on)[0]
 
 
 def run_views(args) -> None:
@@ -462,26 +497,42 @@ def run_views(args) -> None:
             if isinstance(rc, dict) and "judger" in rc:
                 rc["judger"] = float(coef)
             print(f"[views] SEAL armed coef={coef} layer={args.seal_layer}", flush=True)
+        method = name
+        if float(args.temperature) > 0:
+            method = f"{name}_t{str(args.temperature).replace('.', '')}"
+        # A label that does not change the cache view, so the same arm can be
+        # re-decoded under a different setting (batch size, sampler) and compared
+        # against its own baseline instead of overwriting it.
+        if args.method_tag:
+            method = f"{method}__{args.method_tag}"
+        pending = []
         for tape in tapes:
-            it = {"idx": tape["idx"], "question": tape["question"], "gold": tape["gold"]}
-            method = name
-            if float(args.temperature) > 0:
-                method = f"{name}_t{str(args.temperature).replace('.', '')}"
             key = (int(tape["idx"]), method)
             if key in already and not args.overwrite:
                 print(f"[views] skip {key}", flush=True)
                 continue
-            cache, extra = view_cache(name, tape, tapes, args)
-            row = decode_one(wrapper, ns, args, it, cache, method, extra,
-                             seal_on=coef is not None)
-            row["seal_coef"] = coef
-            times = tape.get("times") or {}
-            paid = PAID_ROLES.get(base, UP_ROLES)
-            row["upstream_s"] = float(sum(float(times.get(r) or 0.0) for r in paid))
-            row["paid_roles"] = list(paid)
-            append_row(args.out_dir, row)
-            already.add(key)
-            del cache
+            pending.append(tape)
+        bs = max(1, int(args.decode_bs))
+        for start in range(0, len(pending), bs):
+            chunk = pending[start : start + bs]
+            items, caches, extras = [], [], []
+            for tape in chunk:
+                cache, extra = view_cache(name, tape, tapes, args)
+                items.append({"idx": tape["idx"], "question": tape["question"],
+                              "gold": tape["gold"]})
+                caches.append(cache)
+                extras.append(extra)
+            rows = decode_group(wrapper, ns, args, items, caches, method, extras,
+                                seal_on=coef is not None)
+            for tape, row in zip(chunk, rows):
+                row["seal_coef"] = coef
+                times = tape.get("times") or {}
+                paid = PAID_ROLES.get(base, UP_ROLES)
+                row["upstream_s"] = float(sum(float(times.get(r) or 0.0) for r in paid))
+                row["paid_roles"] = list(paid)
+                append_row(args.out_dir, row)
+                already.add((int(tape["idx"]), method))
+            del caches
             torch.cuda.empty_cache()
         # refresh the check-in and mirror it off ephemeral disk after every arm
         try:
@@ -553,9 +604,15 @@ def _arm_table(rows: List[Dict]) -> Dict[str, Dict]:
         acc = [float(x["correct"]) for x in rs]
         toks = [float(x["tokens"]) for x in rs]
         pos = [float(x.get("cache_pos") or 0) for x in rs]
-        js = [float(x.get("judger_s") or 0.0) for x in rs]
         ups = [float(x.get("upstream_s") or 0.0) for x in rs]
-        e2e = [a + b for a, b in zip(js, ups)]
+        # Only rows that had the GPU to themselves carry interpretable per-item
+        # latency; grouped rows are excluded rather than divided by batch size.
+        timed = [x for x in rs if x.get("judger_s") is not None]
+        js = [float(x["judger_s"]) for x in timed]
+        e2e = [float(x["judger_s"]) + float(x.get("upstream_s") or 0.0) for x in timed]
+        # batch_s/batch_size sums back to true wall clock regardless of grouping.
+        wall = sum(float(x.get("batch_s") or x.get("judger_s") or 0.0)
+                   / max(1, int(x.get("batch_size") or 1)) for x in rs)
         crit = [x for x in rs if x.get("critical")]
         n_eos = sum(1 for x in rs if x.get("eos"))
         out[m] = {
@@ -563,11 +620,15 @@ def _arm_table(rows: List[Dict]) -> Dict[str, Dict]:
             "acc": float(np.mean(acc)) if acc else 0.0,
             "tokens": mean_ci(toks),
             "cache_pos": mean_ci(pos),
+            "n_timed": len(timed),
+            "max_batch": max(int(x.get("batch_size") or 1) for x in rs) if rs else 1,
             "judger_s": float(np.mean(js)) if js else 0.0,
             "upstream_s": float(np.mean(ups)) if ups else 0.0,
             "e2e_s": float(np.mean(e2e)) if e2e else 0.0,
+            "wall_s": float(wall),
             "eos_rate": float(n_eos) / len(rs) if rs else 0.0,
             "tok_per_s": (float(np.sum(toks)) / float(np.sum(js))) if np.sum(js) > 0 else 0.0,
+            "tok_per_s_wall": (float(np.sum(toks)) / wall) if wall > 0 else 0.0,
             "correct_idx": sorted(int(x["idx"]) for x in rs if x["correct"]),
             "critical_kept": sorted(int(x["idx"]) for x in crit if x["correct"]),
             "critical_lost": sorted(int(x["idx"]) for x in crit if not x["correct"]),
@@ -640,22 +701,55 @@ def _latency_notes(arms: Dict[str, Dict]) -> List[str]:
         return ["No `real` arm yet — cannot attribute latency."]
     j, u = real["judger_s"], real["upstream_s"]
     tot = j + u or 1.0
-    notes = [
-        f"Real end-to-end **{tot:.1f}s/item**: Judger decode {j:.1f}s "
-        f"({100.0 * j / tot:.1f}%), silent agents {u:.2f}s ({100.0 * u / tot:.1f}%).",
-        f"Real Judger emits {real['tokens']['mean']:.0f} tokens at {real['tok_per_s']:.1f} tok/s; "
-        f"{100.0 * real['eos_rate']:.0f}% of items stop on EOS "
-        f"(the rest burn the full budget).",
+    notes = []
+    if real.get("n_timed"):
+        notes += [
+            f"Real end-to-end **{tot:.1f}s/item**: Judger decode {j:.1f}s "
+            f"({100.0 * j / tot:.1f}%), silent agents {u:.2f}s ({100.0 * u / tot:.1f}%). "
+            f"(n_timed={real['n_timed']} of {real['n']}, unbatched only.)",
+            f"Real Judger emits {real['tokens']['mean']:.0f} tokens at "
+            f"{real['tok_per_s']:.1f} tok/s; {100.0 * real['eos_rate']:.0f}% of items stop "
+            f"on EOS (the rest burn the full budget).",
+        ]
+    else:
+        notes.append(
+            "No unbatched `real` rows — per-item latency is unavailable. "
+            "Re-run the arm with `--decode_bs 1` if latency is the question."
+        )
+    notes += [
         "",
-        "| Arm | acc | judger_s | upstream_s | e2e_s | vs Real | tokens | eos |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|",
+        "Per-item latency (unbatched rows only; `—` means the arm was run grouped):",
+        "",
+        "| Arm | acc | judger_s | upstream_s | e2e_s | vs Real | tokens | eos | n(timed) |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for m, b in sorted(arms.items(), key=lambda kv: kv[1]["e2e_s"]):
+        if not b.get("n_timed"):
+            notes.append(
+                f"| {m} | {b['acc']:.3f} | — | {b['upstream_s']:.2f} | — | — | "
+                f"{b['tokens']['mean']:.0f} | {100.0 * b['eos_rate']:.0f}% | "
+                f"0/{b['n']} |"
+            )
+            continue
         d = b["e2e_s"] - tot
         notes.append(
             f"| {m} | {b['acc']:.3f} | {b['judger_s']:.1f} | {b['upstream_s']:.2f} | "
             f"{b['e2e_s']:.1f} | {d:+.1f}s ({100.0 * d / tot:+.1f}%) | "
-            f"{b['tokens']['mean']:.0f} | {100.0 * b['eos_rate']:.0f}% |"
+            f"{b['tokens']['mean']:.0f} | {100.0 * b['eos_rate']:.0f}% | "
+            f"{b['n_timed']}/{b['n']} |"
+        )
+    notes += [
+        "",
+        "GPU cost actually paid per arm (valid for grouped runs too — `batch_s/batch_size` "
+        "sums back to true wall clock):",
+        "",
+        "| Arm | n | max batch | wall_s | tok/s (aggregate) |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for m, b in sorted(arms.items(), key=lambda kv: -kv[1]["wall_s"]):
+        notes.append(
+            f"| {m} | {b['n']} | {b['max_batch']} | {b['wall_s']:.0f} | "
+            f"{b['tok_per_s_wall']:.1f} |"
         )
     notes.extend([
         "",
@@ -758,6 +852,119 @@ def write_report(args) -> Dict:
 BUDGETS = (512, 1024, 1536, 2048, 3072, 4096, 6144, 8192)
 
 
+def run_compare(args) -> Dict:
+    """Diff two arms' saved generations token-for-token. CPU only.
+
+    The point is to certify grouped decoding before trusting a batched sweep.
+    Greedy decoding *should* be batch-invariant, but left-padding the KV cache
+    and the different GEMM shapes a batch takes can perturb logits enough to
+    change a tie, and once two runs diverge they diverge for good. If this comes
+    back less than fully identical, batched accuracy numbers are still valid on
+    their own terms but are no longer strictly comparable to the n=1 baseline,
+    and that has to be stated wherever they appear.
+    """
+    names = [a.strip() for a in (args.compare_arms or "").split(",") if a.strip()]
+    if len(names) != 2:
+        raise SystemExit("--mode compare needs --compare_arms A,B")
+    a, b = names
+    rows = load_rows(args.out_dir)
+    tdir = os.path.join(args.out_dir, "texts")
+    ra = {int(r["idx"]): r for r in rows if r["method"] == a}
+    rb = {int(r["idx"]): r for r in rows if r["method"] == b}
+    common = sorted(set(ra) & set(rb))
+    if not common:
+        raise SystemExit(f"no shared items between {a!r} and {b!r}")
+
+    def _text(arm, idx):
+        p = os.path.join(tdir, f"{idx:04d}_{arm}.txt")
+        return open(p).read() if os.path.isfile(p) else None
+
+    items, n_ident, n_tok, n_acc = [], 0, 0, 0
+    for idx in common:
+        ta, tb = _text(a, idx), _text(b, idx)
+        ident = ta is not None and ta == tb
+        div = None
+        if ta is not None and tb is not None and not ident:
+            lim = min(len(ta), len(tb))
+            div = next((i for i in range(lim) if ta[i] != tb[i]), lim)
+        same_tok = int(ra[idx]["tokens"]) == int(rb[idx]["tokens"])
+        same_acc = bool(ra[idx]["correct"]) == bool(rb[idx]["correct"])
+        n_ident += int(ident)
+        n_tok += int(same_tok)
+        n_acc += int(same_acc)
+        items.append({
+            "idx": idx, "identical": bool(ident), "diverge_char": div,
+            "tokens_a": int(ra[idx]["tokens"]), "tokens_b": int(rb[idx]["tokens"]),
+            "correct_a": bool(ra[idx]["correct"]), "correct_b": bool(rb[idx]["correct"]),
+            "same_tokens": bool(same_tok), "same_correct": bool(same_acc),
+        })
+    n = len(common)
+    acc_a = sum(bool(ra[i]["correct"]) for i in common) / n
+    acc_b = sum(bool(rb[i]["correct"]) for i in common) / n
+    out = {
+        "arm_a": a, "arm_b": b, "n": n,
+        "identical_text": n_ident, "same_tokens": n_tok, "same_correct": n_acc,
+        "acc_a": acc_a, "acc_b": acc_b,
+        "wall_a": _arm_table(rows).get(a, {}).get("wall_s"),
+        "wall_b": _arm_table(rows).get(b, {}).get("wall_s"),
+        "verdict": ("identical" if n_ident == n else
+                    "same_decisions" if n_acc == n and n_tok == n else
+                    "diverged"),
+        "items": items,
+    }
+    with open(os.path.join(args.out_dir, "compare.json"), "w") as f:
+        json.dump(out, f, indent=2)
+    lines = [
+        f"# Parity: `{a}` vs `{b}`", "",
+        f"n={n} · identical text **{n_ident}/{n}** · same tokens {n_tok}/{n} · "
+        f"same correct {n_acc}/{n}",
+        f"acc {acc_a:.3f} -> {acc_b:.3f}",
+    ]
+    if out["wall_a"] and out["wall_b"]:
+        lines.append(
+            f"wall clock {out['wall_a']:.0f}s -> {out['wall_b']:.0f}s "
+            f"(**{out['wall_a'] / out['wall_b']:.2f}x**)"
+        )
+    lines += [
+        "", f"**verdict: {out['verdict']}**", "",
+        "| idx | identical | tokens A | tokens B | correct A | correct B | diverge @char |",
+        "|---:|---|---:|---:|---|---|---:|",
+    ]
+    for it in items:
+        lines.append(
+            f"| {it['idx']} | {'yes' if it['identical'] else 'NO'} | {it['tokens_a']} | "
+            f"{it['tokens_b']} | {int(it['correct_a'])} | {int(it['correct_b'])} | "
+            f"{'—' if it['diverge_char'] is None else it['diverge_char']} |"
+        )
+    if out["verdict"] != "identical":
+        lines += [
+            "",
+            "Not bit-identical, so batched rows are self-consistent but not "
+            "drop-in comparable to unbatched ones. Keep each comparison within a "
+            "single batch size, and say so when quoting the numbers.",
+        ]
+    with open(os.path.join(args.out_dir, "COMPARE.md"), "w") as f:
+        f.write("\n".join(lines) + "\n")
+    print("\n".join(lines), flush=True)
+    return out
+
+
+def _unbatched_tps(rows: List[Dict], arm: Optional[str] = None) -> float:
+    """Per-item decode speed, from rows that had the GPU to themselves.
+
+    Grouped rows cannot price a single item's latency: their wall clock is set by
+    the slowest sequence in the batch. Prefer the arm's own unbatched rows, then
+    any unbatched row, so a grouped accuracy sweep can still be priced using
+    speed measured elsewhere in the same run.
+    """
+    for pool in ([r for r in rows if arm and r["method"] == arm], rows):
+        timed = [r for r in pool if r.get("judger_s") is not None]
+        tot_s = sum(float(r["judger_s"]) for r in timed)
+        if tot_s > 0:
+            return sum(float(r["tokens"]) for r in timed) / tot_s
+    return 0.0
+
+
 def run_budget(args) -> Dict:
     """Replay a hard token cap over saved generations. Tokenizer only, no GPU.
 
@@ -781,9 +988,7 @@ def run_budget(args) -> Dict:
         if not rs:
             continue
         # measured decode speed for this arm, used to price each budget
-        tot_tok = sum(float(r["tokens"]) for r in rs)
-        tot_s = sum(float(r.get("judger_s") or 0.0) for r in rs)
-        tps = tot_tok / tot_s if tot_s > 0 else 0.0
+        tps = _unbatched_tps(rows, arm)
         per_budget = []
         for b in BUDGETS:
             n_ok = 0
@@ -896,9 +1101,7 @@ def run_loops(args) -> Dict:
         rs = sorted([r for r in rows if r["method"] == arm], key=lambda r: int(r["idx"]))
         if not rs:
             continue
-        tot_tok = sum(float(r["tokens"]) for r in rs)
-        tot_s = sum(float(r.get("judger_s") or 0.0) for r in rs)
-        tps = tot_tok / tot_s if tot_s > 0 else 0.0
+        tps = _unbatched_tps(rows, arm)
         items, saved_tok, lost_solves = [], 0.0, []
         for r in rs:
             p = os.path.join(tdir, f"{int(r['idx']):04d}_{arm}.txt")
@@ -1000,7 +1203,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="report",
                     choices=["smoke", "collect", "views", "isolated", "isolated_frozen",
-                             "budget", "loops", "report"])
+                             "budget", "loops", "compare", "report"])
     ap.add_argument("--budget_arms", default="real")
     ap.add_argument("--loop_ngram", type=int, default=8)
     ap.add_argument("--loop_window", type=int, default=256)
@@ -1029,6 +1232,14 @@ def main():
     ap.add_argument("--view_arms", default=",".join(VIEW_ARMS))
     ap.add_argument("--cache", default="")
     ap.add_argument("--seal_vector", default="")
+    ap.add_argument("--method_tag", default="",
+                    help="Suffix appended to row method names, leaving the cache "
+                         "view untouched. Lets one arm be re-decoded and compared.")
+    ap.add_argument("--compare_arms", default="",
+                    help="Two method names to diff in --mode compare.")
+    ap.add_argument("--decode_bs", type=int, default=1,
+                    help="Judger decodes per generate() call. >1 multiplies throughput "
+                         "but forfeits per-item latency; keep 1 for latency runs.")
     ap.add_argument("--seal_coef", type=float, default=40.0)
     ap.add_argument("--seal_layer", type=int, default=28)
     ap.add_argument("--seal_on", action="store_true")
@@ -1050,6 +1261,8 @@ def main():
         run_budget(args)
     elif args.mode == "loops":
         run_loops(args)
+    elif args.mode == "compare":
+        run_compare(args)
     else:
         write_report(args)
 
