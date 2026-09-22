@@ -1,0 +1,302 @@
+<think>
+Okay, so I need to find the length of AP in triangle ABC inscribed in a circle ω. The tangents at B and C meet at D, and AD intersects ω again at P. The sides are AB=5, BC=9, AC=10. The answer should be a fraction m/n with m and n coprime, then find m + n.
+
+First, let me recall some geometry concepts. Since D is the intersection of the tangents at B and C, D is the exsymmedian point or something related? Wait, more importantly, D lies on the symmedian of triangle ABC? Or maybe it's related to the polar of A? Hmm, not sure. Alternatively, maybe I can use power of a point.
+
+Power of point D with respect to ω: since DB and DC are tangents, their lengths are equal. So DB = DC. Also, power of D is DB² = DC² = DA * DP. Because AD passes through P on the circle, so DA * DP = power of D.
+
+So if I can find DB, then I can relate DA and DP. But I need to find AP, which is DP - DA? Wait, no. If AD intersects the circle at A and P, then DA * DP = power of D. Wait, actually, the power of D is DB² = DA * DP. So if I can find DA and DP, but AP is DP - DA? Wait, depends on the position. If D is outside the circle, then AD goes from D through A to P. So DA is from D to A, and DP is from D to P. So AP would be DP - DA? Wait, if D is outside, then A is between D and P? Or is P between D and A?
+
+Wait, if AD intersects the circle again at P, then starting from D, going through A, then P is on the other side? Wait, no. If D is outside the circle, and AD is a secant line passing through A and intersecting the circle again at P. So the points are D---A---P? Or D---P---A? Wait, depends on where D is. Since D is the intersection of tangents at B and C, which are outside the circle. So D is outside the circle. Then line AD starts at D, goes through A, and then exits the circle again at P? Wait, but A is already on the circle. So if you draw a line from D through A, it will intersect the circle at A and another point P. So the order is D---A---P? Or D---P---A? Wait, if D is outside, then the line DA would pass through A (on the circle) and then go to P? Wait, but if you have a point outside the circle, and you draw a line through it and a point on the circle, the line will intersect the circle at two points: the original point and another. So if D is outside, and A is on the circle, then line DA intersects the circle at A and another point P. So depending on the direction, but usually, if you have a secant from D passing through A, then P is on the other side of A from D. So the order is D---P---A? No, that can't be. Wait, suppose D is outside, and you draw DA. If A is on the circle, then starting from D, going towards A, you reach A, which is on the circle. To get another intersection point, you have to go beyond A from D? Wait, no. If you have a line passing through D and A, and A is on the circle, then the other intersection point would be on the opposite side of A relative to D. Wait, maybe not. Let me think of a simple case. Imagine a circle, point D outside, line DA passing through A. If you extend DA beyond A, then it would exit the circle again at some point P. Wait, but A is already on the circle. So if you go from D towards A, you reach A, and then if you go past A, you leave the circle. Therefore, the line DA intersects the circle at A and another point P which is on the extension of DA beyond A. Therefore, the points are D---A---P. Therefore, DA is the segment from D to A, and DP is from D to P. Therefore, AP = DP - DA. Therefore, DA * DP = DB². So if I can find DA and DP, but since AP = DP - DA, then maybe I can write DP = DA + AP. Then DA*(DA + AP) = DB². But I don't know DA or AP. So maybe I need another relation.
+
+Alternatively, maybe I can find DA first. How?
+
+Alternatively, maybe use coordinates or trigonometry? But that might be complicated. Alternatively, use properties of triangle ABC and the symmedian point?
+
+Alternatively, use harmonic division or pole/polar?
+
+Alternatively, use the fact that D is the exsymmedian point? Wait, the intersection of tangents at B and C is the symmedian point? No, the symmedian point is the intersection of the symmedians. The tangents at B and C meet at D, which is called the exsymmedian point? Maybe. Alternatively, D is the pole of the symmedian?
+
+Alternatively, use power of point D: DB² = DA * DP. So if I can compute DB, then I can relate DA and DP. But how to compute DB?
+
+To compute DB, since D is the intersection of tangents at B and C. The length of the tangent from D to ω is DB = DC. Also, in triangle ABC, we can compute the circumradius, maybe?
+
+Alternatively, use coordinates. Let me try coordinate geometry.
+
+But maybe first compute the circumradius of triangle ABC. Since we know all sides: AB=5, BC=9, AC=10.
+
+First, compute the circumradius R of triangle ABC. The formula is R = (a*b*c)/(4*Δ), where Δ is the area.
+
+So first compute the area Δ using Heron's formula. The sides are a=BC=9, b=AC=10, c=AB=5.
+
+Wait, standard notation is a=BC, b=AC, c=AB? Wait, usually a is BC, opposite angle A. Wait, maybe better to use standard notation: Let me denote the sides as follows: Let’s let BC = a = 9, AC = b = 10, AB = c = 5. Then the semi-perimeter s = (a + b + c)/2 = (9 + 10 + 5)/2 = 24/2 = 12.
+
+Then area Δ = √[s(s - a)(s - b)(s - c)] = √[12*(12 - 9)*(12 - 10)*(12 - 5)] = √[12*3*2*7] = √(504) = √(16*31.5) wait, 12*3=36, 36*2=72, 72*7=504. So √504. Simplify: 504 = 16 * 31.5? No, 504 = 16 * 31.5? Wait 16*31=496, 16*31.5=504. But better to factor into primes: 504 = 16 * 31.5? Wait 504 divided by 4 is 126, divided by 2 is 63, which is 7*9. So 504 = 4*126 = 4*2*63 = 8*63 = 8*7*9. Therefore √(504) = √(8*7*9) = √(8)*√(7)*√(9) = 2√2 * 3 * √7 = 6√14. Wait, 8*9 is 72, 72*7 is 504. So √(72*7) = √(72)*√7 = 6√2 * √7 = 6√14. Yes, so Δ = 6√14.
+
+Then the circumradius R = (a*b*c)/(4Δ) = (9*10*5)/(4*6√14) = (450)/(24√14) = simplify numerator and denominator by 6: 75/(4√14). Rationalize denominator: 75√14 / (4*14) = 75√14 / 56. So R = 75√14 / 56. Hmm, not sure if I need this yet.
+
+Alternatively, maybe find coordinates. Let me try coordinate geometry. Let me place triangle ABC with coordinates. Let me set coordinates such that BC is on x-axis, B at (0,0), C at (9,0). Then A is somewhere in the plane. Given AB=5, AC=10, BC=9. Let me find coordinates of A.
+
+Let’s denote coordinates: Let’s let B = (0,0), C = (9,0). Let A = (x,y). Then distance from A to B is 5: √(x² + y²) = 5, so x² + y² = 25. Distance from A to C is 10: √[(x - 9)² + y²] = 10, so (x - 9)² + y² = 100. Subtract first equation from second: (x - 9)² + y² - x² - y² = 100 - 25 => x² - 18x + 81 - x² = 75 => -18x + 81 = 75 => -18x = -6 => x = (-6)/(-18) = 1/3. So x = 1/3. Then from x² + y² = 25, we have (1/3)² + y² = 25 => 1/9 + y² = 25 => y² = 25 - 1/9 = 225/9 - 1/9 = 224/9 => y = ±√(224)/3 = ±(4√14)/3. Since triangles are typically considered in upper half-plane, let's take y positive: y = 4√14 / 3. Therefore, coordinates of A are (1/3, 4√14 / 3).
+
+Okay, so coordinates:
+
+B = (0, 0)
+
+C = (9, 0)
+
+A = (1/3, 4√14 / 3)
+
+Now, need to find point D, which is the intersection of tangents at B and C to the circumcircle ω of ABC.
+
+First, find equations of tangents at B and C.
+
+To find the tangent at B to ω. The tangent at a point on a circle is perpendicular to the radius at that point. So the radius at B is from the center of the circle to B. Similarly for C.
+
+But first, need to find the circumcircle ω of triangle ABC. Since we have coordinates for A, B, C, we can find the circumcircle equation.
+
+Alternatively, since we already have coordinates for A, B, C, maybe we can compute the equation of the circumcircle.
+
+Let me find the circumcircle equation. Let me denote the general equation of a circle as x² + y² + Dx + Ey + F = 0. Since points A, B, C lie on it.
+
+For point B (0,0): 0 + 0 + 0 + 0 + F = 0 => F = 0.
+
+For point C (9,0): 81 + 0 + 9D + 0 + 0 = 0 => 81 + 9D = 0 => D = -81/9 = -9.
+
+For point A (1/3, 4√14 / 3): ( (1/3)^2 + (4√14 / 3)^2 ) + D*(1/3) + E*(4√14 / 3) + F = 0. Since F=0 and D=-9.
+
+Compute (1/9 + (16*14)/9) + (-9)*(1/3) + E*(4√14 / 3) = 0.
+
+First compute 1/9 + (224)/9 = 225/9 = 25. Then -9*(1/3) = -3. So:
+
+25 - 3 + (4√14 / 3) * E = 0 => 22 + (4√14 / 3) * E = 0 => (4√14 / 3) * E = -22 => E = (-22 * 3) / (4√14) = (-66)/(4√14) = (-33)/(2√14). Rationalize denominator: multiply numerator and denominator by √14:
+
+E = (-33√14) / (2*14) = (-33√14)/28.
+
+Therefore, the equation of the circle is x² + y² - 9x - (33√14)/28 y = 0.
+
+Alternatively, maybe I can write it in standard form by completing the squares, but maybe not necessary.
+
+Now, the tangent at point B (0,0). The tangent line at B can be found using the formula for tangent to circle at point (x1,y1): xx1 + yy1 + D(x + x1)/2 + E(y + y1)/2 + F = 0? Wait, maybe another way. Alternatively, since the tangent at B is perpendicular to the radius OB, where O is the center of the circle.
+
+Wait, the center of the circle can be found from the equation. The general equation is x² + y² + Dx + Ey + F = 0, so center is (-D/2, -E/2). Here, D = -9, E = -33√14 / 28. Therefore, center O is at (9/2, (33√14)/56). Wait:
+
+Wait, center coordinates are (-D/2, -E/2). Since D = -9, so -D/2 = 9/2. E is -33√14 / 28, so -E/2 = (33√14)/56. Therefore, center O is at (9/2, 33√14 / 56).
+
+Therefore, the radius vector from O to B (0,0) is the vector from O to B: (0 - 9/2, 0 - 33√14 / 56) = (-9/2, -33√14 / 56). Therefore, the tangent at B is perpendicular to this vector.
+
+So the tangent line at B has direction perpendicular to (-9/2, -33√14 / 56). Therefore, its slope is the negative reciprocal of the slope of the radius.
+
+Slope of radius OB: (change in y)/(change in x) = [ -33√14 / 56 ] / [ -9/2 ] = [ 33√14 / 56 ] / [ 9/2 ] = (33√14 / 56) * (2 / 9) = (33√14) / (252) = 11√14 / 84.
+
+Therefore, the slope of tangent at B is the negative reciprocal: -84 / (11√14). Rationalize: multiply numerator and denominator by √14:
+
+-84√14 / (11 * 14) = -6√14 / 11.
+
+So the tangent at B has slope -6√14 / 11 and passes through B (0,0). Therefore, its equation is y = (-6√14 / 11)x.
+
+Similarly, find the tangent at C (9,0). The radius OC is from center O (9/2, 33√14 / 56) to C (9,0). The vector is (9 - 9/2, 0 - 33√14 / 56) = (9/2, -33√14 / 56). The slope of this radius is [ -33√14 / 56 ] / [ 9/2 ] = same as before? Let me compute:
+
+[ -33√14 / 56 ] divided by [ 9/2 ] = (-33√14 / 56) * (2 / 9) = (-33√14) / 252 = -11√14 / 84. Therefore, slope of radius OC is -11√14 / 84. Therefore, the tangent at C is perpendicular, so slope is reciprocal and sign changed: 84 / (11√14). Rationalize: same as before, 84 / (11√14) * √14/√14 = 84√14 / (11*14) = 6√14 / 11.
+
+Therefore, tangent at C has slope 6√14 / 11 and passes through C (9,0). So equation is y - 0 = (6√14 / 11)(x - 9).
+
+So equations of the two tangents:
+
+Tangent at B: y = (-6√14 / 11)x.
+
+Tangent at C: y = (6√14 / 11)(x - 9).
+
+Now, find their intersection point D. Solve the two equations:
+
+Set (-6√14 / 11)x = (6√14 / 11)(x - 9).
+
+Multiply both sides by 11/(6√14) to simplify:
+
+- x = x - 9 => -x = x - 9 => -2x = -9 => x = 9/2.
+
+Then substitute x = 9/2 into tangent at B: y = (-6√14 / 11)(9/2) = (-27√14)/11.
+
+Therefore, coordinates of D are (9/2, -27√14 / 11).
+
+Okay, so D is at (9/2, -27√14 / 11).
+
+Now, need to find equation of line AD, then find its other intersection point P with the circle ω, then compute AP.
+
+First, coordinates of A: (1/3, 4√14 / 3). Coordinates of D: (9/2, -27√14 / 11). Let me find parametric equations or find the equation of line AD.
+
+First, compute the slope of AD.
+
+Slope m_AD = [ y_D - y_A ] / [ x_D - x_A ] = [ (-27√14 / 11 - 4√14 / 3 ) ] / [ 9/2 - 1/3 ].
+
+Compute numerator:
+
+Convert to common denominator 33:
+
+-27√14 / 11 = -81√14 / 33
+
+4√14 / 3 = 44√14 / 33
+
+So numerator: (-81√14 - 44√14)/33 = (-125√14)/33.
+
+Denominator: 9/2 - 1/3 = (27/6 - 2/6) = 25/6.
+
+Therefore, slope m_AD = [ -125√14 / 33 ] / [25 / 6 ] = (-125√14 / 33) * (6 / 25) = (-5√14 / 11) * (6 / 1) ??? Wait:
+
+Wait, 125 divided by 25 is 5, and 6 divided by 33 is 2/11. Let me compute:
+
+(-125√14 / 33) * (6 / 25) = (-125 * 6 / (33 * 25)) * √14 = (- (125 / 25) * 6 / 33 ) * √14 = (-5 * 6 / 33) * √14 = (-30 / 33) * √14 = (-10 / 11) * √14.
+
+So slope m_AD = -10√14 / 11.
+
+Therefore, equation of line AD: using point A (1/3, 4√14 / 3):
+
+y - 4√14 / 3 = (-10√14 / 11)(x - 1/3).
+
+Now, need to find the other intersection point P of this line with the circle ω. Since A is already on both the line and the circle, P is the other point.
+
+Alternatively, parametrize line AD and find its other intersection with the circle.
+
+Alternatively, solve the equation of line AD with the circle equation.
+
+But the circle equation is x² + y² - 9x - (33√14)/28 y = 0.
+
+But this might get messy with radicals. Maybe parametrize the line AD.
+
+Let me parametrize line AD. Let me use parameter t such that when t=0, we are at A, and t=1 at D? Or another parameter. Alternatively, express x and y in terms of a parameter.
+
+Alternatively, since we have the slope, write parametric equations.
+
+Let me use parametric equations with parameter t. Let me take direction vector of AD. The slope is -10√14 / 11, so direction vector can be (11, -10√14). Let me check:
+
+Slope is rise over run: Δy / Δx = -10√14 / 11. So if Δx = 11, Δy = -10√14. So direction vector (11, -10√14). Therefore, parametric equations starting from A:
+
+x = x_A + 11t = 1/3 + 11t
+
+y = y_A - 10√14 t = 4√14 / 3 - 10√14 t
+
+Now, substitute into circle equation:
+
+x² + y² - 9x - (33√14)/28 y = 0.
+
+Let me compute each term.
+
+First, x = 1/3 + 11t
+
+y = 4√14 / 3 - 10√14 t
+
+Compute x²:
+
+(1/3 + 11t)^2 = (1/9) + (22/3)t + 121t²
+
+Compute y²:
+
+[4√14 / 3 - 10√14 t]^2 = [√14 (4/3 - 10t)]² = 14*(4/3 - 10t)^2 = 14*(16/9 - 80/3 t + 100t²) = 14*(16/9) - 14*(80/3)t + 14*100t² = 224/9 - 1120/3 t + 1400t²
+
+Compute -9x:
+
+-9*(1/3 + 11t) = -3 - 99t
+
+Compute -(33√14)/28 * y:
+
+-(33√14)/28 * [4√14 / 3 - 10√14 t] = -(33√14)/28 * √14 [4/3 - 10t] = -(33*14)/28 * [4/3 - 10t] = -(33*14)/28 * [4/3 - 10t] = -(33/2) * [4/3 - 10t] = - (33/2)*(4/3) + (33/2)*10t = -22 + 165t
+
+So putting all together:
+
+x² + y² -9x - (33√14)/28 y = [ (1/9 + 22/3 t + 121t²) + (224/9 - 1120/3 t + 1400t²) ] + [ -3 - 99t ] + [ -22 + 165t ] = 0
+
+Let me compute term by term:
+
+First, expand x² + y²:
+
+(1/9 + 22/3 t + 121t²) + (224/9 - 1120/3 t + 1400t²) = (1/9 + 224/9) + (22/3 t - 1120/3 t) + (121t² + 1400t²) = (225/9) + (-1098/3 t) + 1521t² = 25 - 366t + 1521t²
+
+Then add -9x - (33√14)/28 y which we found to be -3 -99t -22 + 165t = (-3 -22) + (-99t + 165t) = -25 + 66t
+
+Therefore, total equation:
+
+25 - 366t + 1521t² -25 + 66t = 0 => (25 -25) + (-366t + 66t) + 1521t² = 0 => -300t + 1521t² = 0 => t(-300 + 1521t) = 0.
+
+Therefore, solutions t=0 and t = 300 / 1521.
+
+Simplify 300/1521: divide numerator and denominator by 3: 100 / 507. Check if reducible: 100 and 507. 507 ÷ 3 = 169. 100 and 507 share no common factors (since 100 factors are 2²*5², 507 is 3*13²). So t=0 and t=100/507.
+
+Therefore, the parameter t=0 corresponds to point A, and t=100/507 corresponds to point P.
+
+Therefore, coordinates of P are:
+
+x = 1/3 + 11*(100/507) = 1/3 + 1100/507
+
+Convert 1/3 to 169/507:
+
+1/3 = 169/507, so x = 169/507 + 1100/507 = 1269/507. Simplify:
+
+Divide numerator and denominator by 3: 1269 ÷ 3 = 423, 507 ÷ 3 = 169. So 423/169. Check if reducible: 423 ÷ 13 = 32.53... 13*32=416, 423-416=7. Not divisible by 13. 169 is 13². 423 factors: 423 ÷ 3 = 141, ÷3 again 47. So 3²*47. 169 is 13². No common factors. So x = 423/169.
+
+Similarly, y-coordinate:
+
+y = 4√14 / 3 - 10√14*(100/507) = 4√14 / 3 - 1000√14 / 507.
+
+Convert 4√14 / 3 to denominator 507:
+
+Multiply numerator and denominator by 169: 4√14 * 169 / (3*169) = 676√14 / 507.
+
+So y = 676√14 / 507 - 1000√14 / 507 = (676 - 1000)√14 / 507 = (-324√14)/507.
+
+Simplify -324/507: divide numerator and denominator by 3: -108/169. So y = -108√14 / 169.
+
+Therefore, coordinates of P are (423/169, -108√14 / 169).
+
+Now, need to compute AP. Since A is (1/3, 4√14 / 3) and P is (423/169, -108√14 / 169).
+
+Compute the distance between A and P.
+
+First, compute differences in coordinates:
+
+Δx = 423/169 - 1/3 = (423*3 - 169)/507 = (1269 - 169)/507 = 1100 / 507.
+
+Δy = (-108√14 / 169) - (4√14 / 3) = (-108√14 / 169 - 4√14 / 3) = convert to common denominator 507:
+
+Multiply first term by 3/3: -324√14 / 507, second term by 169/169: - (4√14 * 169)/507 = -676√14 / 507. Therefore total Δy = (-324√14 - 676√14)/507 = (-1000√14)/507.
+
+Therefore, AP distance is √[(Δx)^2 + (Δy)^2] = √[(1100/507)^2 + (-1000√14 / 507)^2] = (1/507) * √[1100² + (1000² * 14)].
+
+Compute inside the square root:
+
+First compute 1100²: 1,210,000.
+
+Then 1000² * 14 = 1,000,000 * 14 = 14,000,000.
+
+Total: 1,210,000 + 14,000,000 = 15,210,000.
+
+Therefore, AP = (1/507) * √15,210,000.
+
+Compute √15,210,000. Let me note that 15,210,000 = 15,210 * 1000 = 15,210 * 10^3. But maybe factor it:
+
+Note that 15,210,000 = 15,210,000 = 15,210 * 10^3 = (15,210) * 10^3. Let me check if 15,210 is a square.
+
+Alternatively, note that 15,210,000 = 1521 * 10,000. Because 1521 * 10,000 = 15,210,000. And 1521 is 39² (since 40²=1600, 39²=1521). Therefore √(1521 * 10,000) = 39 * 100 = 3900.
+
+Therefore, AP = 3900 / 507.
+
+Simplify 3900 / 507. Let's divide numerator and denominator by 3: 3900 ÷ 3 = 1300; 507 ÷ 3 = 169. So 1300 / 169.
+
+Check if reducible: 169 is 13². 1300 ÷ 13 = 100. So 1300 / 169 = 100 / 13. Because 13*100 = 1300, and 13*13 = 169. Therefore, 1300 / 169 = 100 / 13.
+
+Therefore, AP = 100 / 13. So m = 100, n = 13, which are coprime. Therefore, m + n = 113.
+
+Wait, that seems straightforward. Let me check my steps again to make sure I didn't make a mistake.
+
+First, coordinates of A, B, C: correct? Yes, with AB=5, AC=10, BC=9, solved coordinates correctly.
+
+Equation of circle: found center at (9/2, 33√14 / 56). Then equations of tangents at B and C: slopes calculated correctly? Let me check slope of tangent at B: radius slope was 11√14 / 84, so tangent slope is -84/(11√14) which simplifies to -6√14 / 11 after rationalizing. Yes, that seems correct.
+
+Intersection point D: solved equations and found x=9/2, y=-27√14 / 11. Correct?
+
+Yes, solving (-6√14 / 11)x = (6√14 / 11)(x - 9) gives -x = x - 9 => x=9/2. Then y = (-6√14 / 11)(9/2) = -27√14 / 11. Correct.
+
+Equation of line AD: slope calculated as -10√14 / 11. Let me check:
+
+Coordinates of A: (1/3, 4√14 / 3), D: (9/2, -27√14 / 11). Difference in y: (-27√14 / 11 - 4√14 / 3) = (-27√14 / 11 - 44√14 / 33) = (-81√14 - 44√14)/33 = -125√14 / 33. Difference in x: 9/2 - 1/3 = 25/6. Then slope is (-125√14 / 33) / (25/6) = (-125√14 / 33) * (6 / 25) = (-5√14 / 11) * (6 / 1) ??? Wait, 125 divided by 25 is 5, 6 divided by 33 is 2/11. So total is -5 * 6 / 33 * √14 = -30/33 * √14 = -10/11 * √14. Yes, correct.
+
+Parametrization of line AD: direction vector (11, -10√14). Then parametric equations. Then substituting into circle equation. Then solving for t, getting t=0 and t=100/507. Then coordinates of P. Then computing AP distance. The calculation of Δx and Δy seems correct. Then the distance squared was [ (1100/507)^2 + ( -1000√14 / 507 )^2 ] = [ (1100² + 1000² * 14 ) ] / 507². Then 1100² + 14*1000² = 1,210,000 + 14,00

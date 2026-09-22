@@ -147,7 +147,13 @@ def maybe_load_model(args, ns):
     from models import ModelWrapper
 
     print(f"[load] {args.model_name} device={args.device}", flush=True)
-    return ModelWrapper(args.model_name, auto_device(args.device), use_vllm=False, args=ns)
+    wrapper = ModelWrapper(args.model_name, auto_device(args.device), use_vllm=False, args=ns)
+    # Decoder-only batched generation reads the next token from the last position,
+    # so right-padding would make every prompt shorter than the batch maximum
+    # predict from a pad token. Harmless at batch 1, silently corrupting above it.
+    if getattr(wrapper, "tokenizer", None) is not None:
+        wrapper.tokenizer.padding_side = "left"
+    return wrapper
 
 
 def tape_root(args) -> str:

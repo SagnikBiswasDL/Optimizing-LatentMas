@@ -1,0 +1,299 @@
+<think>
+Okay, let's try to tackle this problem. The question is asking for the least prime number p such that there exists a positive integer n where p² divides n⁴ + 1. Then, once we find that p, we need to find the smallest positive integer m such that m⁴ + 1 is divisible by p².
+
+First, I need to understand what exactly is being asked. So, we need to find the smallest prime p where p² divides some n⁴ + 1. Then, for that specific p, find the smallest m where m⁴ + 1 is divisible by p².
+
+Let me start by recalling some number theory concepts. If p² divides n⁴ + 1, then n⁴ ≡ -1 mod p². Which implies that n⁸ ≡ 1 mod p². So, the order of n modulo p² divides 8, but doesn't divide 4, because if n⁴ ≡ -1 mod p², then n⁴ ≡ -1 ≠ 1 mod p². Therefore, the order of n modulo p² must be 8. 
+
+But for this to be possible, the multiplicative order of n modulo p² must be 8. Which would require that 8 divides φ(p²), where φ is Euler's totient function. Since φ(p²) = p² - p. So, 8 divides p(p - 1). Therefore, p(p - 1) must be divisible by 8. Let's note that.
+
+But since p is a prime, let's consider possible primes. Let's check small primes and see if they satisfy the condition that there exists an n such that n⁴ ≡ -1 mod p².
+
+Starting with the smallest primes:
+
+p=2: Let's check if there exists n such that n⁴ +1 is divisible by 4. Let's compute n⁴ mod 4. For n even, n is 0 mod 2, so n⁴ is 0 mod 4. Then n⁴ +1 is 1 mod 4. For n odd, n is 1 mod 2, so n² is 1 mod 4, so n⁴ is 1 mod 4. Then n⁴ +1 is 2 mod 4. So in neither case is it divisible by 4. Therefore, p=2 is not possible.
+
+p=3: Check if there exists n with n⁴ +1 divisible by 9. Let's compute n⁴ mod 9. Let's check n from 0 to 8:
+
+n=0: 0 +1=1 mod9
+n=1: 1 +1=2
+n=2: 16 +1=17≡8
+n=3: 81 +1≡1
+n=4: 256 +1=257≡257-28*9=257-252=5
+n=5: 625 +1=626≡626-69*9=626-621=5
+n=6: 1296 +1≡1
+n=7: 2401 +1=2402. 2402 divided by 9: 9*266=2394, 2402-2394=8. So 8 mod9
+n=8: 4096 +1=4097. 4097 divided by 9: 9*455=4095, so 4097≡2 mod9.
+
+So none of these give 0 mod9. Therefore, p=3 is not possible.
+
+p=5: Check if there exists n with n⁴ +1 divisible by 25. Let's compute n⁴ mod25. Let's check possible residues.
+
+Alternatively, maybe there's a better way. Let's think about solving n⁴ ≡ -1 mod p². For p=5, first check if there's a solution mod 5. n⁴ ≡ -1 mod5. Since n⁴ mod5 is either 0 or 1 (by Fermat's little theorem). Because for n not divisible by 5, n⁴ ≡1 mod5. So n⁴ ≡ -1 mod5 would imply 1 ≡ -1 mod5, which is 2≡0 mod5, which is false. Therefore, no solution mod5, so no solution mod25. Hence p=5 is out.
+
+p=7: Check if there's a solution mod7 first. n⁴ ≡ -1 mod7. Let's compute n⁴ mod7 for n=1,...,6:
+
+n=1: 1
+n=2: 16≡2
+n=3: 81≡4
+n=4: 256≡4
+n=5: 625≡2
+n=6: 1296≡1
+
+So possible residues are 1,2,4. -1 mod7 is 6. None of these are 6. Therefore, no solution mod7, so no solution mod49. Hence p=7 is out.
+
+p=11: Let's check mod11 first. n⁴ ≡ -1 mod11. Let's compute n⁴ mod11 for n=1 to 10.
+
+Alternatively, since 11 is prime, the multiplicative group mod11 has order 10. So the equation x⁴ ≡ -1 mod11. Let's check if -1 is a quartic residue mod11.
+
+Alternatively, maybe check if there exists x with x⁴ ≡ -1 mod11. Let me compute:
+
+n=1: 1
+n=2: 16≡5
+n=3: 81≡4
+n=4: 256≡3 (since 256/11 is 23*11=253, 256-253=3)
+n=5: 625. 625 divided by 11: 11*56=616, 625-616=9. So 9.
+n=6: 6^4=1296. 1296/11: 11*117=1287, 1296-1287=9. So 9.
+n=7: 7^4=2401. 2401 divided by 11: 11*218=2398, 2401-2398=3. So 3.
+n=8: 8^4=4096. 4096/11: 11*372=4092, 4096-4092=4. So 4.
+n=9: 9^4=6561. 6561/11: 11*596=6556, 6561-6556=5. So 5.
+n=10: 10^4=10000. 10000 mod11: since 10≡-1 mod11, so (-1)^4=1 mod11.
+
+So the quartic residues mod11 are 1, 3, 4, 5, 9. -1 mod11 is 10. Not in the list. Therefore, no solution mod11. Hence p=11 is out.
+
+p=13: Let's check mod13. First, check if there's a solution to x⁴ ≡ -1 mod13. Let's compute x⁴ mod13 for x from 1 to 12.
+
+Alternatively, maybe use Legendre symbol or something. But maybe just compute:
+
+n=1: 1
+n=2: 16≡3
+n=3: 81≡3 (since 81-6*13=81-78=3)
+n=4: 256. 256/13: 13*19=247, 256-247=9. So 9.
+n=5: 625. 625/13: 13*48=624, so 625≡1 mod13.
+n=6: 6^4=1296. 1296/13: 13*99=1287, 1296-1287=9. So 9.
+n=7: 7^4=2401. 2401 divided by 13: 13*184=2392, 2401-2392=9. So 9?
+Wait, 7²=49≡10 mod13, then 7^4=(7²)²≡10²=100≡9 mod13. Yes. So 9.
+n=8: 8²=64≡12 mod13, then 8^4=(12)²=144≡1 mod13.
+n=9: 9²=81≡3 mod13, then 9^4=3²=9 mod13.
+n=10: 10²=100≡9 mod13, then 10^4=9²=81≡3 mod13.
+n=11: 11²=121≡4 mod13, then 11^4=4²=16≡3 mod13.
+n=12: 12²=144≡1 mod13, then 12^4=1²=1 mod13.
+
+So the quartic residues mod13 are 1, 3, 9. -1 mod13 is 12. Not in the list. Therefore, no solution mod13. Hence p=13 is out.
+
+p=17: Let's check mod17. First, check if x⁴ ≡ -1 mod17 has a solution. Let's compute x⁴ mod17 for x from 1 to 16.
+
+Alternatively, maybe think about the multiplicative group mod17 has order 16. The equation x⁴ ≡ -1 mod17. Let me note that -1 is 16 mod17. So we need x⁴ ≡16 mod17. Let me check if 16 is a quartic residue.
+
+Alternatively, check if there exists x with x^4 ≡ -1 mod17. Let me compute:
+
+n=1: 1
+n=2: 16
+n=3: 81≡13
+n=4: 256≡1 (since 17*15=255, 256-255=1)
+n=5: 625. 625 divided by 17: 17*36=612, 625-612=13. So 13.
+n=6: 6^4=1296. 1296 divided by 17: 17*76=1292, 1296-1292=4. So 4.
+n=7: 7^4=2401. 2401 divided by 17: 17*141=2397, 2401-2397=4. So 4.
+n=8: 8^4=4096. 4096 divided by 17: 17*240=4080, 4096-4080=16. So 16.
+n=9: 9^4=6561. 6561 divided by 17: Let's compute 17*385=6545, 6561-6545=16. So 16.
+n=10: 10^4=10000. 10000 divided by 17: Let me compute 17*588=10, 17*588= 17*(500 + 88) = 8500 + 1496 = 9996. Then 10000 - 9996 = 4. So 4.
+n=11: 11^4. 11²=121≡121-7*17=121-119=2 mod17. Then 11^4=(2)^2=4 mod17.
+n=12: 12²=144≡144-8*17=144-136=8 mod17. Then 12^4=8²=64≡13 mod17.
+n=13: 13²=169≡169-10*17=169-170=-1≡16 mod17. Then 13^4=(16)^2=256≡1 mod17.
+n=14: 14≡-3 mod17. So (-3)^4=81≡13 mod17.
+n=15: 15≡-2 mod17. (-2)^4=16 mod17.
+n=16: 16≡-1 mod17. (-1)^4=1 mod17.
+
+So the quartic residues mod17 are 1, 4, 13, 16. So -1 mod17 is 16, which is present. For example, n=2: 2^4=16≡-1 mod17. So there is a solution mod17. Therefore, there exists n such that n⁴ ≡ -1 mod17. Now, does this lift to mod17²?
+
+So, if there is a solution mod17, we can try to lift it to mod17² using Hensel's lemma. Let me recall Hensel's lemma: if f(x) ≡0 mod p and f'(x) not ≡0 mod p, then there is a unique lift mod p².
+
+Here, f(x) = x⁴ +1. Let's take the solution x=2 mod17. Then f(2)=16 +1=17≡0 mod17. Now compute f'(x)=4x³. At x=2, f'(2)=4*(8)=32≡15 mod17≠0. Therefore, Hensel's lemma applies, so there exists a unique solution mod17² lifting x=2. Therefore, there exists an integer n such that n⁴ +1 ≡0 mod17². Therefore, p=17 is a candidate. But we need to check if there is a smaller prime than 17 that satisfies the condition. Wait, we checked primes up to 13 and none worked. Next prime is 17. So maybe 17 is the minimal p?
+
+But let me check p=7, 5, etc. Wait, we already checked up to p=13. So maybe 17 is the minimal prime. But let me check p=17 is indeed the minimal. Wait, what about p=2,3,5,7,11,13,17. So yes, 17 is the next. So maybe p=17 is the answer. But let me check p=7 again? Wait, earlier steps showed that for p=7, there was no solution mod7. So p=17 is the first prime where there exists a solution mod p, and then lifting to p².
+
+But before confirming that, let me check p=5 again. Wait, for p=5, n⁴ ≡ -1 mod5 would require n⁴ ≡4 mod5. But n⁴ mod5 is 0 or 1. So no solution. Similarly for others. So p=17 is the first prime where there is a solution mod p. Therefore, p=17 is the minimal prime. Therefore, the answer to the first part is p=17.
+
+Now, the second part: find the least positive integer m such that m⁴ +1 is divisible by p², which is 17²=289.
+
+So we need to find the minimal m>0 with m⁴ ≡ -1 mod289.
+
+Earlier, we saw that there is a solution mod17, which is m=2. Let's try to lift this solution to mod289 using Hensel's lemma. Since we have a solution x=2 mod17, and we want to find x ≡2 mod17 such that x⁴ ≡-1 mod289.
+
+Let me denote x = 2 + 17k, where k is an integer. Then compute x⁴ +1 mod289.
+
+First, compute x = 2 + 17k.
+
+Compute x⁴:
+
+Let me compute (2 + 17k)^4. Let's expand this using binomial theorem:
+
+= 2^4 + 4*2^3*(17k) + 6*2^2*(17k)^2 + 4*2*(17k)^3 + (17k)^4.
+
+But since we are working mod 289 =17², terms with (17k)^2 or higher will be multiples of 17², hence 0 mod289. Therefore, only the first two terms matter:
+
+x⁴ ≡ 16 + 4*8*17k mod289.
+
+Compute 4*8=32, so 32*17k = 544k. Now, 544 divided by 289: 289*1=289, 544-289=255. So 544k ≡255k mod289. Therefore:
+
+x⁴ ≡16 + 255k mod289.
+
+We want x⁴ ≡ -1 mod289, which is 288 mod289. Therefore:
+
+16 + 255k ≡288 mod289
+
+=> 255k ≡288 -16 =272 mod289
+
+So 255k ≡272 mod289.
+
+Now, need to solve for k: 255k ≡272 mod289.
+
+First, let's compute gcd(255,289). 289 is 17², 255=15*17. Therefore, gcd(255,289)=17.
+
+Check if 17 divides 272. 272 divided by 17 is 16. So yes, 17 divides 272. Therefore, there are solutions.
+
+Divide the equation by 17:
+
+(255/17)k ≡ (272/17) mod (289/17)
+
+Which is 15k ≡16 mod17.
+
+Now solve 15k ≡16 mod17.
+
+Find the inverse of 15 mod17. Since 15 ≡-2 mod17. The inverse of -2 mod17 is -9 mod17, since (-2)*(-9)=18≡1 mod17. Therefore, inverse of 15 is -9 ≡8 mod17.
+
+Therefore, k ≡16 *8 mod17.
+
+Compute 16*8=128. 128 divided by17: 17*7=119, 128-119=9. So k≡9 mod17.
+
+Therefore, k=9 +17t, where t is integer.
+
+Therefore, x=2 +17k=2 +17*(9 +17t)=2 + 153 + 289t=155 +289t.
+
+Therefore, the minimal positive solution is x=155 mod289. Therefore, m=155 is the minimal positive integer such that m⁴ +1 is divisible by 17²=289.
+
+But wait, is 155 the minimal? Let me check if there is a smaller m. Since we derived that the solution is x≡155 mod289, so the minimal positive m is 155. However, maybe there is another solution with smaller m?
+
+Alternatively, perhaps there's another solution mod17. Wait, earlier when we checked mod17, we saw that x=2 and x=8 and x=9 and x=15? Wait, let me check again. Earlier, when we checked mod17, we saw that n=2, 8, 9, 15 had x⁴≡16≡-1 mod17. Let me confirm:
+
+For example, n=8: 8^4 mod17. Earlier calculation showed 8^4≡16 mod17. Similarly, n=9: 9^4≡16 mod17. Similarly, n=15≡-2 mod17, so (-2)^4=16 mod17. Similarly, n=2, 8, 9, 15 mod17. So there are four solutions mod17. Maybe lifting one of them gives a smaller m?
+
+Let me try lifting another solution, say x=8 mod17. Let's try that.
+
+Let x=8 +17k. Then compute x⁴ +1 mod289.
+
+Again, expand (8 +17k)^4. Again, mod289, only first two terms matter:
+
+8^4 + 4*(8^3)*(17k) mod289.
+
+Compute 8^4=4096. 4096 mod289: Let's divide 4096 by 289. 289*14=4046. 4096-4046=50. So 8^4≡50 mod289.
+
+Then 4*(8^3)*17k. Compute 8^3=512. 512 mod17? Wait, but we need to compute 4*(8^3)*17k mod289. However, since 8^3=512, and 512*4=2048. Then multiply by 17k: 2048*17k. Wait, but this seems complicated. Wait, but earlier approach was to note that (a + b)^4 ≡a^4 + 4a³b mod b² when b is 17 here. Wait, in our previous case, when we had x=2 +17k, we expanded and found that mod17², it's 2^4 + 4*(2³)*17k. Similarly here, with a=8, b=17k:
+
+x⁴ ≡8^4 + 4*(8³)*(17k) mod289.
+
+So compute 8^4 mod289 is 50 as above. Then compute 4*(8³)*17k mod289.
+
+First compute 8³=512. Then 4*512=2048. Then multiply by 17k: 2048*17k. But since we are mod289, which is 17², note that 2048 mod17?
+
+Wait, 2048 divided by 17: 17*120=2040, so 2048-2040=8. Therefore, 2048 ≡8 mod17. Therefore, 2048*17k ≡8*17k mod17². Therefore, 8*17k mod289.
+
+Therefore, overall:
+
+x⁴ ≡50 + 8*17k mod289.
+
+We want x⁴ ≡-1 mod289, which is 288 mod289. Therefore:
+
+50 + 136k ≡288 mod289
+
+=> 136k ≡288 -50 =238 mod289.
+
+Simplify 136k ≡238 mod289.
+
+Again, check gcd(136,289). 136=8*17, 289=17². So gcd is 17. Check if 17 divides 238. 238/17=14. Yes. So divide equation by 17:
+
+(136/17)k ≡238/17 mod289/17 => 8k ≡14 mod17.
+
+Solve 8k ≡14 mod17. Multiply both sides by inverse of 8 mod17. The inverse of 8 mod17: 8*2=16≡-1, so 8*(-2)=1 mod17. Therefore inverse is -2≡15 mod17. Therefore:
+
+k≡14*15 mod17. 14*15=210. 210 divided by17: 17*12=204, 210-204=6. So k≡6 mod17. Therefore, k=6 +17t. Therefore, x=8 +17k=8 +17*(6 +17t)=8 +102 +289t=110 +289t. Therefore, minimal positive solution is 110. Which is smaller than 155. So m=110 is smaller. So maybe 110 is the minimal?
+
+Wait, so earlier when lifting x=2 mod17, we got m=155, but lifting x=8 mod17 gives m=110. Which is smaller. So perhaps 110 is the minimal. Let me check if there are even smaller solutions by lifting other roots.
+
+Let me try lifting x=9 mod17. Let's do that.
+
+x=9 +17k. Compute x⁴ mod289.
+
+Again, expand (9 +17k)^4 ≡9^4 + 4*(9³)*(17k) mod289.
+
+First compute 9^4 mod289. 9^4=6561. Let's divide 6561 by 289. 289*22=6358. 6561 -6358=203. So 9^4≡203 mod289.
+
+Then compute 4*(9³)*17k mod289. First compute 9³=729. 4*729=2916. Now compute 2916 mod17? Because 2916*17k mod289. Wait, similar to before, since 2916*17k mod17². Let me compute 2916 mod17.
+
+Divide 2916 by17: 17*171=2907. 2916-2907=9. Therefore, 2916≡9 mod17. Therefore, 2916*17k ≡9*17k mod289. Therefore:
+
+x⁴ ≡203 + 9*17k mod289.
+
+Set equal to 288:
+
+203 + 153k ≡288 mod289
+
+=> 153k ≡288 -203 =85 mod289.
+
+Check gcd(153,289). 153=9*17, 289=17². So gcd=17. Check if 17 divides 85. 85/17=5. Yes. Divide equation by17:
+
+(153/17)k ≡85/17 mod289/17 => 9k ≡5 mod17.
+
+Solve 9k ≡5 mod17. Inverse of 9 mod17: 9*2=18≡1 mod17, so inverse is 2. Therefore, k≡5*2=10 mod17. Therefore, k=10 +17t. Therefore, x=9 +17k=9 +17*(10 +17t)=9 +170 +289t=179 +289t. So minimal m=179, which is larger than 110. So not better.
+
+Now check lifting x=15 mod17. Let me try that. x=15 +17k.
+
+Compute x⁴ mod289. Again, expand (15 +17k)^4 ≡15^4 +4*(15³)*(17k) mod289.
+
+First compute 15^4 mod289. 15^2=225, 15^4=(225)^2. Compute 225^2: 225*225. Let me compute 225² mod289. Alternatively, note that 15 ≡-2 mod17, so 15^4 ≡(-2)^4=16 mod17. But we need mod289. Let me compute 15^4:
+
+15^2=225. 225 mod289 is 225. Then 15^4=(225)^2. Let me compute 225²:
+
+225² = (200 +25)^2 = 200² + 2*200*25 +25² = 40000 + 10000 + 625 = 50625. Now divide 50625 by 289. Let me compute 289*175=289*(170 +5)=289*170 +289*5. 289*170=289*10*17=2890*17. Wait, this might take too long. Alternatively, note that 15^4 mod289 can be calculated step by step:
+
+First, 15^2=225. Then 15^4=(15^2)^2=225². Let me compute 225 mod289 is 225. Now compute 225² mod289:
+
+Note that 225 = 289 - 64. Therefore, 225 ≡ -64 mod289. Therefore, 225² ≡ (-64)^2 = 4096 mod289. Earlier, we saw that 4096 mod289: 289*14=4046, 4096-4046=50. Therefore, 225²≡50 mod289. Therefore, 15^4≡50 mod289.
+
+Then compute 4*(15³)*17k mod289. First compute 15³. 15³=3375. Compute 3375 mod17? Because we need to compute 4*(15³)*17k mod289. Let me compute 15³ mod17. Since 15≡-2 mod17, (-2)^3=-8≡9 mod17. Therefore, 15³≡9 mod17. Therefore, 4*(15³)*17k ≡4*9*17k=36*17k mod289. But 36 mod17 is 36-2*17=2. Therefore, 36*17k ≡2*17k mod289. Therefore:
+
+x⁴ ≡50 + 34k mod289.
+
+Set equal to 288:
+
+50 +34k ≡288 mod289 => 34k ≡238 mod289.
+
+Check gcd(34,289). 34=2*17, 289=17². So gcd=17. Check if 17 divides 238. 238/17=14. Yes. Divide equation by17:
+
+(34/17)k ≡238/17 mod289/17 => 2k ≡14 mod17 => k≡7 mod17. Therefore, k=7 +17t. Therefore, x=15 +17k=15 +17*(7 +17t)=15 +119 +289t=134 +289t. Therefore, minimal m=134. Which is less than 155 but more than 110. So 110 is still smaller.
+
+So among the four solutions mod17, lifting x=8 gives m=110, x=15 gives 134, x=2 gives 155, x=9 gives 179. So the minimal is 110. But is there a smaller m?
+
+Wait, maybe there are other solutions? Or maybe there's a smaller m than 110?
+
+Wait, let's check m=110. Let me compute 110^4 +1 and check if it's divisible by 289.
+
+But calculating 110^4 is tedious. Alternatively, check 110^4 mod289.
+
+But since we derived it through Hensel's lemma, it should be correct. However, let me verify.
+
+Alternatively, check if 110 ≡8 mod17. 110 divided by17: 17*6=102, 110-102=8. Yes, 110≡8 mod17. And we had that x=8 +17k=110, which was derived to satisfy x⁴ ≡-1 mod289. So unless there's a mistake in the calculation, it should be correct.
+
+But let me check with another approach. Let me compute 110^4 +1 mod289.
+
+First, compute 110 mod289 is 110. Let me compute 110^2 mod289:
+
+110^2 = 12100. Divide by289:
+
+Find how many times 289 goes into 12100. 289*40=11560. 12100 -11560=540. Now 289*1=289, 540-289=251. 289*0. So 110² ≡540 mod289? Wait, no. Wait, 110²=12100. Let me compute 12100 divided by 289:
+
+First, 289*40=11560. 12100 - 11560 = 540. Now, 540 divided by 289 is 1*289=289, remainder 540-289=251. Therefore, 110² ≡251 mod289.
+
+Then compute 110^4 = (110²)^2 ≡251² mod289.
+
+Compute 251². Let me compute 251 mod289 is 251

@@ -5,7 +5,7 @@
     10,
     18
   ],
-  "n_rows": 6,
+  "n_rows": 26,
   "arms": {
     "real": {
       "n": 6,
@@ -22,11 +22,15 @@
         "ci_hi": 819.0,
         "n": 6
       },
+      "n_timed": 6,
+      "max_batch": 1,
       "judger_s": 155.41995410931608,
       "upstream_s": 0.9976107720285654,
       "e2e_s": 156.41756488134465,
+      "wall_s": 932.5197246558964,
       "eos_rate": 0.6666666666666666,
       "tok_per_s": 42.40875442564285,
+      "tok_per_s_wall": 42.40875442564285,
       "correct_idx": [
         0,
         4,
@@ -44,15 +48,169 @@
         "critic",
         "refiner"
       ]
+    },
+    "real__bs16": {
+      "n": 6,
+      "acc": 0.3333333333333333,
+      "tokens": {
+        "mean": 6816.333333333333,
+        "ci_lo": 4951.666666666667,
+        "ci_hi": 7976.833333333333,
+        "n": 6
+      },
+      "cache_pos": {
+        "mean": 698.5,
+        "ci_lo": 604.0,
+        "ci_hi": 819.0,
+        "n": 6
+      },
+      "n_timed": 0,
+      "max_batch": 6,
+      "judger_s": 0.0,
+      "upstream_s": 0.9960246620078882,
+      "e2e_s": 0.0,
+      "wall_s": 532.6373267136514,
+      "eos_rate": 0.5,
+      "tok_per_s": 0.0,
+      "tok_per_s_wall": 76.78395401302203,
+      "correct_idx": [
+        0,
+        18
+      ],
+      "critical_kept": [
+        18
+      ],
+      "critical_lost": [
+        4,
+        10
+      ],
+      "paid_roles": [
+        "planner",
+        "critic",
+        "refiner"
+      ]
+    },
+    "real_seal40": {
+      "n": 6,
+      "acc": 0.5,
+      "tokens": {
+        "mean": 6745.166666666667,
+        "ci_lo": 4616.833333333333,
+        "ci_hi": 8192.0,
+        "n": 6
+      },
+      "cache_pos": {
+        "mean": 698.5,
+        "ci_lo": 604.0,
+        "ci_hi": 819.0,
+        "n": 6
+      },
+      "n_timed": 6,
+      "max_batch": 1,
+      "judger_s": 158.6980215770503,
+      "upstream_s": 0.9960246620078882,
+      "e2e_s": 159.69404623905817,
+      "wall_s": 952.1881294623017,
+      "eos_rate": 0.3333333333333333,
+      "tok_per_s": 42.50315536159212,
+      "tok_per_s_wall": 42.50315536159212,
+      "correct_idx": [
+        0,
+        1,
+        4
+      ],
+      "critical_kept": [
+        4
+      ],
+      "critical_lost": [
+        10,
+        18
+      ],
+      "paid_roles": [
+        "planner",
+        "critic",
+        "refiner"
+      ]
+    },
+    "none": {
+      "n": 6,
+      "acc": 0.3333333333333333,
+      "tokens": {
+        "mean": 7348.166666666667,
+        "ci_lo": 5660.5,
+        "ci_hi": 8192.0,
+        "n": 6
+      },
+      "cache_pos": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 6
+      },
+      "n_timed": 6,
+      "max_batch": 1,
+      "judger_s": 172.69282374344766,
+      "upstream_s": 0.0,
+      "e2e_s": 172.69282374344766,
+      "wall_s": 1036.156942460686,
+      "eos_rate": 0.16666666666666666,
+      "tok_per_s": 42.55050387955378,
+      "tok_per_s_wall": 42.55050387955378,
+      "correct_idx": [
+        0,
+        18
+      ],
+      "critical_kept": [
+        18
+      ],
+      "critical_lost": [
+        4,
+        10
+      ],
+      "paid_roles": []
+    },
+    "real_seal60": {
+      "n": 2,
+      "acc": 1.0,
+      "tokens": {
+        "mean": 4895.5,
+        "ci_lo": 1599.0,
+        "ci_hi": 8192.0,
+        "n": 2
+      },
+      "cache_pos": {
+        "mean": 731.0,
+        "ci_lo": 692.0,
+        "ci_hi": 770.0,
+        "n": 2
+      },
+      "n_timed": 2,
+      "max_batch": 1,
+      "judger_s": 114.74886422045529,
+      "upstream_s": 1.2420691046863794,
+      "e2e_s": 115.99093332514167,
+      "wall_s": 229.49772844091058,
+      "eos_rate": 0.5,
+      "tok_per_s": 42.66273163797748,
+      "tok_per_s_wall": 42.66273163797748,
+      "correct_idx": [
+        0,
+        1
+      ],
+      "critical_kept": [],
+      "critical_lost": [],
+      "paid_roles": [
+        "planner",
+        "critic",
+        "refiner"
+      ]
     }
   },
   "pairing": {
     "real": {
       "recovered_vs_none": [
-        0,
         4,
-        10,
-        18
+        10
       ],
       "lost_vs_real": [],
       "kept_vs_real": [
@@ -61,26 +219,75 @@
         10,
         18
       ]
+    },
+    "real__bs16": {
+      "recovered_vs_none": [],
+      "lost_vs_real": [
+        4,
+        10
+      ],
+      "kept_vs_real": [
+        0,
+        18
+      ]
+    },
+    "real_seal40": {
+      "recovered_vs_none": [
+        1,
+        4
+      ],
+      "lost_vs_real": [
+        10,
+        18
+      ],
+      "kept_vs_real": [
+        0,
+        4
+      ]
+    },
+    "none": {
+      "recovered_vs_none": [],
+      "lost_vs_real": [
+        4,
+        10
+      ],
+      "kept_vs_real": [
+        0,
+        18
+      ]
+    },
+    "real_seal60": {
+      "recovered_vs_none": [
+        1
+      ],
+      "lost_vs_real": [
+        4,
+        10,
+        18
+      ],
+      "kept_vs_real": [
+        0
+      ]
     }
   },
   "per_agent": {
     "planner": {
-      "n": 6,
-      "seconds": 0.40887301104764145,
-      "positions": 210.16666666666666,
-      "peak_mb": 29623.645345052082
+      "n": 36,
+      "seconds": 0.3262093937438395,
+      "positions": 208.66666666666666,
+      "peak_mb": 28925.410468207465
     },
     "critic": {
-      "n": 6,
-      "seconds": 0.2995241954922676,
-      "positions": 251.16666666666666,
-      "peak_mb": 28656.724690755207
+      "n": 36,
+      "seconds": 0.29558535158220267,
+      "positions": 249.66666666666666,
+      "peak_mb": 28672.994778103297
     },
     "refiner": {
-      "n": 6,
-      "seconds": 0.28921356548865634,
-      "positions": 237.16666666666666,
-      "peak_mb": 28755.695719401043
+      "n": 36,
+      "seconds": 0.2879437768004007,
+      "positions": 235.66666666666666,
+      "peak_mb": 28764.784301757812
     },
     "judger": {
       "n": 6,

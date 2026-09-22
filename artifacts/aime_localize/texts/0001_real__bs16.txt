@@ -1,0 +1,332 @@
+<think>
+Okay, let's try to solve this problem step by step. First, I need to understand the problem statement. We have triangle ABC inscribed in a circle ω. The tangents at B and C meet at point D, and AD intersects ω again at P. We know the sides AB=5, BC=9, AC=10, and we need to find AP in the form m/n and then m + n.
+
+Hmm, so first, maybe I should draw a diagram to visualize. But since I can't draw, I'll imagine it. Point D is the intersection of the tangents at B and C. So, D lies outside the circle, and BD and CD are tangents. Then AD is a line from A through D, intersecting the circle again at P. So AP is part of AD, from A to P, and PD is the rest.
+
+I remember that the tangents from a common external point to a circle are equal in length. So BD = CD. Also, there might be some properties related to power of a point, harmonic division, or maybe some similar triangles here.
+
+First, maybe I should compute the circumradius of triangle ABC. Since ABC is inscribed in ω, the circumradius R can be found using the formula:
+
+R = (a*b*c)/(4*Δ), where a, b, c are the sides and Δ is the area.
+
+Wait, the sides are AB=5, BC=9, AC=10. Let me check: AB=5, BC=9, AC=10. So sides are a=BC=9, b=AC=10, c=AB=5? Wait, standard notation is usually a opposite A, but maybe I need to confirm. Wait, in standard triangle notation, a is BC, opposite angle A. Wait, no, actually, in standard notation, side a is opposite angle A, which is BC. So if ABC is the triangle, then side a is BC=9, side b is AC=10, side c is AB=5. So yes.
+
+So first, compute the area Δ of triangle ABC. Using Heron's formula. The semi-perimeter s = (a + b + c)/2 = (9 + 10 + 5)/2 = 24/2 = 12.
+
+Then area Δ = √[s(s - a)(s - b)(s - c)] = √[12*(12 - 9)*(12 - 10)*(12 - 5)] = √[12*3*2*7] = √(504) = √(16*31.5) wait, let me compute that again. 12*3 is 36, 2*7 is 14, so 36*14 = 504. So √504. Simplify that: 504 = 16 * 31.5? Wait, 16*31.5 is 504? Wait 16*30=480, 16*1.5=24, so 480+24=504. Yes. But √504 can be simplified. 504 = 4*126 = 4*9*14 = 4*9*2*7. So √(4*9*2*7) = 2*3*√14 = 6√14. So Δ = 6√14.
+
+Then the circumradius R = (a*b*c)/(4Δ) = (9*10*5)/(4*6√14) = (450)/(24√14) = simplify numerator and denominator by 6: 75/(4√14). Rationalizing the denominator: 75√14/(4*14) = 75√14/56. So R = 75√14 / 56. Hmm, not sure if I need this yet, but maybe.
+
+Alternatively, maybe I can use coordinates or other methods. But perhaps there's a better approach using power of a point.
+
+Since D is the intersection of the tangents at B and C, then D lies on the symmedian of triangle ABC. Also, the power of point D with respect to ω is DB² = DC² = power of D. Also, since AD passes through P, which is on ω, then by power of point A with respect to ω? Wait, A is on ω, so its power is zero. But D is outside, so power of D is DB² = DC² = DA * DP. Because AD intersects ω at A and P, so DA * DP = power of D. Therefore, DA * DP = DB². Therefore, if I can find DA and DP, or express DP in terms of DA, then I can find AP.
+
+Wait, AP is part of AD. Let me denote AP = x, PD = y. Then AD = AP + PD = x + y. But since DA * DP = DB², then (x + y) * y = DB². But I need another equation to relate x and y. However, maybe there's a way to find DA and DB?
+
+Alternatively, since D is the exsimilicenter of the tangents at B and C, maybe we can find coordinates of D or use some properties.
+
+Alternatively, use coordinates. Let me try coordinate geometry. Let me place triangle ABC in coordinate plane. Let me assign coordinates to points A, B, C. But maybe that's complicated. Alternatively, use barycentric coordinates or other methods.
+
+Alternatively, use the fact that D lies on the symmedian. Wait, the tangents at B and C meet at D, which is the exsymmedian point? Or maybe the symmedian point? Wait, the intersection of tangents at B and C is the symmedian point? Not sure. Alternatively, maybe use the fact that BD and CD are tangents, so BD = CD, and angle DBC = angle DCB? Wait, since BD and CD are tangents, then angles between tangent and chord are equal to the angles in the alternate segment. So angle DBC = angle BAC, and angle DCB = angle BAC? Wait, no. Wait, angle between tangent at B and chord BC is equal to the angle in the alternate segment. So angle between tangent at B and BC is equal to angle BAC. Similarly, angle between tangent at C and CB is equal to angle BAC. Wait, but since BD is tangent at B, then angle between BD and BC is equal to angle BAC. Similarly, angle between CD and CB is equal to angle BAC. Therefore, triangle DBC has angles at B and C equal to angle BAC. Therefore, triangle DBC is similar to triangle ABC? Wait, not sure. Wait, angle at D is angle BDC. Let me think.
+
+Alternatively, since BD and CD are tangents, then BD = CD, so triangle DBC is isoceles with BD=CD. Also, angles at B and C are equal to angle BAC. Let me denote angle BAC as α. Then angles DBC and DCB are both equal to α. Therefore, in triangle DBC, angles at B and C are α, so angle at D is 180° - 2α. But angle BAC is α, and in triangle ABC, angles sum to 180°, so maybe we can find α?
+
+Alternatively, maybe use the Law of Cosines in triangle ABC to find angle BAC. Let me try that. In triangle ABC, sides AB=5, BC=9, AC=10. So angle at A is between AB and AC, which is angle BAC. Using Law of Cosines:
+
+BC² = AB² + AC² - 2*AB*AC*cos(angle BAC)
+
+So 9² = 5² + 10² - 2*5*10*cos(α)
+
+Calculating:
+
+81 = 25 + 100 - 100 cos α
+
+81 = 125 - 100 cos α
+
+Then 100 cos α = 125 - 81 = 44
+
+So cos α = 44/100 = 11/25. Therefore, angle α has cosine 11/25.
+
+Now, in triangle DBC, angles at B and C are both α, so angle at D is 180° - 2α. Then, using Law of Sines on triangle DBC:
+
+BD / sin(angle BCD) = BC / sin(angle BDC)
+
+Wait, BD / sin(angle BCD) = BC / sin(angle BDC). Wait, angle BCD is α, angle BDC is 180° - 2α. So:
+
+BD / sin α = BC / sin(180° - 2α) = BC / sin(2α)
+
+Therefore, BD = BC * sin α / sin(2α) = BC * sin α / (2 sin α cos α) ) = BC / (2 cos α)
+
+So BD = BC / (2 cos α). Since BC is 9, and cos α is 11/25, then BD = 9 / (2*(11/25)) ) = 9 * 25 / 22 = 225/22.
+
+So BD = 225/22. Therefore, the power of point D with respect to ω is DB² = (225/22)².
+
+Now, since AD passes through P, and A is on ω, then DA * DP = power of D = DB². Let me denote AP = x, PD = y. Then DA = AP + PD = x + y. But since P is between A and D? Wait, depends on where D is. Wait, D is outside the circle, and AD is a secant from A through D, but since A is on the circle, then AD starts at A, goes through P (another intersection point) and then to D. Wait, but if D is outside, then the line AD would intersect the circle at A and P, with P between A and D? Or is it the other way around? Wait, if D is outside, then the line AD starts at A (on the circle), goes through P (another point on the circle), and then extends to D outside. Wait, but if D is the intersection of tangents at B and C, then D is outside the circle. So the line AD starts at A, goes through P (inside the circle?), then exits at D? No, that can't be. Wait, if D is outside, then the line AD would pass through A (on the circle), then go through P (another point on the circle), and then extend to D outside. Wait, but that would mean that P is between A and D. Therefore, AP is part of AD from A to P, and PD is from P to D. Therefore, DA = AP + PD = x + y. But the power of D is DA * DP = DB². Wait, no. Wait, the power of D is equal to DP * DA, but since D is outside, and AD is a secant line passing through A and P, then the power of D is DP * DA? Wait, no. Wait, the power of a point D with respect to the circle is equal to DP * DA, where DP is the entire length from D to A, but since A is on the circle, the power is DA * DP? Wait, no. Wait, the power of D is equal to the square of the tangent from D to the circle, which is DB². Also, for a secant line passing through D and intersecting the circle at two points, say X and Y, then DX * DY = power of D. In this case, the secant line is AD, which intersects the circle at A and P. So DA * DP = power of D. Wait, but DA is from D to A, and DP is from D to P? Wait, no. If the secant passes through D, then the two points are A and P. So if D is outside, then the power is DA * DP, where DA is the distance from D to A, and DP is from D to P? Wait, no. Wait, the formula is that if a secant from D passes through the circle at X and Y, then DX * DY = power of D. Here, the points are A and P. If D is outside, then the points are ordered D---P---A, or D---A---P? Wait, if D is outside, and the line AD passes through A (on the circle) and then P (another point on the circle), then P must be between D and A? No, that can't be. Because if you have a point D outside the circle, and draw a line from D through A (which is on the circle), then the other intersection point P would be on the extension beyond A. Wait, but that would mean that P is on the line DA beyond A, but since A is already on the circle, then the line DA would intersect the circle at A and another point P. Wait, but if D is outside, then the line DA would intersect the circle at two points: A and another point P. Depending on the position, P could be between D and A or beyond A. But since D is the intersection of tangents at B and C, which are outside the circle, and AD is connecting A to D, which is outside, then P is likely between A and D. Wait, but if you have a point D outside the circle, and draw a line from D to A (on the circle), then the line DA would intersect the circle at A and another point P. If D is outside, then P must be between D and A. Because if you go from D towards A, you first meet P (inside the circle) then reach A. Wait, but A is on the circle. So if you start at D, go towards A, you first meet P (inside the circle), then reach A. Wait, but that would mean that P is between D and A. Therefore, DA is the entire length from D to A, and DP is from D to P, and PA is from P to A. Therefore, DA = DP + PA. Therefore, DP * DA = DP * (DP + PA) = power of D. But power of D is DB². Therefore, DP * (DP + PA) = DB². Let me denote PA = x, then DP = DA - PA. Wait, but I don't know DA yet. Alternatively, let me denote DP = y, then DA = y + x. But I need another relation. However, maybe I can express DA in terms of other quantities.
+
+Alternatively, since we have coordinates or other relations. Wait, but maybe I can use Menelaus' theorem or Ceva's theorem. Alternatively, use mass point geometry. But perhaps there's a better way.
+
+Alternatively, use coordinates. Let me try coordinate geometry. Let me place point A at (0, 0), point B at (5, 0), but wait, given AB=5, BC=9, AC=10. Wait, maybe coordinate system is messy here. Alternatively, use barycentric coordinates. But maybe that's complicated.
+
+Alternatively, use the formula for the length of the tangent from D to the circle. Since D is outside, and BD is tangent, so BD² = power of D = DA * DP. So DA * DP = BD². Let me denote AP = x, then since P lies on AD, we can express DA and DP in terms of x. But I need to find DA. How?
+
+Alternatively, find coordinates of D. Since D is the intersection of tangents at B and C. To find coordinates of D, maybe I need coordinates of B and C. But without knowing coordinates of ABC, this might be difficult. Alternatively, use vector methods or parametric equations.
+
+Alternatively, use the fact that D lies on the symmedian. Wait, the symmedian is the reflection of the median over the angle bisector. But I'm not sure how that helps here.
+
+Alternatively, use the formula for the distance from D to A. Let me think. Since D is the intersection of tangents at B and C, then line BD is tangent at B, so BD is perpendicular to the radius OB, where O is the circumcenter of ABC. Similarly, CD is perpendicular to OC. Therefore, BD is perpendicular to OB, and CD is perpendicular to OC. Therefore, O lies at the intersection of the perpendiculars from B to BD and from C to CD. But this might not be helpful directly.
+
+Alternatively, find coordinates of circumcircle ω. Let me try coordinate geometry again. Let me assign coordinates to triangle ABC. Let me place point A at (0, 0), point B at (5, 0), since AB=5. Then point C is somewhere such that AC=10 and BC=9. Let me find coordinates of C.
+
+Let me denote coordinates: A(0,0), B(5,0), C(x,y). Then AC = 10: √(x² + y²) = 10 → x² + y² = 100. BC = 9: √((x - 5)² + y²) = 9 → (x - 5)² + y² = 81. Subtract the first equation from the second: (x - 5)² + y² - x² - y² = 81 - 100 → x² -10x +25 -x² = -19 → -10x +25 = -19 → -10x = -44 → x = 4.4 = 22/5.
+
+Then x = 22/5. Substitute back into x² + y² = 100:
+
+(22/5)² + y² = 100 → 484/25 + y² = 100 → y² = 100 - 484/25 = 2500/25 - 484/25 = 2016/25 → y = ±√(2016)/5. Simplify √2016: 2016 = 16 * 126 = 16 * 9 * 14 = 16 * 9 * 14 → √2016 = 4 * 3 * √14 = 12√14. Therefore, y = ±12√14 / 5. Since triangles are typically considered in upper half-plane, let's take y positive: C(22/5, 12√14/5).
+
+Now, coordinates of A(0,0), B(5,0), C(22/5, 12√14/5). Now, need to find equations of tangents at B and C to the circumcircle ω, then find their intersection D, then find equation of AD, find its other intersection P with ω, then compute AP.
+
+First, find the equation of the circumcircle ω. Since we have coordinates of A, B, C, we can find the equation of the circle passing through them.
+
+General equation of circle: x² + y² + Dx + Ey + F = 0. Plugging in A(0,0): 0 + 0 + 0 + 0 + F = 0 → F = 0.
+
+So equation becomes x² + y² + Dx + Ey = 0.
+
+Plugging in B(5,0): 25 + 0 + 5D + 0 = 0 → 25 + 5D = 0 → D = -5.
+
+Now equation is x² + y² -5x + Ey = 0.
+
+Plugging in C(22/5, 12√14/5):
+
+( (22/5)^2 + (12√14/5)^2 ) -5*(22/5) + E*(12√14/5) = 0.
+
+Calculate each term:
+
+(22/5)^2 = 484/25
+
+(12√14/5)^2 = 144*14 / 25 = 2016/25
+
+Sum: (484 + 2016)/25 = 2500/25 = 100.
+
+Then -5*(22/5) = -22.
+
+So equation becomes 100 -22 + (12√14/5)E = 0 → 78 + (12√14/5)E = 0 → (12√14/5)E = -78 → E = (-78 * 5)/(12√14) = (-390)/(12√14) = (-65)/(2√14). Rationalizing denominator: (-65√14)/(2*14) = (-65√14)/28.
+
+Thus, the equation of the circle is x² + y² -5x - (65√14)/28 y = 0.
+
+Now, need to find equations of tangents at B and C.
+
+The tangent at a point (x1, y1) on the circle x² + y² + Dx + Ey + F = 0 is given by xx1 + yy1 + D(x + x1)/2 + E(y + y1)/2 + F = 0. Wait, or is there another formula? Alternatively, the tangent line at point (x1, y1) can be found using derivative or using the fact that it's perpendicular to the radius.
+
+Alternatively, for general circle equation x² + y² + Dx + Ey + F = 0, the tangent at (x1, y1) is xx1 + yy1 + D(x + x1)/2 + E(y + y1)/2 + F = 0. Let me check this formula.
+
+Alternatively, since the circle equation is x² + y² + Dx + Ey + F = 0, then the tangent at (x1, y1) is xx1 + yy1 + D(x + x1)/2 + E(y + y1)/2 + F = 0. Let me verify with point A(0,0). Plugging into tangent formula: x*0 + y*0 + D(x + 0)/2 + E(y + 0)/2 + F = 0 → (D/2)x + (E/2)y + F = 0. But since F=0, this becomes (D/2)x + (E/2)y = 0. For point A(0,0), this is the tangent line. But since A is on the circle, the tangent at A should be perpendicular to OA, where O is the center. But maybe this formula is correct.
+
+Alternatively, use the standard tangent formula. For a circle with center (h,k) and radius r, the tangent at (x1,y1) is (x1 - h)(x - h) + (y1 - k)(y - k) = r². Wait, no, that's the equation of the circle. The tangent line is (x1 - h)(x - h) + (y1 - k)(y - k) = r²? No, that's not correct. The standard tangent line at (x1,y1) is (x1 - h)(x - h) + (y1 - k)(y - k) = r²? No, that's the equation of the circle. The tangent line is (x1 - h)(x - h) + (y1 - k)(y - k) = r²? No, that's not. Wait, the tangent line at (x1,y1) is (x1 - h)(x - h) + (y1 - k)(y - k) = r²? No, that's the equation of the circle. The correct formula is (x1 - h)(x - h) + (y1 - k)(y - k) = r²? No, that's not. Wait, the tangent line at (x1,y1) is (x1 - h)(x - h) + (y1 - k)(y - k) = r²? No, that's the same as the circle equation. Wait, I think I need to recall the correct formula.
+
+Alternatively, for a general circle equation, the tangent at (x1,y1) can be found by replacing x² with xx1, y² with yy1, x with (x + x1)/2, y with (y + y1)/2, and keeping the constant term. This is the method of "tangent equation by polar line".
+
+So for the circle x² + y² + Dx + Ey + F = 0, the tangent at (x1,y1) is xx1 + yy1 + D*(x + x1)/2 + E*(y + y1)/2 + F = 0.
+
+Yes, that seems correct. So applying this formula.
+
+First, find tangent at B(5,0):
+
+xx1 + yy1 + D*(x + x1)/2 + E*(y + y1)/2 + F = 0.
+
+Here, x1=5, y1=0, D=-5, E=-65√14/28, F=0.
+
+So:
+
+x*5 + y*0 + (-5)*(x + 5)/2 + (-65√14/28)*(y + 0)/2 + 0 = 0.
+
+Simplify:
+
+5x - (5/2)(x + 5) - (65√14/56)y = 0.
+
+Compute term by term:
+
+5x - (5/2)x - 25/2 - (65√14/56)y = 0.
+
+Combine like terms:
+
+(5x - (5/2)x) = (10x/2 - 5x/2) = 5x/2.
+
+So:
+
+5x/2 - 25/2 - (65√14/56)y = 0.
+
+Multiply all terms by 2 to eliminate denominators:
+
+5x - 25 - (65√14/28)y = 0.
+
+Rearranged:
+
+5x - (65√14/28)y = 25.
+
+Similarly, find tangent at C(22/5, 12√14/5).
+
+Using the same formula:
+
+xx1 + yy1 + D*(x + x1)/2 + E*(y + y1)/2 + F = 0.
+
+x1 = 22/5, y1 = 12√14/5, D=-5, E=-65√14/28, F=0.
+
+So:
+
+x*(22/5) + y*(12√14/5) + (-5)*(x + 22/5)/2 + (-65√14/28)*(y + 12√14/5)/2 + 0 = 0.
+
+Let me compute each term step by step.
+
+First term: (22/5)x.
+
+Second term: (12√14/5)y.
+
+Third term: -5*(x + 22/5)/2 = -5/2 * x - (5/2)*(22/5) = -5x/2 - 11.
+
+Fourth term: (-65√14/28) * (y + 12√14/5)/2 = (-65√14/56)*(y + 12√14/5).
+
+Let me expand this:
+
+= (-65√14/56)y - (65√14/56)*(12√14/5).
+
+Compute the second part:
+
+(65√14 * 12√14) / (56 * 5) = (65 * 12 * 14) / (280).
+
+Simplify:
+
+65 * 12 = 780; 780 * 14 = 10920; denominator 280.
+
+10920 / 280 = 39. So the term is -39.
+
+So putting it all together:
+
+(22/5)x + (12√14/5)y - (5x/2) - 11 - (65√14/56)y - 39 = 0.
+
+Combine like terms:
+
+For x terms: (22/5)x - (5/2)x = convert to common denominator 10:
+
+(44/10 - 25/10)x = 19/10 x.
+
+For y terms: (12√14/5)y - (65√14/56)y. Let's find common denominator, which is 280.
+
+Convert 12√14/5 to 672√14/280, and 65√14/56 to 402.5√14/280? Wait, better to compute fractions:
+
+Multiply numerator and denominator:
+
+12√14/5 = (12√14 * 56)/280 = (672√14)/280.
+
+65√14/56 = (65√14 * 5)/280 = 325√14/280.
+
+So the difference is (672√14 - 325√14)/280 = 347√14/280.
+
+Wait, 672 - 325 = 347? Let me check: 672 - 300 = 372, minus 25 = 347. Yes.
+
+So y terms: 347√14/280 y.
+
+Constant terms: -11 - 39 = -50.
+
+So overall equation:
+
+(19/10)x + (347√14/280)y - 50 = 0.
+
+This seems complicated. Maybe I made a mistake in calculation. Let me check the fourth term again.
+
+Fourth term was (-65√14/56)*(y + 12√14/5) = -65√14/56 * y - 65√14/56 * 12√14/5.
+
+Compute the second part:
+
+-65√14 * 12√14 / (56 * 5) = -65 * 12 * 14 / (280).
+
+Wait, √14 * √14 = 14. So yes, that's correct.
+
+Calculate numerator: 65 * 12 = 780, 780 * 14 = 10920.
+
+Denominator: 56 * 5 = 280.
+
+So 10920 / 280 = 39. So the term is -39. So that part is correct.
+
+So the equation is:
+
+(19/10)x + (347√14/280)y - 50 = 0.
+
+This seems very messy. Maybe there's a better way to find the equations of the tangents. Alternatively, since we have coordinates of B and C, and the circle equation, we can find the equations of the tangents using the condition that the distance from the center to the line is equal to the radius.
+
+But this might also be complicated. Alternatively, since we have the coordinates of the circle's center and radius, we can find the equations of the tangents.
+
+Wait, the center of the circle ω is at (-D/2, -E/2). From the general equation x² + y² + Dx + Ey + F = 0, the center is (-D/2, -E/2). In our case, D = -5, E = -65√14/28. So center O is at (5/2, 65√14/56).
+
+Radius squared is (D/2)^2 + (E/2)^2 - F. Since F=0, radius squared is ( (-5/2)^2 + (-65√14/56)^2 ). Let me compute that later if needed.
+
+But for the tangent lines at B and C, since they are tangents from D, and we need to find D as the intersection of these two tangents. However, solving the two tangent equations seems very complex with the current expressions. Maybe there's a mistake in the approach.
+
+Alternatively, since we have BD = 225/22 from earlier, and we can use power of point D: DA * DP = BD² = (225/22)^2.
+
+If I can find DA, then I can solve for AP.
+
+But how to find DA? DA is the distance from D to A. But I need coordinates of D. Alternatively, since D lies on both tangents at B and C, and we have equations for those tangents, even though they are complicated, maybe we can solve them.
+
+Let me try solving the two tangent equations:
+
+First tangent at B: 5x - (65√14/28)y = 25.
+
+Second tangent at C: (19/10)x + (347√14/280)y - 50 = 0.
+
+Let me write them as:
+
+Equation 1: 5x - (65√14/28)y = 25.
+
+Equation 2: (19/10)x + (347√14/280)y = 50.
+
+Let me convert these to decimals or find a common denominator to solve. But this seems very messy. Maybe there's a better approach.
+
+Alternatively, since we know BD = 225/22, and we can find coordinates of D by using the fact that D lies on the tangent at B and the tangent at C. But this seems too calculation-heavy.
+
+Wait, earlier I found BD = 225/22. If I can find coordinates of D, then I can compute DA and use the power of point formula.
+
+Alternatively, since we have coordinates of B and the tangent line at B, and we know that D lies on this tangent line. Also, since BD is tangent to the circle at B, then the line BD is perpendicular to the radius OB. So vector OB is from O to B, and vector BD is from B to D. Their dot product should be zero.
+
+Let me try this approach. Let me find coordinates of O, which is (5/2, 65√14/56). Coordinates of B are (5, 0). So vector OB is B - O = (5 - 5/2, 0 - 65√14/56) = (5/2, -65√14/56).
+
+Vector BD is D - B = (Dx - 5, Dy - 0) = (Dx - 5, Dy).
+
+Since BD is perpendicular to OB, their dot product is zero:
+
+(5/2)(Dx - 5) + (-65√14/56)(Dy) = 0.
+
+Similarly, since D lies on the tangent at B, which we have equation 5x - (65√14/28)y = 25. So substituting Dx and Dy into this equation:
+
+5Dx - (65√14/28)Dy = 25.
+
+So now we have two equations:
+
+1) (5/2)(Dx - 5) - (65√14/56)Dy = 0.
+
+2) 5Dx - (65√14/28)Dy = 25.
+
+Let me simplify equation 1:
+
+Multiply through by 56 to eliminate denominators:
+
+5/2 * 56 (Dx - 5) - 65√14 * Dy = 0.
+
+5/2 * 56 = 5 * 28 = 140.
+
+So 140(Dx - 5) - 65√14 Dy = 0.
+
+Which is 140Dx - 700 - 65√14 Dy = 0.
+
+Equation 2: 5Dx - (65√14/28)Dy = 25. Multiply through by 28 to eliminate denominators:
+
+5*28 Dx - 65√14 Dy = 25*28.
+
+Which is 140Dx - 65√14 Dy = 700.
+
+Now, notice that equation 1 is 140Dx - 65√14 Dy = 700, which is exactly the same as equation 2. So this doesn't give new information. This means that the two conditions are dependent, which makes sense because the tangent line at B already ensures that BD is perpendicular to OB. So this approach doesn't help us find D's coordinates.
+
+Hmm, this is getting too complicated. Maybe I should go back to the power of point D and use the earlier relation.
+
+We had DA * DP = DB² = (225/22)^2.
+
+Let me denote AP = x, and since

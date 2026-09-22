@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "evict_seg": {
+    "mode": "seg_evict",
+    "budget_per_role": 8,
+    "sink": 2,
+    "mb_out": 0.00439453125,
+    "pos_out": 24,
+    "parts": [
+      {
+        "role": "planner",
+        "in": 30,
+        "out": 8,
+        "ratio": 0.26666666666666666
+      },
+      {
+        "role": "critic",
+        "in": 30,
+        "out": 8,
+        "ratio": 0.26666666666666666
+      },
+      {
+        "role": "refiner",
+        "in": 30,
+        "out": 8,
+        "ratio": 0.26666666666666666
+      }
+    ]
+  }
+}

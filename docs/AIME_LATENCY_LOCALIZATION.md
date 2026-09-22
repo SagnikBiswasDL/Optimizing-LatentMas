@@ -226,6 +226,101 @@ before trusting any batched number.** If it is not fully identical, batched
 results remain valid on their own terms but stop being drop-in comparable to the
 n=1 baseline, and that has to be said wherever they are quoted.
 
+## 3. The cache earns its keep; SEAL does not (2026-09-22, measured)
+
+Same six items throughout, all `--decode_bs 1`, greedy, budget 8192. `!` marks a
+run that never emitted EOS and burned the whole budget.
+
+| item | gold | real | none | seal40 | seal60 |
+|---:|---:|---|---|---|---|
+| 0 | 204 | ✓ 2600 | ✓ 3129 | ✓ 1807 | ✓ 1599 |
+| 1 | 113 | ✗ 8192! | ✗ 8192! | **✓ 8192!** | **✓ 8192!** |
+| 2 | 371 | ✗ 8192! | ✗ 8192! | ✗ 8192! | — |
+| 4 | 110 | ✓ 7653 | ✗ 8192! | ✓ 5896 | — |
+| 10 | 104 | ✓ 5848 | ✗ 8192! | **✗ 8192!** | — |
+| 18 | 023 | ✓ 7062 | ✓ 8192! | **✗ 8192!** | — |
+
+| arm | n | acc | mean tokens | EOS rate |
+|---|---:|---:|---:|---:|
+| real | 6 | **0.667** | 6591 | **0.67** |
+| none | 6 | **0.333** | 7348 | **0.17** |
+| real_seal40 | 6 | 0.500 | 6745 | 0.33 |
+| real_seal60 | 2 | (1.000) | 4896 | 0.50 |
+
+**The latent cache is doing real work.** Deleting it outright halves accuracy
+(0.667 → 0.333) and collapses termination (EOS 0.67 → 0.17). This is the first
+direct evidence on AIME that the upstream agents contribute something the Judger
+cannot reconstruct alone, and it cuts against the content-insensitivity readings
+from the shuffled-cache experiments: shuffling the cache was survivable, but
+removing it is not. Note *how* it fails — without the cache the Judger mostly
+stops terminating, so the cache's contribution looks like knowing when the problem
+is finished, not just what to say.
+
+**SEAL at the Judger is a net loss on AIME, and the risk we flagged is exactly
+what happened.** Accuracy falls 0.667 → 0.500 and mean tokens go *up* (6591 →
+6745), because EOS rate halves. The per-item detail is more interesting than the
+average:
+
+- Where it keeps a solve it is a large token win: item 0 −31% (2600→1807), item 4
+  −23% (7653→5896). That is the GSM8K result reproducing.
+- It *gains* item 1, which no other arm solves. Suppressing reflection stopped it
+  from talking itself out of the answer.
+- But it **breaks termination on items 10 and 18**, both of which the baseline
+  solved while emitting EOS. They now run the full budget and answer wrong.
+
+So the vector trades reflection for verbosity in both directions: less hedging
+helps a problem that was over-thinking, and hurts two that needed the reflection
+to know they were done. Averaged over n=6 that is negative. coef 60 got through
+only 2 items before the budget cut, and both are ones coef 40 also solved, so it
+says nothing yet about the items that broke — it is not evidence that 60 is better.
+
+**Caveat that limits all of the above: n=6, so one item is 17 accuracy points.**
+The cache result (a 2-item gap, and a mechanism visible in the EOS rate) is worth
+believing directionally. The SEAL result is one lost solve away from neutral and
+needs n=30 before it is quotable.
+
+### Grouped decoding failed parity — do not use it for accuracy (2026-09-22)
+
+Measured, not predicted. Six items, batch of 6, left-padded prompts and
+left-padded caches, against the same six decoded one at a time:
+
+| | unbatched | batch 6 |
+|---|---:|---:|
+| accuracy | **0.667** (4/6) | **0.333** (2/6) |
+| identical text | — | **0/6** |
+| same token count | — | 2/6 |
+| wall clock | 933s | 533s (**1.75x**) |
+
+Items 4 and 10 flipped from correct to wrong (`110`→`134`, `104`→`33`), and item
+10 stopped terminating at all, running 5848 tokens unbatched to the full 8192
+batched. So grouping bought 1.75x and cost **half the solves**. Not a tie-break
+perturbation — systematic degradation.
+
+Two things caused it and only one is fixed. `exp_aime_localize.py` never set
+`tokenizer.padding_side = "left"`, which every other batched script in this repo
+does; with right-padding, each prompt shorter than the batch maximum predicts its
+first token from a pad position. That is now fixed. What remains is position
+encoding: `decode_batch` passes a single `cache_position = arange(pmax, pmax + L)`
+shared across the batch, so once the cache is left-padded to `pmax` and the prompt
+is left-padded to `L`, every sequence shorter than the maximum gets an artificial
+RoPE gap between where its real cache ends and its real prompt begins, of a size
+that differs per item. The 1.75x is also well short of the ~4x the arithmetic
+predicted, so per-step cost grows faster with batch than weight-streaming alone
+would explain.
+
+**Consequence:** every accuracy number must come from `--decode_bs 1` until this
+is fixed. The probe rows are kept under the label `real__bs16` rather than
+deleted, since the failure is a result. (That label records the *configured* cap;
+the realized batch was 6, because the parity run was scoped to six tapes.)
+
+**This also puts a question mark on earlier batched results in this repo.**
+`exp_frozen_seal.py` and `exp_one_role.py` batch through the same `decode_batch`,
+which is where the GSM8K SEAL numbers came from. They are less exposed — a frozen
+cache is identical across the batch, so the cache-padding half of the problem
+vanishes and only prompt padding remains, and they do set `padding_side` — but
+"less exposed" is not "unaffected", and it should be checked with the same
+byte-level `--mode compare` before those numbers go in a paper.
+
 ### Order of operations
 
 1. `bash scripts/run_aime_localize.sh parity` — ~6 min. Certifies grouped

@@ -34,6 +34,20 @@ directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
   The real latency target is Judger tokens: the items we get **wrong** are exactly the ones
   that never emit EOS and burn the full 8192 budget (188s vs 60s for a solved item).
   Full numbers + next steps: `AIME_LATENCY_LOCALIZATION.md`.
+- **The latent cache earns its keep on AIME (2026-09-22, measured, n=6):** deleting the
+  upstream cache halves accuracy (**0.667 → 0.333**) and collapses termination
+  (**EOS 0.67 → 0.17**). Shuffling the cache was survivable; removing it is not. The
+  cache's contribution looks like knowing when the problem is *done*.
+- **SEAL at the Judger is a net loss on AIME (same run):** acc **0.667 → 0.500** and
+  mean tokens go *up* (6591 → 6745) because EOS rate halves. It is a −31%/−23% token
+  win on the items it keeps, and it uniquely solves item 1, but it breaks termination
+  on two items the baseline solved. The third latency lever is closed at n=6; needs
+  n=30 before it is quotable either way.
+- **Grouped (batched) Judger decoding fails parity — do not use it for accuracy:**
+  batch 6 gave 1.75x throughput for **half the solves** (0.667 → 0.333), 0/6 texts
+  identical. Root cause is padding/position handling with a prefix cache. This also
+  puts a question mark on earlier batched numbers from `exp_frozen_seal.py` /
+  `exp_one_role.py`; check them with `--mode compare` before publishing.
 - **Two of the three Judger levers are now dead (2026-09-22, measured):** a hard token cap
   buys 1.20x for **−0.167 accuracy** (and 1.71x for −0.500), and the degenerate-tail
   detector **fires on nothing** — the non-terminating AIME items are doing real
