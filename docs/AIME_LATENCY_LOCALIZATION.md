@@ -63,17 +63,32 @@ precisely where we earn nothing. Mean latency is being set by failures, not by
 successes.
 
 This is the low-hanging fruit, and it lives entirely in the Judger's token
-budget. Two directions, in priority order:
+budget. But the two obvious interventions are **not** equally good, and the
+arithmetic matters:
 
-1. **Cap / early-exit.** If the 4 solved items stay solved under a ~4k cap, that
-   is a ~2x mean-latency cut for free. `--mode budget` was written to answer this
-   offline from saved generations (replays a hard cap, no GPU) — it needs one
-   completed `views` sweep to run against. Note all 4 solves used ≤7653 tokens
-   and 2 of 4 used ≤5848, so a cap strictly between 5848 and 8192 is already
-   guaranteed to lose nothing on this n=6 and would cut both 188s runs.
-2. **Detect non-termination early.** The failures are distinguishable by
-   behaviour (no EOS, looping), not by answer quality. A cheap loop//repetition
-   detector that aborts is pure latency win with zero accuracy cost on these 6.
+**A hard token cap is nearly worthless here.** The boxed answer sits at the very
+end of a healthy CoT, so any cap below an item's length destroys its answer. The
+only *safe* cap on this n=6 is above 7653 (the longest solved item), which
+truncates only items 1 and 2 by 539 tokens each — **1078 of 39547 total tokens,
+i.e. 2.7%**. Push the cap lower and it starts eating solves: a 6000 cap saves 18%
+but kills items 4 and 18, halving accuracy. `--mode budget` measures this curve
+offline from saved generations (tokenizer only, no GPU) and is expected to come
+back *negative*; it is worth running precisely to close the option honestly.
+
+**Aborting degenerate tails is the real lever.** Items 1 and 2 never emit EOS and
+are wrong anyway, so cutting them costs nothing. If their looping is detectable
+by ~token 3000, aborting saves roughly **10400 of 39547 tokens (26% of all
+decode) at zero accuracy cost**. `--mode loops` implements this: an n-gram
+repetition detector over a sliding window, requiring two consecutive windows over
+threshold so a restated equation does not trip it. It reports, per item, the
+onset position, tokens saved, and a `would_lose_solve` flag that fires when the
+abort point precedes a correct answer — that flag is the guard against a detector
+tuned too aggressively.
+
+The detector's machinery is tested; its **threshold is uncalibrated** because it
+has never seen a real degenerate AIME tail. Calibrating it is the first thing the
+next GPU session should produce. Success criterion: fires on items 1 and 2, fires
+on neither of the four solves.
 
 ## 3. Accuracy (tracked in parallel, so we don't buy speed with solves)
 
@@ -134,8 +149,21 @@ stopped and are the likely cause of the credit burn. Delete the duplicates; the
 The sweep is restart-safe (`rows.jsonl` keys on `(idx, method)`), tapes regenerate
 in well under a minute, and `views` is arm-major so partial runs are readable.
 
-1. `collect` (~40s for 6 items) then `views --view_arms real` to confirm parity.
-2. `--mode budget --budget_arms real` — the cap curve. **Highest value per GPU
-   second, and it is the only arm that targets the 99.4%.**
-3. Only then the localization arms (`c3`, `c23`, `isolated`, `evict_seg`). Reframe
-   these as accuracy/memory questions; they are no longer a latency story.
+Run `bash scripts/run_aime_localize.sh quick` — one ~20 minute stage that does all
+of the below and writes a `DONE_quick` sentinel to `PERSIST_DIR` so you know when
+it is safe to stop the pod.
+
+1. `collect` (~40s for 6 items) then `views --view_arms real` (~15 min) to confirm
+   parity with the numbers above and, critically, to save the generations.
+2. `--mode loops` — calibrate the degenerate-tail detector. **Highest value per
+   GPU second: it is the only thing targeting the 99.4%, and the 26% saving is
+   real if the threshold separates items {1,2} from {0,4,10,18}.**
+3. `--mode budget` — the cap curve, to close that option with a number rather
+   than an argument.
+4. Only then the localization arms (`c3`, `c23`, `isolated`, `evict_seg`), at
+   n=30 if they are worth it at all. Reframe them as accuracy/memory questions;
+   they are no longer a latency story.
+
+Operational: both analysis modes are CPU-only and run off saved `texts/`, so once
+step 1 has persisted you can stop the pod and iterate on the detector locally for
+free. That is the whole point of saving generations.

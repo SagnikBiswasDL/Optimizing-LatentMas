@@ -777,8 +777,15 @@ def run_budget(args) -> Dict:
     path = os.path.join(args.out_dir, "budget.json")
     with open(path, "w") as f:
         json.dump(out, f, indent=2)
-    lines = ["# Judger token-budget curve", "",
-             "Hard cap replayed over saved generations; no answer inside the cap = wrong.", ""]
+    lines = [
+        "# Judger token-budget curve", "",
+        "Hard cap replayed over saved generations; no answer inside the cap = wrong, "
+        "so this is the conservative bound on an early-exit policy (a real policy could "
+        "force an answer at the cap and do better).", "",
+        "Caveat: lengths come from re-tokenizing the saved text, which can differ by a "
+        "few tokens from the generation-time count. `est_judger_s` prices each budget at "
+        "the measured tok/s for that arm.", "",
+    ]
     for arm, blk in out.items():
         lines.extend([
             f"## `{arm}` (n={blk['n']}, {blk['tok_per_s']:.1f} tok/s measured)", "",
@@ -792,6 +799,124 @@ def run_budget(args) -> Dict:
                 f"{e.get('speedup_vs_full', 1.0):.2f}x |")
         lines.append("")
     with open(os.path.join(args.out_dir, "BUDGET.md"), "w") as f:
+        f.write("\n".join(lines) + "\n")
+    print("\n".join(lines), flush=True)
+    return out
+
+
+def _loop_onset(ids: Sequence[int], *, n: int = 8, window: int = 256,
+                stride: int = 128, thresh: float = 0.8) -> Optional[int]:
+    """First position where the tail has gone degenerate, or None.
+
+    Slides a window and asks what fraction of its n-grams already appeared
+    earlier in the generation. A run that is looping repeats almost everything;
+    a run still making progress does not. Requires two consecutive windows over
+    threshold so a repeated formula or restated equation does not trip it.
+    """
+    if len(ids) < window * 2:
+        return None
+    grams = [tuple(ids[i:i + n]) for i in range(len(ids) - n + 1)]
+    hits = 0
+    for start in range(window, len(grams) - window, stride):
+        seen = set(grams[:start])
+        win = grams[start:start + window]
+        if not win:
+            break
+        rep = sum(1 for g in win if g in seen) / len(win)
+        if rep >= thresh:
+            hits += 1
+            if hits >= 2:
+                return int(start - stride)
+        else:
+            hits = 0
+    return None
+
+
+def run_loops(args) -> Dict:
+    """Find degenerate tails in saved generations and price aborting there.
+
+    This targets the actual latency lever: runs that never emit EOS burn the
+    whole budget and are wrong anyway, so cutting them costs no accuracy. A
+    hard token cap cannot do this job because the answer sits at the very end
+    of a healthy generation.
+    """
+    from transformers import AutoTokenizer
+
+    rows = load_rows(args.out_dir)
+    tdir = os.path.join(args.out_dir, "texts")
+    if not rows or not os.path.isdir(tdir):
+        raise SystemExit("need rows.jsonl + texts/ — run --mode views first")
+    tok = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
+    arms = [a.strip() for a in (args.budget_arms or "real").split(",") if a.strip()]
+    out: Dict[str, Any] = {}
+    for arm in arms:
+        rs = sorted([r for r in rows if r["method"] == arm], key=lambda r: int(r["idx"]))
+        if not rs:
+            continue
+        tot_tok = sum(float(r["tokens"]) for r in rs)
+        tot_s = sum(float(r.get("judger_s") or 0.0) for r in rs)
+        tps = tot_tok / tot_s if tot_s > 0 else 0.0
+        items, saved_tok, lost_solves = [], 0.0, []
+        for r in rs:
+            p = os.path.join(tdir, f"{int(r['idx']):04d}_{arm}.txt")
+            if not os.path.isfile(p):
+                continue
+            with open(p) as f:
+                ids = tok(f.read(), add_special_tokens=False)["input_ids"]
+            onset = _loop_onset(ids, n=args.loop_ngram, window=args.loop_window,
+                               thresh=args.loop_thresh)
+            n_tok = len(ids)
+            save = max(0, n_tok - onset) if onset is not None else 0
+            # aborting only costs accuracy if the item was correct AND the
+            # answer lives after the abort point
+            costs = bool(r["correct"]) and onset is not None
+            if costs:
+                lost_solves.append(int(r["idx"]))
+            saved_tok += save
+            items.append({
+                "idx": int(r["idx"]), "correct": bool(r["correct"]),
+                "eos": bool(r.get("eos")), "tokens": n_tok,
+                "loop_onset": onset, "saved_tokens": save,
+                "would_lose_solve": costs,
+            })
+        base = sum(i["tokens"] for i in items) or 1
+        out[arm] = {
+            "n": len(items), "tok_per_s": tps,
+            "total_tokens": base,
+            "saved_tokens": int(saved_tok),
+            "saved_frac": saved_tok / base,
+            "saved_seconds": saved_tok / tps if tps > 0 else 0.0,
+            "would_lose_solves": sorted(lost_solves),
+            "items": items,
+        }
+    with open(os.path.join(args.out_dir, "loops.json"), "w") as f:
+        json.dump(out, f, indent=2)
+    lines = [
+        "# Degenerate-tail (loop) detection", "",
+        f"Detector: {args.loop_ngram}-gram repetition over a {args.loop_window}-token "
+        f"window, threshold {args.loop_thresh}, two consecutive windows required.", "",
+        "Aborting at the onset costs accuracy only for rows marked "
+        "`would_lose_solve` — those were correct, so the abort would have cut a "
+        "healthy generation and the detector is too aggressive for them.", "",
+    ]
+    for arm, blk in out.items():
+        lines.extend([
+            f"## `{arm}`", "",
+            f"Abort-at-onset saves **{blk['saved_tokens']} of {blk['total_tokens']} tokens "
+            f"({100.0 * blk['saved_frac']:.1f}%)**, about "
+            f"{blk['saved_seconds']:.0f}s at {blk['tok_per_s']:.1f} tok/s. "
+            f"Solves lost: {blk['would_lose_solves'] or 'none'}.", "",
+            "| item | tokens | EOS | correct | loop onset | tokens saved | would lose solve |",
+            "|---:|---:|---|---|---:|---:|---|",
+        ])
+        for i in blk["items"]:
+            lines.append(
+                f"| {i['idx']} | {i['tokens']} | {'yes' if i['eos'] else 'no'} | "
+                f"{'yes' if i['correct'] else 'no'} | "
+                f"{i['loop_onset'] if i['loop_onset'] is not None else '—'} | "
+                f"{i['saved_tokens']} | {'YES' if i['would_lose_solve'] else 'no'} |")
+        lines.append("")
+    with open(os.path.join(args.out_dir, "LOOPS.md"), "w") as f:
         f.write("\n".join(lines) + "\n")
     print("\n".join(lines), flush=True)
     return out
@@ -832,8 +957,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="report",
                     choices=["smoke", "collect", "views", "isolated", "isolated_frozen",
-                             "budget", "report"])
+                             "budget", "loops", "report"])
     ap.add_argument("--budget_arms", default="real")
+    ap.add_argument("--loop_ngram", type=int, default=8)
+    ap.add_argument("--loop_window", type=int, default=256)
+    ap.add_argument("--loop_thresh", type=float, default=0.8)
     ap.add_argument("--out_dir", default="artifacts/aime_localize")
     ap.add_argument("--tape_dir", default="",
                     help="local-disk dir for the big KV tapes (default out_dir/tapes)")
@@ -877,6 +1005,8 @@ def main():
         run_isolated(args, use_frozen=True)
     elif args.mode == "budget":
         run_budget(args)
+    elif args.mode == "loops":
+        run_loops(args)
     else:
         write_report(args)
 

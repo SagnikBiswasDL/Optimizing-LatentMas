@@ -3,13 +3,17 @@
 # then role-budgeted eviction. Restart-safe. GPU from `collect` onward.
 #
 #   bash scripts/run_aime_localize.sh smoke
-#   bash scripts/run_aime_localize.sh focus     # items 0,1,2,4,10,18
+#   bash scripts/run_aime_localize.sh quick     # ~20 min: Real arm + token-budget curve
+#   bash scripts/run_aime_localize.sh focus     # items 0,1,2,4,10,18, all arms (~3h)
 #   bash scripts/run_aime_localize.sh full      # n=30
 #   bash scripts/run_aime_localize.sh qwen      # Real decode at Qwen thinking sampler
 #   bash scripts/run_aime_localize.sh aime25    # same table on AIME 2025
 #
 # Env: CACHE= path to math1k/cache.pt for isolated_frozen (Jiayi line 4).
 #      SEAL_VECTOR= gsm8k L28 vector for isolated_frozen_seal.
+#      TAPE_DIR= local disk for big KV tapes (network mounts corrupt them).
+#      PERSIST_DIR= durable dir for small artifacts; also where DONE_<stage>
+#        lands. Poll that sentinel to know when it is safe to stop the pod.
 set -u
 REPO=${REPO:-$(cd "$(dirname "$0")/.." && pwd)}
 cd "$REPO" || exit 2
@@ -87,8 +91,41 @@ run_py () {
   fi
 }
 
+# Loud, machine-checkable completion marker. The pod cannot stop itself
+# (runpodctl has no API key here), and an idle H200 burns credits, so the
+# sentinel lands on the durable volume where it can be polled from outside.
+finish () {
+  local stage=$1
+  local dest=${PERSIST_DIR:-$ROOT_DIR}
+  mkdir -p "$dest" 2>/dev/null || true
+  {
+    echo "stage=$stage"
+    echo "finished_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "elapsed_s=$SECONDS"
+  } > "$dest/DONE_${stage}" 2>/dev/null || true
+  {
+    echo ""
+    echo "=================================================================="
+    echo "  RUN COMPLETE: $stage   (elapsed ${SECONDS}s)"
+    echo "  >>> STOP THE POD NOW — nothing further will run. <<<"
+    echo "  sentinel: $dest/DONE_${stage}"
+    echo "=================================================================="
+  } | tee -a "$LOG"
+}
+
 smoke () {
   run_py --mode smoke
+}
+
+# Cheap-first: the only arm that targets the 99.4% (Judger decode). ~20 min on
+# an H200 — collect is seconds, 6 real decodes dominate, budget replay is CPU.
+quick () {
+  local idx=${INDICES:-0,1,2,4,10,18}
+  run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
+  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real
+  run_py --mode report
+  run_py --mode budget --task aime2024 --budget_arms real
+  run_py --mode loops --task aime2024 --budget_arms real
 }
 
 focus () {
@@ -137,18 +174,23 @@ aime25 () {
   ROOT_DIR=$save
 }
 
-stage=${1:-focus}
+stage=${1:-quick}
 case "$stage" in
   smoke) smoke ;;
+  quick) quick ;;
   focus) focus ;;
   full) full ;;
   qwen) qwen ;;
   aime25) aime25 ;;
   report) run_py --mode report ;;
+  budget) run_py --mode budget --task aime2024 --budget_arms "${BUDGET_ARMS:-real}" ;;
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 smoke|focus|full|qwen|aime25|report" >&2; exit 2 ;;
+  *) echo "usage: $0 quick|smoke|focus|full|qwen|aime25|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
+persist
 cat "${ROOT_DIR}/CHECKIN.md" 2>/dev/null || true
+cat "${ROOT_DIR}/BUDGET.md" 2>/dev/null || true
+finish "$stage"
