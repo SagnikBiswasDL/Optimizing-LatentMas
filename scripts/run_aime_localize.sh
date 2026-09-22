@@ -13,18 +13,41 @@
 set -u
 REPO=${REPO:-$(cd "$(dirname "$0")/.." && pwd)}
 cd "$REPO" || exit 2
-if [[ -f /workspace/env_native.sh ]]; then
-  source /root/venv/bin/activate 2>/dev/null || true
-  source /workspace/env_native.sh 2>/dev/null || true
-  PY=${PY:-/root/venv/bin/python}
-elif [[ -x "$REPO/.venv/bin/python" ]]; then
-  PY=${PY:-"$REPO/.venv/bin/python"}
-else
-  PY=${PY:-python}
+# Interpreter: first venv that actually has torch wins. Pod layout has moved
+# between /root/venv and /workspace/venv across migrations, so probe instead
+# of hardcoding.
+if [[ -z ${PY:-} ]]; then
+  for cand in /workspace/venv/bin/python /root/venv/bin/python "$REPO/.venv/bin/python" \
+              "$(command -v python3 2>/dev/null)" "$(command -v python 2>/dev/null)"; do
+    if [[ -x $cand ]] && "$cand" -c 'import torch' >/dev/null 2>&1; then PY=$cand; break; fi
+  done
 fi
+if [[ -z ${PY:-} ]]; then echo "[localize] no python with torch found" >&2; exit 2; fi
+[[ -f /workspace/env_native.sh ]] && source /workspace/env_native.sh 2>/dev/null || true
+cd "$REPO" || exit 2
+echo "[localize] PY=$PY"
 export HF_HOME=${HF_HOME:-${REPO}/.cache/huggingface}
 
 ROOT_DIR=${ROOT_DIR:-${REPO}/artifacts/aime_localize}
+# /workspace on the pod is a network volume (MooseFS). Large torch.save writes
+# corrupt there, so tapes go to container-local disk; but container-local disk is
+# wiped when the pod stops, so the small artifacts get mirrored back (see
+# PERSIST_DIR). Treat /workspace as networked when it is a different device to /.
+WS_IS_NETWORK=0
+if [[ -d /workspace ]]; then
+  if [[ $(df -P /workspace / 2>/dev/null | awk 'NR>1{print $1}' | sort -u | wc -l) -gt 1 ]]; then
+    WS_IS_NETWORK=1
+  fi
+fi
+if [[ -z ${TAPE_DIR:-} ]]; then
+  if [[ $WS_IS_NETWORK -eq 1 ]]; then
+    TAPE_DIR=/root/aime_localize_tapes
+  else
+    TAPE_DIR=${ROOT_DIR}/tapes
+  fi
+fi
+export TAPE_DIR
+mkdir -p "$TAPE_DIR"
 CACHE=${CACHE:-${REPO}/artifacts/math_ladder/math1k/cache.pt}
 SEAL_VECTOR=${SEAL_VECTOR:-${REPO}/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt}
 K=${K:-10}
@@ -32,12 +55,34 @@ SEED=${SEED:-42}
 LOG=${LOG:-${ROOT_DIR}/localize.log}
 mkdir -p "$ROOT_DIR"
 
+# Mirror the small artifacts somewhere that outlives the container. Pod-local
+# disk is wiped when the pod stops, and that is how a finished sweep got lost.
+# Set PERSIST_DIR to a network-volume path; tapes are deliberately not mirrored.
+if [[ -z ${PERSIST_DIR:-} ]] && [[ $WS_IS_NETWORK -eq 1 ]] && \
+   [[ $ROOT_DIR != /workspace/* ]]; then
+  PERSIST_DIR=/workspace/aime_localize_results
+fi
+PERSIST_DIR=${PERSIST_DIR:-}
+export PERSIST_DIR
+echo "[localize] ROOT_DIR=$ROOT_DIR TAPE_DIR=$TAPE_DIR PERSIST_DIR=${PERSIST_DIR:-none}"
+persist () {
+  [[ -n $PERSIST_DIR ]] || return 0
+  mkdir -p "$PERSIST_DIR" 2>/dev/null || return 0
+  # small files only: rows/times/texts/reports. Many small writes are fine on
+  # the network mount; it is large seeking writes that corrupt.
+  rsync -a --exclude 'tapes' --exclude '*.pt' "$ROOT_DIR"/ "$PERSIST_DIR"/ 2>/dev/null \
+    || cp -r "$ROOT_DIR"/* "$PERSIST_DIR"/ 2>/dev/null || true
+}
+
 run_py () {
   echo "[localize] $* $(date)" | tee -a "$LOG"
-  if "$PY" -u scripts/exp_aime_localize.py --out_dir "$ROOT_DIR" --seed "$SEED" --k "$K" "$@"; then
+  if "$PY" -u scripts/exp_aime_localize.py --out_dir "$ROOT_DIR" --tape_dir "$TAPE_DIR" \
+      --persist_dir "$PERSIST_DIR" --seed "$SEED" --k "$K" "$@"; then
     echo "[localize] OK $(date)" | tee -a "$LOG"
+    persist
   else
     echo "[localize] FAIL exit=$? $(date)" | tee -a "$LOG"
+    persist
     return 1
   fi
 }
@@ -58,6 +103,7 @@ focus () {
     echo "[localize] no frozen cache at $CACHE — skip isolated_frozen" | tee -a "$LOG"
   fi
   run_py --mode report
+  run_py --mode budget --task aime2024 --budget_arms real,c3,none
 }
 
 full () {

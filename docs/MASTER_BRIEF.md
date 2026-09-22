@@ -27,6 +27,13 @@ directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
   forwards) can be replaced by **one fixed, question-independent synthetic KV cache**
   (Gaussian matched to averaged real-cache per-channel statistics, full length) that
   reproduces full-LatentMAS accuracy and conciseness with **zero upstream compute**.
+- **Latency reality check (2026-09-21, measured):** on AIME with Qwen3-14B, the 3 silent
+  agents cost **0.95s of a 152.7s item (0.6%)**; the Judger decode is **99.4%**. So the whole
+  cache-surgery family (eviction, dropping roles, alternate wirings, synthetic scaffolds)
+  **cannot be sold as a latency win on AIME** — justify it by accuracy or KV memory instead.
+  The real latency target is Judger tokens: the items we get **wrong** are exactly the ones
+  that never emit EOS and burn the full 8192 budget (188s vs 60s for a solved item).
+  Full numbers + next steps: `AIME_LATENCY_LOCALIZATION.md`.
 - **What didn't work:** shrinking the scaffold to a few slots (learned m=64 → 0.50 vs fixed
   full-length 0.54–0.60), so we save compute but not KV memory yet. Mean-Replay of MATH-1k
   matches Real on GSM8K/MATH but **not AIME**. DeltaBridge (one-token Real−Frozen residual

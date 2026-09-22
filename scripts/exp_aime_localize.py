@@ -20,8 +20,10 @@ writes. If {4,10,18} survive, inter-agent *read* is wasteful.
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import os
+import shutil
 import sys
 import time
 from typing import Any, Dict, List, Optional, Sequence
@@ -64,18 +66,30 @@ from utils import auto_device, set_seed  # noqa: E402
 
 CRITICAL = (4, 10, 18)
 FOCUS = (0, 1, 2, 4, 10, 18)
+UP_ROLES = ("planner", "critic", "refiner")
+# Upstream compute a view actually still has to pay. In the growing tape a later
+# role's write only exists because the earlier roles ran, so `c3` costs the same
+# silent-agent time as `real`; only `isolated`/`none` can bank the saving.
+PAID_ROLES = {
+    "none": (),
+    "c1": ("planner",),
+    "c2": ("planner", "critic"),
+    "c12": ("planner", "critic"),
+}
+# Arm-major order: the arms that decide the recommendation run first, so a
+# partial run is still readable if we stop early.
 VIEW_ARMS = (
-    "none",
     "real",
-    "c1",
-    "c2",
+    "none",
     "c3",
     "c23",
+    "c1",
+    "c2",
     "c12",
+    "evict_seg",
+    "evict_uniform",
     "latents",
     "shuf",
-    "evict_uniform",
-    "evict_seg",
 )
 
 
@@ -118,8 +132,19 @@ def maybe_load_model(args, ns):
     return ModelWrapper(args.model_name, auto_device(args.device), use_vllm=False, args=ns)
 
 
-def tape_path(root: str, idx: int) -> str:
-    return os.path.join(root, "tapes", f"{int(idx):04d}.pt")
+def tape_root(args) -> str:
+    """Tapes are ~130MB each and must not land on a network mount.
+
+    /workspace on the pod is MooseFS, where torch.save's zip writer fails
+    mid-file ("unexpected pos"). Keep the big tensors on local disk and leave
+    only the small JSON artifacts in out_dir.
+    """
+    d = getattr(args, "tape_dir", "") or os.environ.get("TAPE_DIR") or ""
+    return d if d else os.path.join(args.out_dir, "tapes")
+
+
+def tape_path(args, idx: int) -> str:
+    return os.path.join(tape_root(args), f"{int(idx):04d}.pt")
 
 
 def rows_path(root: str) -> str:
@@ -149,6 +174,67 @@ def seen_keys(rows: Sequence[Dict]) -> set:
     return {(int(r["idx"]), str(r["method"])) for r in rows}
 
 
+def agent_times_path(root: str) -> str:
+    return os.path.join(root, "agent_times.jsonl")
+
+
+def append_agent_times(root: str, idx: int, pass_name: str, times, peaks, spans) -> None:
+    """Per-role silent-agent cost, kept tensor-free so `report` stays cheap."""
+    os.makedirs(root, exist_ok=True)
+    with open(agent_times_path(root), "a") as f:
+        for sp in spans:
+            role = sp["role"]
+            f.write(json.dumps({
+                "idx": int(idx),
+                "pass": pass_name,
+                "role": role,
+                "seconds": float(times.get(role) or 0.0),
+                "positions": int(sp["end"]) - int(sp["start"]),
+                "peak_mb": float(peaks.get(role) or 0.0),
+            }) + "\n")
+
+
+def persist_small(args) -> None:
+    """Copy the tensor-free artifacts to a location that outlives the container.
+
+    Pod-local disk is wiped on stop, so a long sweep must check its results in
+    somewhere durable as it goes rather than only at the end. Tapes are excluded
+    on purpose: they are large, regenerable, and large writes are exactly what
+    the network mount mishandles.
+    """
+    dest = getattr(args, "persist_dir", "") or os.environ.get("PERSIST_DIR") or ""
+    if not dest:
+        return
+    try:
+        os.makedirs(dest, exist_ok=True)
+        for name in ("rows.jsonl", "agent_times.jsonl", "report.json",
+                     "CHECKIN.md", "BUDGET.md", "budget.json"):
+            src = os.path.join(args.out_dir, name)
+            if os.path.isfile(src):
+                shutil.copy2(src, os.path.join(dest, name))
+        tsrc = os.path.join(args.out_dir, "texts")
+        if os.path.isdir(tsrc):
+            tdst = os.path.join(dest, "texts")
+            os.makedirs(tdst, exist_ok=True)
+            for fn in os.listdir(tsrc):
+                shutil.copy2(os.path.join(tsrc, fn), os.path.join(tdst, fn))
+    except Exception as exc:  # never let mirroring kill a sweep
+        print(f"[persist] failed: {exc}", flush=True)
+
+
+def load_agent_times(root: str) -> List[Dict]:
+    path = agent_times_path(root)
+    if not os.path.isfile(path):
+        return []
+    out = []
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                out.append(json.loads(line))
+    return out
+
+
 def judger_tensors(wrapper, questions, ns):
     messages = [
         build_agent_message_sequential_latent_mas(
@@ -165,8 +251,21 @@ def load_frozen(path: str, device="cpu"):
 
 
 def save_tape(path: str, payload: Dict) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    torch.save(payload, path)
+    """Serialize to memory, then lay the bytes down in one sequential write.
+
+    torch.save straight to a path seeks while writing, which some network
+    filesystems mishandle; a buffered write plus atomic rename avoids both the
+    seek pattern and half-written tapes on crash.
+    """
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    buf = io.BytesIO()
+    torch.save(payload, buf)
+    tmp = f"{path}.tmp"
+    with open(tmp, "wb") as f:
+        f.write(buf.getbuffer())
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
 
 
 def load_tape(path: str) -> Dict:
@@ -220,7 +319,7 @@ def run_collect(args) -> None:
     wrapper = maybe_load_model(args, ns)
     up_agents = [a for a in default_agents() if a.role != "judger"]
     for i in idxs:
-        path = tape_path(args.out_dir, i)
+        path = tape_path(args, i)
         if os.path.isfile(path) and not args.overwrite:
             print(f"[collect] skip idx={i}", flush=True)
             continue
@@ -243,6 +342,7 @@ def run_collect(args) -> None:
             "mb": float(kv_mb(cpu)),
         }
         save_tape(path, payload)
+        append_agent_times(args.out_dir, i, "growing", times, peaks, spans)
         print(
             f"[collect] idx={i} pos={payload['pos']} mb={payload['mb']:.1f} "
             f"up={times['upstream']:.2f}s spans={spans}",
@@ -252,8 +352,8 @@ def run_collect(args) -> None:
         torch.cuda.empty_cache()
 
 
-def list_tapes(root: str) -> List[Dict]:
-    d = os.path.join(root, "tapes")
+def list_tapes(args) -> List[Dict]:
+    d = tape_root(args)
     if not os.path.isdir(d):
         return []
     out = []
@@ -293,6 +393,12 @@ def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict])
     }
     if extra:
         row["extra"] = extra
+    # Full generation is kept so `--mode budget` can replay truncation offline
+    # instead of re-decoding on the GPU.
+    tdir = os.path.join(args.out_dir, "texts")
+    os.makedirs(tdir, exist_ok=True)
+    with open(os.path.join(tdir, f"{int(it['idx']):04d}_{method}.txt"), "w") as f:
+        f.write(texts[0])
     print(
         f"[decode] idx={row['idx']} {method} acc={int(row['correct'])} "
         f"tok={row['tokens']} pos={row['cache_pos']} {t_j:.1f}s pred={row['pred']!r}",
@@ -304,9 +410,9 @@ def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict])
 def run_views(args) -> None:
     if not torch.cuda.is_available():
         raise SystemExit("CUDA required for --mode views")
-    tapes = list_tapes(args.out_dir)
+    tapes = list_tapes(args)
     if not tapes:
-        raise SystemExit(f"no tapes in {args.out_dir}/tapes — run --mode collect")
+        raise SystemExit(f"no tapes in {tape_root(args)} — run --mode collect")
     ns = make_ns(args)
     wrapper = maybe_load_model(args, ns)
     if args.seal_vector:
@@ -314,10 +420,9 @@ def run_views(args) -> None:
                            layer_index=args.seal_layer)
     already = seen_keys(load_rows(args.out_dir))
     arms = [a.strip() for a in args.view_arms.split(",") if a.strip()]
-    for tape in tapes:
-        it = {"idx": tape["idx"], "question": tape["question"], "gold": tape["gold"]}
-        for name in arms:
-            cache, extra = view_cache(name, tape, tapes, args)
+    for name in arms:
+        for tape in tapes:
+            it = {"idx": tape["idx"], "question": tape["question"], "gold": tape["gold"]}
             method = name
             if float(args.temperature) > 0:
                 method = f"{name}_t{str(args.temperature).replace('.', '')}"
@@ -325,10 +430,22 @@ def run_views(args) -> None:
             if key in already and not args.overwrite:
                 print(f"[views] skip {key}", flush=True)
                 continue
+            cache, extra = view_cache(name, tape, tapes, args)
             row = decode_one(wrapper, ns, args, it, cache, method, extra)
+            times = tape.get("times") or {}
+            paid = PAID_ROLES.get(name, UP_ROLES)
+            row["upstream_s"] = float(sum(float(times.get(r) or 0.0) for r in paid))
+            row["paid_roles"] = list(paid)
             append_row(args.out_dir, row)
             already.add(key)
+            del cache
             torch.cuda.empty_cache()
+        # refresh the check-in and mirror it off ephemeral disk after every arm
+        try:
+            write_report(args)
+        except Exception as exc:  # report must never kill a long sweep
+            print(f"[views] report failed: {exc}", flush=True)
+        persist_small(args)
 
 
 def run_isolated(args, *, use_frozen: bool) -> None:
@@ -351,7 +468,7 @@ def run_isolated(args, *, use_frozen: bool) -> None:
             method = "isolated_frozen_seal"
             args.seal_on = True
     pool = load_pool(args.task)
-    tapes = list_tapes(args.out_dir)
+    tapes = list_tapes(args)
     idxs = [t["idx"] for t in tapes] if tapes else parse_indices(args.indices, args.n)
     already = seen_keys(load_rows(args.out_dir))
     for i in idxs:
@@ -374,8 +491,10 @@ def run_isolated(args, *, use_frozen: bool) -> None:
                             for r, w in writes.items()}},
         )
         row["upstream_s"] = times.get("upstream")
+        row["paid_roles"] = list(UP_ROLES)
         append_row(args.out_dir, row)
-        tag = os.path.join(args.out_dir, "tapes_isolated", f"{int(i):04d}_{method}.pt")
+        append_agent_times(args.out_dir, i, method, times, peaks, spans)
+        tag = os.path.join(tape_root(args), "isolated", f"{int(i):04d}_{method}.pt")
         save_tape(tag, {"idx": i, "method": method, "spans": spans, "past": cpu,
                         "times": times})
         del past, cpu, start
@@ -391,17 +510,116 @@ def _arm_table(rows: List[Dict]) -> Dict[str, Dict]:
         acc = [float(x["correct"]) for x in rs]
         toks = [float(x["tokens"]) for x in rs]
         pos = [float(x.get("cache_pos") or 0) for x in rs]
+        js = [float(x.get("judger_s") or 0.0) for x in rs]
+        ups = [float(x.get("upstream_s") or 0.0) for x in rs]
+        e2e = [a + b for a, b in zip(js, ups)]
         crit = [x for x in rs if x.get("critical")]
+        n_eos = sum(1 for x in rs if x.get("eos"))
         out[m] = {
             "n": len(rs),
             "acc": float(np.mean(acc)) if acc else 0.0,
             "tokens": mean_ci(toks),
             "cache_pos": mean_ci(pos),
+            "judger_s": float(np.mean(js)) if js else 0.0,
+            "upstream_s": float(np.mean(ups)) if ups else 0.0,
+            "e2e_s": float(np.mean(e2e)) if e2e else 0.0,
+            "eos_rate": float(n_eos) / len(rs) if rs else 0.0,
+            "tok_per_s": (float(np.sum(toks)) / float(np.sum(js))) if np.sum(js) > 0 else 0.0,
             "correct_idx": sorted(int(x["idx"]) for x in rs if x["correct"]),
             "critical_kept": sorted(int(x["idx"]) for x in crit if x["correct"]),
             "critical_lost": sorted(int(x["idx"]) for x in crit if not x["correct"]),
+            "paid_roles": (rs[0].get("paid_roles") if rs else None),
         }
     return out
+
+
+def _agent_table(root: str, arms: Dict[str, Dict]) -> tuple:
+    """Per-agent wall clock: the four LatentMAS roles side by side."""
+    recs = load_agent_times(root)
+    if not recs:
+        return {}, ["No per-agent timings yet — run `--mode collect`."]
+    by: Dict[str, Dict[str, List[float]]] = {}
+    for r in recs:
+        if r.get("pass") != "growing":
+            continue
+        d = by.setdefault(r["role"], {"s": [], "pos": [], "mb": []})
+        d["s"].append(float(r["seconds"]))
+        d["pos"].append(float(r["positions"]))
+        d["mb"].append(float(r["peak_mb"]))
+    real = arms.get("real") or {}
+    judger_s = float(real.get("judger_s") or 0.0)
+    stats = {
+        role: {
+            "n": len(d["s"]),
+            "seconds": float(np.mean(d["s"])),
+            "positions": float(np.mean(d["pos"])),
+            "peak_mb": float(np.mean(d["mb"])),
+        }
+        for role, d in by.items()
+    }
+    up_total = sum(v["seconds"] for v in stats.values())
+    total = up_total + judger_s
+    if judger_s > 0:
+        stats["judger"] = {
+            "n": int(real.get("n") or 0),
+            "seconds": judger_s,
+            "positions": float((real.get("tokens") or {}).get("mean") or 0.0),
+            "peak_mb": 0.0,
+        }
+    lines = [
+        "| Agent | n | seconds | % of e2e | KV positions written | peak MB |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
+    for role in list(UP_ROLES) + ["judger"]:
+        v = stats.get(role)
+        if not v:
+            continue
+        pct = 100.0 * v["seconds"] / total if total > 0 else 0.0
+        label = "tokens emitted" if role == "judger" else "KV positions"
+        mb = f"{v['peak_mb']:.0f}" if v["peak_mb"] else "-"
+        lines.append(
+            f"| {role} | {v['n']} | {v['seconds']:.3f} | {pct:.2f}% | "
+            f"{v['positions']:.0f} ({label}) | {mb} |"
+        )
+    lines.append("")
+    lines.append(
+        f"Silent agents together cost {up_total:.3f}s of the {total:.1f}s item. "
+        "Anything that only removes silent-agent work is capped at that number — "
+        "the Judger decode is the budget that matters."
+    )
+    return stats, lines
+
+
+def _latency_notes(arms: Dict[str, Dict]) -> List[str]:
+    """Where the AIME wall clock actually goes, and what each arm could bank."""
+    real = arms.get("real")
+    if not real:
+        return ["No `real` arm yet — cannot attribute latency."]
+    j, u = real["judger_s"], real["upstream_s"]
+    tot = j + u or 1.0
+    notes = [
+        f"Real end-to-end **{tot:.1f}s/item**: Judger decode {j:.1f}s "
+        f"({100.0 * j / tot:.1f}%), silent agents {u:.2f}s ({100.0 * u / tot:.1f}%).",
+        f"Real Judger emits {real['tokens']['mean']:.0f} tokens at {real['tok_per_s']:.1f} tok/s; "
+        f"{100.0 * real['eos_rate']:.0f}% of items stop on EOS "
+        f"(the rest burn the full budget).",
+        "",
+        "| Arm | acc | judger_s | upstream_s | e2e_s | vs Real | tokens | eos |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for m, b in sorted(arms.items(), key=lambda kv: kv[1]["e2e_s"]):
+        d = b["e2e_s"] - tot
+        notes.append(
+            f"| {m} | {b['acc']:.3f} | {b['judger_s']:.1f} | {b['upstream_s']:.2f} | "
+            f"{b['e2e_s']:.1f} | {d:+.1f}s ({100.0 * d / tot:+.1f}%) | "
+            f"{b['tokens']['mean']:.0f} | {100.0 * b['eos_rate']:.0f}% |"
+        )
+    notes.extend([
+        "",
+        "Upstream is charged honestly: in the growing tape `c3` still needs Planner and "
+        "Critic to have run, so only `none`/`c1`/`c2`/`isolated` can bank silent-agent time.",
+    ])
+    return notes
 
 
 def write_report(args) -> Dict:
@@ -438,12 +656,14 @@ def write_report(args) -> Dict:
         elif rec == "keep_concat":
             rec = "isolate_then_evict"
             reason = "isolated keeps critical items — communication read is wasteful; evict inside writes"
+    agent_stats, agent_lines = _agent_table(args.out_dir, arms)
     report = {
         "task": args.task,
         "critical": list(CRITICAL),
         "n_rows": len(rows),
         "arms": arms,
         "pairing": pairing,
+        "per_agent": agent_stats,
         "recommend": rec,
         "reason": reason,
     }
@@ -457,16 +677,31 @@ def write_report(args) -> Dict:
         "",
         reason,
         "",
+        "## Where the latency is (per agent)",
+        "",
+    ]
+    lines.extend(agent_lines)
+    lines.extend([
+        "",
+        "## Latency per arm",
+        "",
+    ])
+    lines.extend(_latency_notes(arms))
+    lines.extend([
+        "",
+        "## Accuracy per arm",
+        "",
         f"Critical items (Real-only vs Frozen in the locked ladder): {list(CRITICAL)}",
         "",
-        "| Arm | n | acc | critical kept | lost vs Real |",
-        "|---|---:|---:|---|---|",
-    ]
-    for m, blk in sorted(arms.items()):
+        "| Arm | n | acc | correct items | critical kept | lost vs Real | recovered vs none |",
+        "|---|---:|---:|---|---|---|---|",
+    ])
+    for m, blk in sorted(arms.items(), key=lambda kv: -kv[1]["acc"]):
         p = pairing.get(m) or {}
         lines.append(
-            f"| {m} | {blk['n']} | {blk['acc']:.3f} | "
-            f"{blk.get('critical_kept')} | {p.get('lost_vs_real')} |"
+            f"| {m} | {blk['n']} | {blk['acc']:.3f} | {blk.get('correct_idx')} | "
+            f"{blk.get('critical_kept')} | {p.get('lost_vs_real')} | "
+            f"{p.get('recovered_vs_none')} |"
         )
     lines.extend(["", "Jiayi map: `real` = judger(c1+c2+c3). `c1`/`c2`/`c3` = private writes. "
                   "`isolated` = a1(c1')→… with empty/frozen c', judger still gets concat writes. "
@@ -475,6 +710,91 @@ def write_report(args) -> Dict:
         f.write("\n".join(lines) + "\n")
     print(json.dumps({"recommend": rec, "reason": reason, "arms": list(arms)}, indent=2), flush=True)
     return report
+
+
+BUDGETS = (512, 1024, 1536, 2048, 3072, 4096, 6144, 8192)
+
+
+def run_budget(args) -> Dict:
+    """Replay a hard token cap over saved generations. Tokenizer only, no GPU.
+
+    Answers the latency question directly: if the Judger were cut off at N
+    tokens, what accuracy would we keep and what would we pay? A truncated
+    generation with no extractable answer counts as wrong, so this is the
+    conservative version of an early-exit policy.
+    """
+    from transformers import AutoTokenizer
+
+    rows = load_rows(args.out_dir)
+    tdir = os.path.join(args.out_dir, "texts")
+    if not rows or not os.path.isdir(tdir):
+        raise SystemExit("need rows.jsonl + texts/ — run --mode views first")
+    tok = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
+    arms = [a.strip() for a in (args.budget_arms or "real").split(",") if a.strip()]
+    pool = load_pool(args.task)
+    out: Dict[str, Any] = {}
+    for arm in arms:
+        rs = [r for r in rows if r["method"] == arm]
+        if not rs:
+            continue
+        # measured decode speed for this arm, used to price each budget
+        tot_tok = sum(float(r["tokens"]) for r in rs)
+        tot_s = sum(float(r.get("judger_s") or 0.0) for r in rs)
+        tps = tot_tok / tot_s if tot_s > 0 else 0.0
+        per_budget = []
+        for b in BUDGETS:
+            n_ok = 0
+            spent = []
+            for r in rs:
+                p = os.path.join(tdir, f"{int(r['idx']):04d}_{arm}.txt")
+                if not os.path.isfile(p):
+                    continue
+                with open(p) as f:
+                    text = f.read()
+                ids = tok(text, add_special_tokens=False)["input_ids"]
+                used = min(len(ids), b)
+                spent.append(used)
+                cut = tok.decode(ids[:b], skip_special_tokens=True) if len(ids) > b else text
+                gold = pool[int(r["idx"])].get("gold") or ""
+                if graded(cut, gold, args.task):
+                    n_ok += 1
+            if not spent:
+                continue
+            mean_tok = float(np.mean(spent))
+            per_budget.append({
+                "budget": int(b),
+                "acc": n_ok / len(spent),
+                "mean_tokens": mean_tok,
+                "est_judger_s": mean_tok / tps if tps > 0 else 0.0,
+            })
+        base = per_budget[-1] if per_budget else None
+        if base:
+            for e in per_budget:
+                e["speedup_vs_full"] = (
+                    base["est_judger_s"] / e["est_judger_s"] if e["est_judger_s"] > 0 else 0.0)
+                e["acc_delta"] = e["acc"] - base["acc"]
+        out[arm] = {"tok_per_s": tps, "n": len(rs), "curve": per_budget}
+    path = os.path.join(args.out_dir, "budget.json")
+    with open(path, "w") as f:
+        json.dump(out, f, indent=2)
+    lines = ["# Judger token-budget curve", "",
+             "Hard cap replayed over saved generations; no answer inside the cap = wrong.", ""]
+    for arm, blk in out.items():
+        lines.extend([
+            f"## `{arm}` (n={blk['n']}, {blk['tok_per_s']:.1f} tok/s measured)", "",
+            "| budget | acc | Δacc | mean tokens | est judger_s | speedup |",
+            "|---:|---:|---:|---:|---:|---:|",
+        ])
+        for e in blk["curve"]:
+            lines.append(
+                f"| {e['budget']} | {e['acc']:.3f} | {e.get('acc_delta', 0.0):+.3f} | "
+                f"{e['mean_tokens']:.0f} | {e['est_judger_s']:.1f} | "
+                f"{e.get('speedup_vs_full', 1.0):.2f}x |")
+        lines.append("")
+    with open(os.path.join(args.out_dir, "BUDGET.md"), "w") as f:
+        f.write("\n".join(lines) + "\n")
+    print("\n".join(lines), flush=True)
+    return out
 
 
 def run_smoke(args) -> None:
@@ -511,8 +831,14 @@ def run_smoke(args) -> None:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="report",
-                    choices=["smoke", "collect", "views", "isolated", "isolated_frozen", "report"])
+                    choices=["smoke", "collect", "views", "isolated", "isolated_frozen",
+                             "budget", "report"])
+    ap.add_argument("--budget_arms", default="real")
     ap.add_argument("--out_dir", default="artifacts/aime_localize")
+    ap.add_argument("--tape_dir", default="",
+                    help="local-disk dir for the big KV tapes (default out_dir/tapes)")
+    ap.add_argument("--persist_dir", default="",
+                    help="durable dir (network volume) mirrored after each arm")
     ap.add_argument("--model_name", default="Qwen/Qwen3-14B")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--task", default="aime2024")
@@ -549,6 +875,8 @@ def main():
         run_isolated(args, use_frozen=False)
     elif args.mode == "isolated_frozen":
         run_isolated(args, use_frozen=True)
+    elif args.mode == "budget":
+        run_budget(args)
     else:
         write_report(args)
 
