@@ -10,18 +10,83 @@ methodological correction.
 
 ---
 
-## 0. Disambiguate "performance" before you plan anything
+## 0. The goal is a LATENCY result. Here is the whole latency model.
 
-The repo's own history shows these are two unrelated problems here:
+**The end deliverable is a latency win, not an accuracy win.** Accuracy matters only
+as a constraint: a latency win that loses correctness is not a win (that is exactly
+how token-capping died). Read this section as the specification.
 
-- **Latency.** Settled and measured twice, deterministically: on AIME with
-  Qwen3-14B, the Judger's decode is **99.4%** of a 156s item; all three silent
-  agents together are **1.0s**. Any proposal that optimizes the silent agents,
-  the cache wiring, eviction, or a synthetic scaffold is competing for 0.6% of the
-  wall clock. Those interventions may be defensible on KV memory or accuracy, but
-  they **cannot be sold as an AIME latency win**. Trust this number; it replicated
-  exactly across two independent runs.
-- **Accuracy.** Wide open, and see §2 for why it may not mean what you think.
+Three measurements, in increasing order of usefulness:
+
+**(i) The Judger is the only thing that costs anything.** On AIME with Qwen3-14B the
+Judger's decode is **99.4%** of a 156s item; all three silent agents together are
+**1.0s**. Replicated exactly across two runs under greedy decoding.
+
+**(ii) Decode throughput is a hard constant, invariant to the cache.** Across all 20
+unbatched rows in `artifacts/aime_localize/rows.jsonl`:
+
+```
+tok/s = 42.51 +/- 0.31   (min 41.82, max 42.85, spread 1.025x)
+```
+
+and that holds while `cache_pos` ranges **0 to 962** and cache size ranges **0 to
+150 MB**. The zero-cache `none` arm decodes at 42.76 tok/s; the 150 MB `real` arm at
+41.91. Attending over the upstream latent cache is free at these scales, because a
+few hundred cache positions are noise next to thousands of generated tokens.
+
+**(iii) Therefore latency is exactly token count:**
+
+```
+latency_seconds = tokens_generated / 42.5
+```
+
+This single equation should drive the whole plan, and it has three consequences:
+
+- **Cache surgery cannot produce a latency win.** Eviction, compression, role
+  dropping, `c1`/`c2`/`c3`, medoids, cheaper scaffolds — all of it targets either the
+  1.0s of agent time or a cache whose size provably does not affect tok/s. These are
+  defensible as **KV-memory** results. They are not latency results. If a plan
+  proposes them for latency, it has not read this section.
+- **There are exactly two real levers: emit fewer tokens, or raise the 42.5 tok/s
+  floor.** The second is serving-stack work (fix batching per §1a, vLLM, speculative
+  decoding, quantization) and is orthogonal to everything else in the repo. The first
+  is the research contribution.
+- **You can report tokens instead of seconds.** Because tok/s is constant to 2.5%,
+  token count is a faithful and hardware-independent latency proxy. This makes the
+  experiments cheaper and the result far more robust than wall-clock timing.
+
+### The latency result already half-exists
+
+Restricting to same-item pairs where **both arms terminated and both were correct**
+(the only honest latency comparison available):
+
+| item | `real` | SEAL coef 40 | SEAL coef 60 |
+|---|---|---|---|
+| 0 | 61.1s / 2600 tok | 42.9s / 1807 tok (**1.42x**) | 37.4s / 1599 tok (**1.63x**) |
+| 4 | 180.1s / 7653 tok | 137.6s / 5896 tok (**1.31x**) | not run |
+
+**1.31x to 1.63x latency reduction at preserved correctness.** That is the paper, in
+embryo, at n=3 observations over 2 items. Extending and de-censoring this is the
+highest-value research task in the repo. Note also that coef 60 beat coef 40 on the
+one item both ran, and 60 is the largest coefficient ever tried — the coefficient
+sweep is unfinished and is the cheapest possible win.
+
+### The blocker: 60% of the data is right-censored
+
+**12 of 20 unbatched runs hit the 8192-token budget exactly**, so their latency is a
+censored observation (">= 192s"), not a measurement. Consequences:
+
+- **No mean latency or mean token count is computable from the current data.** Any
+  such average is really an average of the cap.
+- The reported "SEAL made mean tokens go *up*" is a **censoring artifact**: SEAL
+  pushed two items from terminating into the cap, and a capped run books 8192.
+- **Fixing this is mostly free: raise the budget** until runs terminate, then measure.
+  A budget-extension probe is already written (§2) and never run.
+
+For terminating runs, time-to-first-correct-boxed-answer equals time-to-EOS (the
+answer lands at ~100% of the generation), so there is no hidden post-answer waste to
+reclaim and the token count is already the right metric. Post-answer rambling only
+occurs in capped runs. That check has been done; do not redo it.
 
 ## 1. The three landmines
 
@@ -59,7 +124,7 @@ circular and has been retracted in the docs.** Any claim of the form "the cache
 helps" needs the other 24 items. The same bias applies to anything else you
 measure on this set.
 
-## 2. The most important open question
+## 2. The most important open question (and it is a latency question)
 
 `--mode answers` scans every saved generation for `\boxed{}` and asks whether the
 gold answer appears *anywhere*, however the run was graded. Across all 26
@@ -144,17 +209,24 @@ problems is real; it is the accuracy side that breaks.
   role-aware eviction). `--mode budget`, `loops`, `answers`, `compare` are all
   CPU-only and run off saved generations, so iterate there for free.
 
-## 6. Unexplored, roughly in order of expected value
+## 6. Unexplored, ordered for a latency deliverable
 
-1. **Fix batched decoding** (§1a). Unlocks everything else; verify with `--mode compare`.
-2. **n=30 unbiased `real` / `none`** — the only way to get a real accuracy number
-   and to de-confound §1c.
-3. **Per-role localization** (`c1`/`c2`/`c3`/`c23`) at any n. Never run. Tells you
-   *which* silent agent's writes the Judger actually uses — and the harness,
-   segment-aware KV slicing, and eviction for it are already written and unit-tested.
-4. **AIME 2025 holdout** — completely untouched; `aime25_sweep` exists.
-5. **K (latent steps) beyond the frozen K2/K5 comparison** that motivated this
-   whole line of work.
+1. **Raise the budget to de-censor the data** (§0). Without this there is no
+   denominator and no mean. Cheapest high-value action in the repo.
+2. **Finish the SEAL coefficient sweep.** Only 40 and 60 have been tried; 60 was
+   better than 40 and is the largest ever run. `parse_arm` means a whole sweep runs
+   in **one model load** (`real_seal20`, `real_seal80`, ...). This directly extends
+   the 1.31–1.63x result and is where the headline number will come from.
+3. **Fix batched decoding** (§1a). A separate, multiplicative ~1.75x on the tok/s
+   side, and it is what makes n=30 affordable. Verify with `--mode compare`.
+4. **n=30 unbiased tokens-to-solution for `real` vs `real_seal*`** — the actual
+   experiment behind the paper, and it de-confounds §1c for free.
+5. **Serving-stack throughput** (vLLM, speculative decoding). Raises the 42.5 tok/s
+   floor and is orthogonal to the steering work, so it composes with it. Untouched.
+6. **Per-role localization** (`c1`/`c2`/`c3`/`c23`), never run: harness, segment-aware
+   KV slicing, and eviction are written and unit-tested. Frame as **KV memory**, not
+   latency (§0). Same for AIME-2025 holdout and K-sweeps — worth doing, but they are
+   not the latency result.
 
 ## 7. One meta-warning
 

@@ -40,6 +40,13 @@ directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
   mid-computation at the budget. So accuracy here may be measuring convergence *speed*,
   not reasoning ability, and SEAL's damage was making items **not finish** rather than
   answer wrong. Next run (`insight`) extends the budget to settle it.
+- **Latency reduces exactly to token count (2026-09-23, measured, 20 rows):** decode
+  throughput is **42.51 ± 0.31 tok/s**, invariant while the cache ranges 0→962 positions
+  and 0→150 MB. So `latency = tokens / 42.5`, cache surgery cannot be a latency win
+  (only a KV-memory win), and **token count is a hardware-independent latency proxy.**
+  Best honest result so far: SEAL gives **1.31–1.63x lower latency at preserved
+  correctness** (items 0 and 4). Caveat: 12 of 20 runs are censored at the 8192 cap, so
+  no *mean* is computable yet.
 - **If you are a fresh agent, read `READ_ME_FIRST_AGENT_BRIEFING.md` before this file.**
   It lists the invalidated claims, the silent batching bug, and which of these bullets
   are superseded. This brief is layered chronologically, so later entries correct
