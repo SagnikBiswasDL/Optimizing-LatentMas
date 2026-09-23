@@ -221,6 +221,13 @@ def main():
         configs = [c for c in configs if not c[3]]
 
     extras = {}
+
+    def save() -> None:
+        os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+        with open(args.out, "w") as fh:
+            json.dump({"device": dev, "model": args.model, "configs": rows,
+                       "gates": extras}, fh, indent=2)
+
     for label, attn, static, comp in configs:
         print(f"\n## {label}", flush=True)
         try:
@@ -261,6 +268,10 @@ def main():
             rows.append({"config": label, "error": f"{type(exc).__name__}: {exc}"})
         finally:
             free_model(model)
+            # torch.compile can abort the interpreter below Python (inductor has
+            # taken the process down here with no traceback), so results are
+            # flushed per config rather than only at the end.
+            save()
 
     ok = [r for r in rows if "tok_per_s" in r]
     base = next((r for r in ok if r["config"].startswith("current")), None)
@@ -281,10 +292,7 @@ def main():
                   f"**{best['tok_per_s'] / base['tok_per_s']:.2f}x** the current path. "
                   f"That is a latency win on every item at no accuracy cost, and it "
                   f"composes with any token reduction from steering.")
-    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
-    with open(args.out, "w") as f:
-        json.dump({"device": dev, "model": args.model, "configs": rows,
-                   "gates": extras}, f, indent=2)
+    save()
     print(f"\nwrote {args.out}")
 
 

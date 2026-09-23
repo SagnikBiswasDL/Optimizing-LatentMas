@@ -113,10 +113,16 @@ restore () {
   echo "[localize] restored $n prior rows from $PERSIST_DIR" | tee -a "$LOG"
 }
 
+# Kernel-path flags applied to every invocation in a stage. The provenance guard
+# refuses to compare rows decoded on different paths, so the path has to be a
+# property of the whole stage rather than of individual calls.
+DECODE_FLAGS=${DECODE_FLAGS:-}
+
 run_py () {
-  echo "[localize] $* $(date)" | tee -a "$LOG"
+  echo "[localize] $* ${DECODE_FLAGS} $(date)" | tee -a "$LOG"
+  # shellcheck disable=SC2086  # DECODE_FLAGS is deliberately word-split
   if "$PY" -u scripts/exp_aime_localize.py --out_dir "$ROOT_DIR" --tape_dir "$TAPE_DIR" \
-      --persist_dir "$PERSIST_DIR" --seed "$SEED" --k "$K" "$@"; then
+      --persist_dir "$PERSIST_DIR" --seed "$SEED" --k "$K" "$@" ${DECODE_FLAGS}; then
     echo "[localize] OK $(date)" | tee -a "$LOG"
     persist
   else
@@ -391,12 +397,19 @@ throughput () {
 # different accuracy is not.
 fastparity () {
   local idx=${INDICES:-0,1,2,4,10,18}
-  local attn=${FAST_ATTN:-flash_attention_2}
-  echo "[localize] fast-path accuracy check: attn=$attn static+compile" | tee -a "$LOG"
+  # flash_attention_2 needs the flash_attn package, which is absent on some pods;
+  # it also buys little at batch 1, where decode is bound by weight bandwidth
+  # rather than attention. StaticCache is the lever that measured 1.70x, so that
+  # is the default and compile is opt-in (it aborts inside generate(), see
+  # docs/READ_ME_FIRST_AGENT_BRIEFING.md).
+  local attn=${FAST_ATTN:-sdpa}
+  local flags="--attn_impl $attn --static_cache"
+  [[ ${FAST_COMPILE:-0} == 1 ]] && flags="$flags --compile_decode"
+  echo "[localize] fast-path accuracy check: $flags" | tee -a "$LOG"
   run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
+  # shellcheck disable=SC2086
   run_py --mode views --task aime2024 --view_arms real --view_indices "$idx" \
-    --judger_budget 8192 --method_tag fast --decode_bs 1 \
-    --attn_impl "$attn" --static_cache --compile_decode
+    --judger_budget 8192 --method_tag fast --decode_bs 1 $flags
   # Byte parity will fail across kernels; what matters is that accuracy holds, so
   # record the comparison rather than gating on it.
   run_py --mode compare --compare_arms "real,real__fast" --allow_diverge
