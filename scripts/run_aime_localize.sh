@@ -3,6 +3,8 @@
 # then role-budgeted eviction. Restart-safe. GPU from `collect` onward.
 #
 #   bash scripts/run_aime_localize.sh smoke
+#   bash scripts/run_aime_localize.sh efficiency # ~2 GPU-h: the coefficient decision run
+#   bash scripts/run_aime_localize.sh confirm24  # ~2.5 GPU-h: held-out 24 items, gated
 #   bash scripts/run_aime_localize.sh insight   # ~45 min: budget-limit + cache-content probes
 #   bash scripts/run_aime_localize.sh blitz     # fixed GPU window, value-ordered
 #   bash scripts/run_aime_localize.sh parity    # ~6 min: certify grouped decode. RUN FIRST.
@@ -193,6 +195,34 @@ seal () {
 # sweep is trusted. Re-decodes the six items we already have exact numbers for,
 # as one batch, under the label real__bs<N>, then diffs the text byte-for-byte.
 # Cheap (~6 min) and it gates everything below.
+# ---------------------------------------------------------------- time budget
+# A GPU-hour budget is only real if something enforces it. Each `views` call gets
+# a fresh in-process clock, so the deadline has to live out here and be handed
+# down per call; run_views stops cleanly between items rather than mid-decode.
+DEADLINE_S=${DEADLINE_S:-0}
+start_deadline () {
+  DEADLINE_S=$(( SECONDS + $1 ))
+  echo "[localize] deadline set: ${1}s from now" | tee -a "$LOG"
+}
+remaining () {
+  local r=$(( DEADLINE_S - SECONDS ))
+  (( r < 0 )) && r=0
+  echo "$r"
+}
+# Refuse to start a sub-stage that cannot plausibly finish, instead of starting it
+# and leaving a half-populated arm that later looks like a real measurement.
+have_time () {
+  local need=$1 label=$2 left
+  left=$(remaining)
+  if (( DEADLINE_S == 0 )); then return 0; fi
+  if (( left < need )); then
+    echo "[localize] SKIP $label: needs ~${need}s, ${left}s left in budget" | tee -a "$LOG"
+    return 1
+  fi
+  echo "[localize] $label: ~${need}s needed, ${left}s left" | tee -a "$LOG"
+  return 0
+}
+
 parity_sentinel () { echo "${PERSIST_DIR:-$ROOT_DIR}/PARITY_OK_bs${DECODE_BS}"; }
 
 # Any stage that decodes with DECODE_BS>1 must call this first. Grouped decoding
@@ -338,6 +368,162 @@ insight () {
     --budget_arms real,none,shuf,real_seal40,real__b24k,real_seal40__b16k
 }
 
+# ===========================================================================
+# The coefficient decision run. Question: can steering make the Judger finish
+# sooner without dropping a correct answer?
+#
+# Design notes that cost money if ignored:
+#
+#  * Every arm decodes at the SAME cap (PROMOTE_CAP). Comparing a baseline given
+#    24k tokens against a candidate given 8k would manufacture a token saving.
+#  * Only *censored* rows are re-run. A greedy run that emitted EOS below the old
+#    cap emits the same EOS at any larger cap, so those rows are cap-independent
+#    and reusable — which is what makes this fit in two GPU-hours.
+#  * --decode_bs 1 throughout. Grouped decoding is not bit-faithful in bf16 (see
+#    docs/READ_ME_FIRST_AGENT_BRIEFING.md §1a); a throughput win here would be
+#    paid for in exactly the quantity being measured.
+#  * Screening runs on the two items coef 40 broke. A coefficient that cannot hold
+#    those cannot pass the rule, so it is rejected for ~2 items of GPU instead of 6.
+# ===========================================================================
+efficiency () {
+  local cap=${PROMOTE_CAP:-16384}
+  local tag=${PROMOTE_TAG:-b16k}
+  local idx=${INDICES:-0,1,2,4,10,18}
+  local screen=${SCREEN_INDICES:-10,18}
+  local coefs=${COEFS:-20,60,80}
+  local budget=${EFFICIENCY_S:-7200}
+  local layer=${SEAL_LAYER:-28}
+  local max_survivors=${MAX_SURVIVORS:-2}
+  need_seal_vector "real_seal40" || return 1
+  start_deadline "$budget"
+  # Per-item worst case in seconds: the cap, at the throughput this box measured.
+  local per_item=$(( cap * 100 / 4250 ))
+
+  echo "[localize] efficiency: cap=$cap tag=$tag coefs=$coefs screen=$screen" \
+    "budget=${budget}s per_item<=${per_item}s" | tee -a "$LOG"
+
+  run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget "$cap"
+
+  # --- Stage 1: de-censor the baseline. Items 1 and 2 never finished at 8192, so
+  # the baseline's own token total is currently a lower bound, and the whole
+  # comparison is against an unknown number.
+  if have_time $(( per_item * 2 )) "stage1 de-censor baseline"; then
+    run_py --mode views --task aime2024 --view_arms real --view_indices 1,2 \
+      --judger_budget "$cap" --method_tag "$tag" --decode_bs 1 \
+      --time_budget_s "$(remaining)"
+    # Did the longer run retrace the shorter one? If not, extended and original
+    # token counts are not comparable and nothing downstream is valid.
+    run_py --mode prefix --compare_arms "real,real__${tag}" --allow_diverge
+  fi
+
+  # --- Stage 2: screen coefficients on the items coef 40 broke.
+  local survivors=""
+  for c in ${coefs//,/ }; do
+    have_time $(( per_item * 2 )) "stage2 screen coef $c" || break
+    run_py --mode views --task aime2024 --view_arms "real_seal${c}" \
+      --view_indices "$screen" --judger_budget "$cap" --method_tag "$tag" \
+      --decode_bs 1 --seal_vector "$SEAL_VECTOR" --seal_layer "$layer" \
+      --time_budget_s "$(remaining)"
+    # Survives only if it solves BOTH screen items under the stopping policy.
+    if "$PY" - "$ROOT_DIR/rows.jsonl" "real_seal${c}__${tag}" "$screen" <<'EOF'
+import json, sys
+path, arm, idxs = sys.argv[1], sys.argv[2], [int(x) for x in sys.argv[3].split(',')]
+rows = [json.loads(l) for l in open(path)]
+by = {(r['method'], int(r['idx'])): r for r in rows}
+ok = all((arm, i) in by and by[(arm, i)].get('eos') and by[(arm, i)].get('correct')
+         for i in idxs)
+print(f"[screen] {arm} on {idxs}: " + ("SURVIVES" if ok else "eliminated"))
+sys.exit(0 if ok else 1)
+EOF
+    then
+      survivors="${survivors}${survivors:+,}$c"
+    fi
+  done
+  echo "[localize] survivors: ${survivors:-none}" | tee -a "$LOG"
+
+  # --- Stage 3: complete the cohort for survivors, cheapest-first, capped in
+  # number so a 3-way tie cannot silently blow the budget.
+  local rest
+  rest=$("$PY" - "$idx" "$screen" <<'EOF'
+import sys
+all_i = [x for x in sys.argv[1].split(',') if x]
+scr = set(sys.argv[2].split(','))
+print(','.join(i for i in all_i if i not in scr))
+EOF
+)
+  local n=0 cands=""
+  for c in ${survivors//,/ }; do
+    (( n >= max_survivors )) && { echo "[localize] survivor cap reached, skipping coef $c" | tee -a "$LOG"; break; }
+    have_time $(( per_item * 4 )) "stage3 cohort for coef $c" || break
+    run_py --mode views --task aime2024 --view_arms "real_seal${c}" \
+      --view_indices "$rest" --judger_budget "$cap" --method_tag "$tag" \
+      --decode_bs 1 --seal_vector "$SEAL_VECTOR" --seal_layer "$layer" \
+      --time_budget_s "$(remaining)"
+    cands="${cands}${cands:+,}real_seal${c}"
+    n=$(( n + 1 ))
+  done
+
+  # --- Stage 4: the decision.
+  run_py --mode report
+  run_py --mode latency --exclude_arms real__bs16
+  if [[ -n $cands ]]; then
+    run_py --mode promote --baseline_arm real --candidate_arms "$cands" \
+      --promote_cap "$cap" --promote_tag "$tag" --promote_indices "$idx" \
+      --min_saving "${MIN_SAVING:-0.10}"
+  else
+    echo "[localize] no candidate completed the cohort; nothing to score" | tee -a "$LOG"
+  fi
+  echo "[localize] efficiency used ${SECONDS}s of ${budget}s" | tee -a "$LOG"
+}
+
+# Held-out confirmation on the other 24 AIME-2024 items. Gated on a promotion,
+# because at ~2.5 GPU-h for baseline plus one arm it is the most expensive thing
+# here and is worthless without a candidate worth confirming.
+confirm24 () {
+  local cap=${PROMOTE_CAP:-16384}
+  local tag=${PROMOTE_TAG:-b16k}
+  local coef=${CONFIRM_COEF:-}
+  local budget=${CONFIRM_S:-9000}
+  if [[ -z $coef ]]; then
+    coef=$("$PY" -c "
+import json,sys
+try: d=json.load(open('$ROOT_DIR/promote.json'))
+except Exception: sys.exit(0)
+w=d.get('promoted') or []
+print(w[0].replace('real_seal','') if w else '')
+" 2>/dev/null)
+  fi
+  if [[ -z $coef ]]; then
+    echo "[localize] confirm24: nothing was promoted. Set CONFIRM_COEF=<n> to override." >&2
+    return 1
+  fi
+  need_seal_vector "real_seal${coef}" || return 1
+  start_deadline "$budget"
+  echo "[localize] confirm24: coef=$coef cap=$cap on the 24 non-development items" | tee -a "$LOG"
+  # The held-out set is everything in 0-29 that is NOT in the development cohort,
+  # so the confirmation cannot be contaminated by the items used to choose the coef.
+  local held
+  held=$("$PY" - "${INDICES:-0,1,2,4,10,18}" <<'EOF'
+import sys
+dev = {int(x) for x in sys.argv[1].split(',') if x}
+print(','.join(str(i) for i in range(30) if i not in dev))
+EOF
+)
+  echo "[localize] held-out items: $held" | tee -a "$LOG"
+  run_py --mode collect --task aime2024 --n 30 --indices "$held" --judger_budget "$cap"
+  run_py --mode views --task aime2024 --view_arms real --view_indices "$held" \
+    --judger_budget "$cap" --method_tag "$tag" --decode_bs 1 --time_budget_s "$(remaining)"
+  run_py --mode views --task aime2024 --view_arms "real_seal${coef}" \
+    --view_indices "$held" --judger_budget "$cap" --method_tag "$tag" --decode_bs 1 \
+    --seal_vector "$SEAL_VECTOR" --seal_layer "${SEAL_LAYER:-28}" \
+    --time_budget_s "$(remaining)"
+  run_py --mode latency --exclude_arms real__bs16
+  run_py --mode promote --baseline_arm real --candidate_arms "real_seal${coef}" \
+    --promote_cap "$cap" --promote_tag "$tag" --promote_indices "$held" \
+    --min_saving "${MIN_SAVING:-0.10}"
+  run_py --mode report
+}
+
 # One command for a fixed GPU window. Arms run in value order and the sweep
 # stops cleanly between batches when the budget expires, so whatever finished is
 # complete and persisted rather than half-written. BLITZ_MIN sets the window.
@@ -446,6 +632,8 @@ case "$stage" in
   quick) quick ;;
   seal) seal ;;
   insight) insight ;;
+  efficiency) efficiency ;;
+  confirm24) confirm24 ;;
   blitz) blitz ;;
   parity) parity ;;
   sweep) sweep ;;
@@ -461,7 +649,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 efficiency|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist

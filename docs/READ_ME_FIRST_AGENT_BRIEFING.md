@@ -185,6 +185,65 @@ circular and has been retracted in the docs.** Any claim of the form "the cache
 helps" needs the other 24 items. The same bias applies to anything else you
 measure on this set.
 
+## 1.5 The live experiment: `efficiency` (two GPU-hours, built, unrun)
+
+**Question.** Can steering make the Judger finish sooner without losing a correct
+answer?
+
+**Promotion rule.** A coefficient is promoted only if it keeps **every** baseline
+solve *and* spends **≥10% fewer tokens** in total across the six development items.
+Both halves are load-bearing: token cuts are trivially purchasable by failing to
+finish, which is exactly how coefficient 40 regressed.
+
+```bash
+bash scripts/run_aime_localize.sh efficiency   # ~2 GPU-h, hard deadline
+bash scripts/run_aime_localize.sh confirm24    # only if something was promoted
+```
+
+Four stages, all at `--decode_bs 1`, all at one shared cap (`PROMOTE_CAP=16384`):
+
+1. **De-censor the baseline.** Items 1 and 2 never finished at 8192, so the
+   baseline's own token total is currently a lower bound and the comparison is
+   against an unknown number. Then `--mode prefix` checks the longer run actually
+   retraces the shorter one; if it does not, extended and original token counts are
+   not comparable and nothing downstream holds.
+2. **Screen coefficients 20, 60, 80 on items 10 and 18** — the two the baseline
+   solves and coefficient 40 broke. A coefficient that cannot hold those cannot pass
+   the rule, so it dies for two items of GPU instead of six.
+3. **Complete the six-item cohort** for up to `MAX_SURVIVORS=2` survivors.
+4. **Decide** with `--mode promote`.
+
+**Three design points that are easy to get wrong:**
+
+- **Every arm must share one cap.** Giving the baseline 24k and a candidate 8k would
+  manufacture a token saving out of nothing.
+- **Only censored rows are re-run.** A greedy run that emitted EOS below the old cap
+  emits the same EOS at any larger cap, so those rows are cap-independent and free to
+  reuse. That economy is what makes this fit in two hours; `--mode promote` enforces
+  it, reusing a row only when `eos=True` and refusing to score otherwise.
+- **The rule double-counts correctness.** Losing one solve books `cap − baseline
+  tokens` extra — 10,536 tokens for item 10, about 19% of the baseline total — so the
+  token bar becomes unreachable the moment a solve is lost. `--mode promote`
+  therefore also reports the **counterfactual saving** with lost items credited at
+  baseline cost. A candidate at −8% headline and +10% counterfactual is a
+  *termination* failure, not a verbosity failure, and the fix is whatever restores
+  EOS (a stopping criterion, a coefficient that decays late in the decode, steering
+  only early tokens) rather than a smaller coefficient.
+
+**What will not fit.** Stage 4 on the other 24 items needs baseline *and* candidate,
+about 2.5 GPU-hours on its own, so `confirm24` is a separate run gated on a
+promotion. Also note the 10% threshold is not cap-invariant: items nobody solves add
+identical dead weight to both sides, so raising the cap makes the same real
+improvement look smaller. The cap-invariant column (saving over the baseline's solved
+items) is reported alongside for that reason.
+
+**Expected outcome, recorded before running.** On the evidence, the most likely
+result is no promotion, with one or more coefficients showing a large positive
+counterfactual saving — i.e. steering does cut tokens on problems it does not break,
+and termination is the binding constraint. A clean promotion would be a genuine
+surprise. Also remember that a single flipped solve is inside this set's noise floor
+(§1a′), so treat a one-item loss as a question, not an answer.
+
 ## 2. The most important open question (and it is a latency question)
 
 `--mode answers` scans every saved generation for `\boxed{}` and asks whether the

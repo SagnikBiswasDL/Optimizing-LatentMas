@@ -231,6 +231,147 @@ def test_latency_excludes_named_arms(tmp_path):
     assert "bad__bs16" not in res["arms"]
 
 
+# --------------------------------------------------------- promotion decision
+
+CAP = 16384
+
+
+def _promo_cfg(out, cands, **kw):
+    d = dict(out_dir=out, candidate_arms=cands, promote_cap=CAP, promote_tag="b16k",
+             promote_indices="0,1,4,10", min_saving=0.10, baseline_arm="real")
+    d.update(kw)
+    return cfg(**d)
+
+
+def _promo_rows(cand_rows):
+    """Baseline: solves 0,4,10 cheaply; item 1 censored even at the raised cap."""
+    return [
+        _row("real", 0, 2600, True, True),
+        _row("real", 4, 7653, True, True),
+        _row("real", 10, 5848, True, True),
+        _row("real__b16k", 1, CAP, False, False),
+    ] + cand_rows
+
+
+def test_promote_refuses_to_score_against_a_censored_baseline(tmp_path):
+    """Item 1 censored at the OLD cap is not a usable baseline number."""
+    rows = [_row("real", 0, 2600, True, True), _row("real", 1, 8192, False, False)]
+    out = _fixture(tmp_path, rows, {})
+    with pytest.raises(SystemExit) as ei:
+        E.run_promote(_promo_cfg(out, "real_seal20", promote_indices="0,1"))
+    assert "UNUSABLE" in str(ei.value)
+
+
+def test_promote_reuses_a_terminated_row_from_a_smaller_cap(tmp_path):
+    """A run that emitted EOS below the old cap is cap-independent, so reusable."""
+    out = _fixture(tmp_path, _promo_rows([
+        _row("real_seal20__b16k", 0, 1700, True, True),
+        _row("real_seal20__b16k", 4, 5200, True, True),
+        _row("real_seal20__b16k", 10, 4100, True, True),
+        _row("real_seal20__b16k", 1, CAP, False, False),
+    ]), {})
+    res = E.run_promote(_promo_cfg(out, "real_seal20"))
+    # baseline items 0,4,10 have no b16k row, so they are reused from the 8192 run;
+    # item 1 does, because it was censored there and had to be re-decoded.
+    assert res["baseline_total"] == 2600 + 7653 + 5848 + CAP
+    cand = res["candidates"]["real_seal20"]["per_item"]
+    assert cand["0"]["source"] == "measured"
+
+
+def test_promote_accepts_a_candidate_that_keeps_solves_and_cuts_enough(tmp_path):
+    out = _fixture(tmp_path, _promo_rows([
+        _row("real_seal20__b16k", 0, 1700, True, True),
+        _row("real_seal20__b16k", 4, 5200, True, True),
+        _row("real_seal20__b16k", 10, 4100, True, True),
+        _row("real_seal20__b16k", 1, CAP, False, False),
+    ]), {})
+    res = E.run_promote(_promo_cfg(out, "real_seal20"))
+    d = res["candidates"]["real_seal20"]
+    assert d["keeps_all_solves"] and d["meets_token_rule"] and d["promote"]
+    assert res["promoted"] == ["real_seal20"]
+
+
+def test_promote_rejects_a_candidate_that_loses_a_solve_however_cheap(tmp_path):
+    """Token cuts must not be purchasable by failing to finish."""
+    out = _fixture(tmp_path, _promo_rows([
+        _row("real_seal80__b16k", 0, 100, True, True),
+        _row("real_seal80__b16k", 4, 100, True, True),
+        _row("real_seal80__b16k", 10, 100, True, False),   # cheap but WRONG
+        _row("real_seal80__b16k", 1, 100, True, False),
+    ]), {})
+    res = E.run_promote(_promo_cfg(out, "real_seal80"))
+    d = res["candidates"]["real_seal80"]
+    assert d["solves_lost"] == [10]
+    assert d["meets_token_rule"] is True, "it is cheap, but that must not be enough"
+    assert d["promote"] is False
+
+
+def test_promote_rejects_an_insufficient_saving(tmp_path):
+    out = _fixture(tmp_path, _promo_rows([
+        _row("real_seal80__b16k", 0, 2500, True, True),
+        _row("real_seal80__b16k", 4, 7300, True, True),
+        _row("real_seal80__b16k", 10, 5600, True, True),
+        _row("real_seal80__b16k", 1, CAP, False, False),
+    ]), {})
+    d = E.run_promote(_promo_cfg(out, "real_seal80"))["candidates"]["real_seal80"]
+    assert d["keeps_all_solves"] and not d["meets_token_rule"] and not d["promote"]
+
+
+def test_promote_separates_termination_failure_from_verbosity(tmp_path):
+    """The case that matters: efficient on everything it finishes, loses one item.
+
+    Losing item 10 books (CAP - 5848) extra tokens, which alone exceeds the 10%
+    bar, so the headline saving goes negative. The counterfactual must still show
+    the efficiency gain, or the report would read as 'steering is verbose' when the
+    truth is 'steering broke EOS'.
+    """
+    out = _fixture(tmp_path, _promo_rows([
+        _row("real_seal60__b16k", 0, 1500, True, True),
+        _row("real_seal60__b16k", 4, 4800, True, True),
+        _row("real_seal60__b16k", 10, CAP, False, False),
+        _row("real_seal60__b16k", 1, CAP, False, False),
+    ]), {})
+    d = E.run_promote(_promo_cfg(out, "real_seal60"))["candidates"]["real_seal60"]
+    assert d["saving"] < 0, "headline saving is dominated by the lost solve"
+    assert d["cost_per_lost_solve"]["10"] == CAP - 5848
+    assert d["counterfactual_saving"] > d["saving"]
+    assert d["efficiency_gain_absent_termination_failure"] is True
+
+
+def test_promote_marks_saving_as_an_upper_bound_when_censored(tmp_path):
+    out = _fixture(tmp_path, _promo_rows([
+        _row("real_seal20__b16k", 0, 1700, True, True),
+        _row("real_seal20__b16k", 4, 5200, True, True),
+        _row("real_seal20__b16k", 10, 4100, True, True),
+        _row("real_seal20__b16k", 1, CAP, False, False),
+    ]), {})
+    d = E.run_promote(_promo_cfg(out, "real_seal20"))["candidates"]["real_seal20"]
+    assert d["total_is_upper_bound_on_saving"] is True
+
+
+# ------------------------------------------------------------ extension check
+
+def test_prefix_check_passes_when_the_longer_run_retraces(tmp_path):
+    out = _fixture(
+        tmp_path,
+        [_row("real", 0, 10, False, False), _row("real__b16k", 0, 20, True, True)],
+        {(0, "real"): "abcdef", (0, "real__b16k"): "abcdefGHIJ"},
+    )
+    res = E.run_prefix(cfg(out_dir=out, compare_arms="real,real__b16k"))
+    assert res["verdict"] == "reproduced"
+
+
+def test_prefix_check_fails_and_exits_when_the_extension_diverges(tmp_path):
+    out = _fixture(
+        tmp_path,
+        [_row("real", 0, 10, False, False), _row("real__b16k", 0, 20, True, True)],
+        {(0, "real"): "abcdef", (0, "real__b16k"): "abcXYZ"},
+    )
+    with pytest.raises(SystemExit) as ei:
+        E.run_prefix(cfg(out_dir=out, compare_arms="real,real__b16k"))
+    assert "EXTENSION CHECK FAILED" in str(ei.value)
+
+
 def test_latency_mean_tokens_uses_completed_runs_only(tmp_path):
     out = _latency_fixture(tmp_path)
     res = E.run_latency(cfg(out_dir=out))

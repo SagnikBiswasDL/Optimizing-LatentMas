@@ -1300,6 +1300,254 @@ def run_latency(args) -> Dict:
     return out
 
 
+def _resolve_row(rows_by: Dict, arm: str, idx: int, tag: str) -> tuple:
+    """Pick the row to score for (arm, item), and say why.
+
+    Prefers a row decoded at the experiment's cap (`arm__tag`). Falls back to an
+    older row at a smaller cap only if it *terminated*: greedy decoding that
+    emitted EOS before the cap would emit the same EOS at any larger cap, so such
+    a row is cap-independent and free to reuse. A censored row at a smaller cap is
+    not reusable, because its true length is unknown and larger than what it says.
+    """
+    tagged = rows_by.get((f"{arm}__{tag}", idx)) if tag else None
+    if tagged is not None:
+        return tagged, "measured"
+    old = rows_by.get((arm, idx))
+    if old is not None and old.get("eos"):
+        return old, "reused (terminated below the old cap)"
+    if old is not None:
+        return None, "UNUSABLE (censored at the old cap; needs re-running)"
+    return None, "missing"
+
+
+def run_promote(args) -> Dict:
+    """Score candidate steering coefficients against the promotion rule.
+
+    The rule: keep every baseline solve, and spend at least `--min_saving` fewer
+    tokens in total across the whole item set. Both halves are needed — token cuts
+    are easy to buy by simply failing to finish, which is exactly how coefficient
+    40 regressed.
+    """
+    rows = [r for r in load_rows(args.out_dir) if r.get("judger_s") is not None]
+    by = {(r["method"], int(r["idx"])): r for r in rows}
+    cap = int(args.promote_cap)
+    tag = args.promote_tag
+    base = args.baseline_arm
+    want = sorted(set(parse_indices(args.promote_indices, 0)))
+    cands = [a.strip() for a in args.candidate_arms.split(",") if a.strip()]
+    need = float(args.min_saving)
+
+    def gather(arm):
+        got, why, unusable = {}, {}, []
+        for i in want:
+            r, reason = _resolve_row(by, arm, i, tag)
+            why[i] = reason
+            if r is None:
+                unusable.append(i)
+            else:
+                got[i] = r
+        return got, why, unusable
+
+    b_rows, b_why, b_bad = gather(base)
+    if b_bad:
+        raise SystemExit(
+            f"baseline `{base}` cannot be scored on items {b_bad}:\n  "
+            + "\n  ".join(f"{i}: {b_why[i]}" for i in b_bad)
+            + f"\nRun those at cap {cap} with --method_tag {tag} first."
+        )
+    # A "solve" is correctness under the stopping policy: a run that never emitted
+    # EOS did not solve the problem, whatever its text happens to contain.
+    b_solves = sorted(i for i, r in b_rows.items() if r.get("eos") and r.get("correct"))
+    b_total = sum(min(int(r["tokens"]), cap) for r in b_rows.values())
+    b_cens = sorted(i for i, r in b_rows.items() if not r.get("eos"))
+    b_solved_total = sum(int(b_rows[i]["tokens"]) for i in b_solves)
+
+    results = {}
+    for arm in cands:
+        got, why, bad = gather(arm)
+        if bad:
+            results[arm] = {"scorable": False, "blocked_on": bad,
+                            "why": {str(i): why[i] for i in bad}}
+            continue
+        kept = sorted(i for i in b_solves if got[i].get("eos") and got[i].get("correct"))
+        lost = [i for i in b_solves if i not in kept]
+        total = sum(min(int(r["tokens"]), cap) for r in got.values())
+        cens = sorted(i for i, r in got.items() if not r.get("eos"))
+        saving = 1.0 - total / b_total if b_total else 0.0
+        # Losing a solve costs (cap - baseline_tokens) tokens, which on this set is
+        # ~19% of the baseline total for a single item. So the token rule is
+        # unreachable once a solve is lost, and the correctness constraint is
+        # effectively applied twice. To tell "steering is verbose" apart from
+        # "steering breaks termination" — the binding constraint every time so far —
+        # also score the counterfactual where each lost item is credited at the
+        # baseline's own cost. That isolates the efficiency question from the
+        # termination question instead of letting one mask the other.
+        lost_cost = {i: min(int(got[i]["tokens"]), cap) - int(b_rows[i]["tokens"])
+                     for i in lost}
+        cf_total = total - sum(lost_cost.values())
+        cf_saving = 1.0 - cf_total / b_total if b_total else 0.0
+        # Cap-invariant diagnostic: the same comparison restricted to the items the
+        # baseline actually finishes. The all-items total depends on `cap` through
+        # the runs neither arm completes, so it moves when the cap moves.
+        solved_total = sum(int(got[i]["tokens"]) for i in b_solves)
+        results[arm] = {
+            "scorable": True,
+            "keeps_all_solves": not lost,
+            "solves_kept": kept, "solves_lost": lost,
+            "total_tokens": total, "baseline_total": b_total,
+            "saving": saving, "needed": need,
+            "meets_token_rule": saving >= need,
+            "promote": (not lost) and saving >= need,
+            "censored_items": cens,
+            "total_is_upper_bound_on_saving": bool(cens),
+            "saving_on_baseline_solves": (
+                1.0 - solved_total / b_solved_total if b_solved_total else None),
+            "tokens_burned_on_lost_solves": sum(lost_cost.values()),
+            "cost_per_lost_solve": {str(i): v for i, v in lost_cost.items()},
+            "counterfactual_saving": cf_saving,
+            "efficiency_gain_absent_termination_failure": cf_saving >= need,
+            "per_item": {str(i): {"tokens": int(got[i]["tokens"]),
+                                  "eos": bool(got[i].get("eos")),
+                                  "correct": bool(got[i].get("correct")),
+                                  "source": why[i]} for i in want},
+        }
+
+    winners = [a for a, d in results.items() if d.get("promote")]
+    out = {"baseline": base, "cap": cap, "tag": tag, "items": want,
+           "min_saving": need, "baseline_total": b_total,
+           "baseline_solves": b_solves, "baseline_censored": b_cens,
+           "candidates": results, "promoted": winners}
+    with open(os.path.join(args.out_dir, "promote.json"), "w") as f:
+        json.dump(out, f, indent=2)
+
+    L = ["# Promotion decision", "",
+         f"Rule: keep **every** baseline solve **and** cut total tokens by "
+         f"**≥{need:.0%}** across items {want}.", "",
+         f"Baseline `{base}`: solves {b_solves}, total **{b_total}** tokens at cap {cap}"
+         + (f", still censored on {b_cens}" if b_cens else ", nothing censored") + ".", ""]
+    if b_cens:
+        L += [f"Items {b_cens} are capped for every arm, so they add "
+              f"{sum(cap for _ in b_cens)} identical tokens to both sides. That dilutes "
+              f"the achievable percentage and makes the {need:.0%} rule *harder* the "
+              f"higher the cap goes. The cap-invariant column is reported alongside.", ""]
+    L += ["| candidate | solves kept | solves lost | total tok | saving (all items) | "
+          "saving (baseline's solves) | verdict |",
+          "|---|---|---|---:|---:|---:|---|"]
+    for arm, d in results.items():
+        if not d.get("scorable"):
+            L.append(f"| `{arm}` | — | — | — | — | — | NOT SCORABLE: items "
+                     f"{d['blocked_on']} {'; '.join(d['why'].values())} |")
+            continue
+        sv = f"{d['saving']:+.1%}"
+        if d["total_is_upper_bound_on_saving"]:
+            sv = "≤" + sv
+        s2 = ("—" if d["saving_on_baseline_solves"] is None
+              else f"{d['saving_on_baseline_solves']:+.1%}")
+        verdict = ("**PROMOTE**" if d["promote"]
+                   else "reject: lost " + ",".join(map(str, d["solves_lost"]))
+                   if d["solves_lost"] else f"reject: saving {d['saving']:+.1%} < {need:.0%}")
+        L.append(f"| `{arm}` | {','.join(map(str, d['solves_kept'])) or 'none'} | "
+                 f"{','.join(map(str, d['solves_lost'])) or 'none'} | {d['total_tokens']} | "
+                 f"{sv} | {s2} | {verdict} |")
+    L += ["", "A `≤` on the saving means the candidate was still censored somewhere, so "
+              "its true token count is higher and its true saving is lower.", ""]
+
+    near = [a for a, d in results.items()
+            if d.get("scorable") and not d["promote"] and d["solves_lost"]
+            and d["efficiency_gain_absent_termination_failure"]]
+    if near:
+        L += [f"## Termination failure, not an efficiency failure: "
+              f"{', '.join('`' + a + '`' for a in near)}", "",
+              "| candidate | lost | tokens burned on lost solves | saving if those had "
+              "terminated |", "|---|---|---:|---:|"]
+        for a in near:
+            d = results[a]
+            L.append(f"| `{a}` | {','.join(map(str, d['solves_lost']))} | "
+                     f"{d['tokens_burned_on_lost_solves']} | "
+                     f"{d['counterfactual_saving']:+.1%} |")
+        L += ["", "These clear the token bar on every item they finish, and fail the "
+                  "rule only because a lost solve books the full cap. **That is a "
+                  "termination result, not a verbosity result**, and it is the same "
+                  "failure mode coefficient 40 had — so the lever to reach for is "
+                  "whatever restores EOS (a stopping criterion, a coefficient schedule "
+                  "that decays late in the decode, or steering only the early tokens), "
+                  "not a smaller coefficient.", "",
+              "Before acting on a single lost item, note that one flipped solve is "
+              "inside the measured noise floor on this set: a semantically-neutral "
+              "change to arithmetic order moved accuracy 0.667 → 0.333. Re-check the "
+              "lost item with several samples at temperature before believing it.", ""]
+    if winners:
+        L += [f"## Promoted: {', '.join('`' + w + '`' for w in winners)}", "",
+              "Confirm on the held-out remainder before believing it: "
+              "`bash scripts/run_aime_localize.sh confirm24`. The 6-item set is "
+              "curated (items 4,10,18 were picked because Real beat Frozen), so this "
+              "result does not generalize on its own.", ""]
+    else:
+        L += ["## Nothing promoted", "",
+              "No candidate both kept every baseline solve and cleared the token bar. "
+              "Check the near-miss note above before concluding steering cannot work: "
+              "the binding constraint so far has been termination, not token count.", ""]
+    with open(os.path.join(args.out_dir, "PROMOTE.md"), "w") as f:
+        f.write("\n".join(L) + "\n")
+    print("\n".join(L), flush=True)
+    return out
+
+
+def run_prefix(args) -> Dict:
+    """Check that a re-run at a larger cap reproduces the shorter run's prefix.
+
+    De-censoring assumes an extended run retraces the original. Nothing stored in
+    the artifacts guarantees that — there are no saved token IDs, so the extension
+    is a fresh decode — and if it does not hold, extended token counts are not
+    comparable to the originals and the whole de-censoring step is void.
+    """
+    arms = [a.strip() for a in args.compare_arms.split(",") if a.strip()]
+    if len(arms) != 2:
+        raise SystemExit("--mode prefix needs --compare_arms short,long")
+    short, long = arms
+    tdir = os.path.join(args.out_dir, "texts")
+
+    def text(arm, idx):
+        p = os.path.join(tdir, f"{idx:04d}_{arm}.txt")
+        return open(p).read() if os.path.isfile(p) else None
+
+    rows = load_rows(args.out_dir)
+    idxs = sorted({int(r["idx"]) for r in rows if r["method"] in (short, long)})
+    items, ok = [], 0
+    for i in idxs:
+        a, b = text(short, i), text(long, i)
+        if a is None or b is None:
+            continue
+        is_pref = b.startswith(a)
+        div = None if is_pref else next(
+            (j for j in range(min(len(a), len(b))) if a[j] != b[j]), min(len(a), len(b)))
+        ok += int(is_pref)
+        items.append({"idx": i, "is_prefix": is_pref, "short_chars": len(a),
+                      "long_chars": len(b), "diverge_char": div})
+    out = {"short": short, "long": long, "n": len(items), "n_prefix": ok, "items": items,
+           "verdict": "reproduced" if items and ok == len(items) else "NOT reproduced"}
+    with open(os.path.join(args.out_dir, "prefix.json"), "w") as f:
+        json.dump(out, f, indent=2)
+    L = [f"# Extension check: does `{long}` retrace `{short}`?", "",
+         f"prefix preserved **{ok}/{len(items)}** · verdict **{out['verdict']}**", "",
+         "| idx | prefix preserved | short chars | long chars | diverge @char |",
+         "|---:|---|---:|---:|---:|"]
+    for it in items:
+        L.append(f"| {it['idx']} | {'yes' if it['is_prefix'] else 'NO'} | "
+                 f"{it['short_chars']} | {it['long_chars']} | "
+                 f"{'—' if it['diverge_char'] is None else it['diverge_char']} |")
+    if out["verdict"] != "reproduced":
+        L += ["", "**The extension does not retrace the original.** Extended token "
+                  "counts are then not comparable to pre-extension ones, and every "
+                  "arm in the comparison must be re-decoded at the same cap."]
+    with open(os.path.join(args.out_dir, "PREFIX.md"), "w") as f:
+        f.write("\n".join(L) + "\n")
+    print("\n".join(L), flush=True)
+    if items and ok != len(items) and not args.allow_diverge:
+        raise SystemExit(f"EXTENSION CHECK FAILED: {ok}/{len(items)} retraced.")
+    return out
+
+
 def _unbatched_tps(rows: List[Dict], arm: Optional[str] = None) -> float:
     """Per-item decode speed, from rows that had the GPU to themselves.
 
@@ -1554,7 +1802,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="report",
                     choices=["smoke", "collect", "views", "isolated", "isolated_frozen",
-                             "budget", "loops", "compare", "answers", "latency", "report"])
+                             "budget", "loops", "compare", "answers", "latency",
+                             "promote", "prefix", "report"])
+    ap.add_argument("--candidate_arms", default="",
+                    help="arms to score in --mode promote, e.g. real_seal20,real_seal60")
+    ap.add_argument("--promote_cap", type=int, default=16384,
+                    help="token cap every arm in --mode promote was decoded at")
+    ap.add_argument("--promote_tag", default="b16k",
+                    help="--method_tag the promotion runs used")
+    ap.add_argument("--promote_indices", default="0,1,2,4,10,18",
+                    help="item set the promotion rule is evaluated over")
+    ap.add_argument("--min_saving", type=float, default=0.10,
+                    help="fractional token reduction required to promote")
     ap.add_argument("--allow_diverge", action="store_true",
                     help="record a failed --mode compare instead of exiting non-zero")
     ap.add_argument("--baseline_arm", default="real",
@@ -1633,6 +1892,10 @@ def main():
         run_answers(args)
     elif args.mode == "latency":
         run_latency(args)
+    elif args.mode == "promote":
+        run_promote(args)
+    elif args.mode == "prefix":
+        run_prefix(args)
     else:
         write_report(args)
 
