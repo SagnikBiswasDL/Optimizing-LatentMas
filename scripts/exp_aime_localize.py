@@ -20,6 +20,7 @@ writes. If {4,10,18} survive, inter-agent *read* is wasteful.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import json
 import os
@@ -164,11 +165,65 @@ def tape_root(args) -> str:
     only the small JSON artifacts in out_dir.
     """
     d = getattr(args, "tape_dir", "") or os.environ.get("TAPE_DIR") or ""
-    return d if d else os.path.join(args.out_dir, "tapes")
+    base = d if d else os.path.join(args.out_dir, "tapes")
+    if getattr(args, "tape_dir_exact", False):
+        return base
+    return os.path.join(base, config_slug(args))
+
+
+def config_slug(args) -> str:
+    """Directory-safe signature of everything that changes a tape's contents.
+
+    A tape is keyed by item index alone, so without this a shared TAPE_DIR lets
+    AIME-2025 item 0 load AIME-2024's cache. That failure is silent: the shapes
+    match and the decode succeeds against the wrong problem's cache.
+    """
+    model = re.sub(r"[^A-Za-z0-9._-]+", "-", str(getattr(args, "model_name", "") or "")).strip("-")
+    return f"{args.task}__{model}__k{int(args.k)}"
 
 
 def tape_path(args, idx: int) -> str:
     return os.path.join(tape_root(args), f"{int(idx):04d}.pt")
+
+
+def tape_identity(args, idx: int, question: str) -> Dict:
+    return {
+        "idx": int(idx),
+        "task": str(args.task),
+        "k": int(args.k),
+        "model": str(getattr(args, "model_name", "") or ""),
+        "question_sha": hashlib.sha256((question or "").encode()).hexdigest()[:16],
+    }
+
+
+def check_tape_identity(tape: Dict, args, expect_question: Optional[str] = None) -> List[str]:
+    """Return a list of mismatches between a loaded tape and the current config."""
+    bad = []
+    want = {"task": str(args.task), "k": int(args.k)}
+    for key, wanted in want.items():
+        got = tape.get(key)
+        # Older tapes predate the identity block; treat absent as unverifiable,
+        # not as matching, so they are reported rather than silently trusted.
+        if got is None:
+            bad.append(f"{key}: missing from tape (pre-identity tape)")
+        elif type(wanted)(got) != wanted:
+            bad.append(f"{key}: tape={got!r} expected={wanted!r}")
+    ident = tape.get("identity") or {}
+    tape_model = ident.get("model")
+    want_model = str(getattr(args, "model_name", "") or "")
+    if tape_model is not None and want_model and tape_model != want_model:
+        bad.append(f"model: tape={tape_model!r} expected={want_model!r}")
+    if expect_question is not None:
+        want_sha = hashlib.sha256(expect_question.encode()).hexdigest()[:16]
+        got_sha = ident.get("question_sha")
+        if got_sha is None:
+            tq = tape.get("question")
+            got_sha = hashlib.sha256((tq or "").encode()).hexdigest()[:16] if tq else None
+        if got_sha is None:
+            bad.append("question: tape carries no question to verify")
+        elif got_sha != want_sha:
+            bad.append(f"question: tape={got_sha} expected={want_sha}")
+    return bad
 
 
 def rows_path(root: str) -> str:
@@ -351,10 +406,23 @@ def run_collect(args) -> None:
     up_agents = [a for a in default_agents() if a.role != "judger"]
     for i in idxs:
         path = tape_path(args, i)
-        if os.path.isfile(path) and not args.overwrite:
-            print(f"[collect] skip idx={i}", flush=True)
-            continue
         it = pool[i]
+        if os.path.isfile(path) and not args.overwrite:
+            # Reuse is the whole point of tapes, but reuse of the *wrong* tape is
+            # worse than recomputing, so verify before trusting the file.
+            try:
+                bad = check_tape_identity(load_tape(path), args, it["question"])
+            except Exception as exc:
+                bad = [f"unreadable: {exc}"]
+            if bad:
+                raise SystemExit(
+                    f"[collect] tape {path} does not match this configuration:\n  "
+                    + "\n  ".join(bad)
+                    + "\nRefusing to reuse it. Use --overwrite to rebuild, or point "
+                      "--tape_dir somewhere else."
+                )
+            print(f"[collect] skip idx={i} (identity verified)", flush=True)
+            continue
         past, times, peaks, spans, _writes = build_upstream_segments(
             wrapper, [it["question"]], args.k, ns, up_agents,
         )
@@ -363,6 +431,7 @@ def run_collect(args) -> None:
             "idx": i,
             "task": args.task,
             "k": int(args.k),
+            "identity": tape_identity(args, i, it["question"]),
             "question": it["question"],
             "gold": it.get("gold") or it.get("solution") or "",
             "spans": spans,
@@ -383,13 +452,18 @@ def run_collect(args) -> None:
         torch.cuda.empty_cache()
 
 
-def list_tapes(args) -> List[Dict]:
+def list_tapes(args, want_indices: Optional[Sequence[int]] = None) -> List[Dict]:
     d = tape_root(args)
     if not os.path.isdir(d):
         return []
-    out = []
+    want = set(int(i) for i in want_indices) if want_indices else None
+    out, rejected = [], []
     for name in sorted(os.listdir(d)):
         if not name.endswith(".pt"):
+            continue
+        # Each tape is ~130MB, so filter by filename before paying to load it.
+        stem = name[:-3]
+        if want is not None and stem.isdigit() and int(stem) not in want:
             continue
         path = os.path.join(d, name)
         # Truncated/zero-byte tapes are a real artifact of the network-mount
@@ -398,9 +472,22 @@ def list_tapes(args) -> List[Dict]:
             print(f"[tapes] skip empty {path}", flush=True)
             continue
         try:
-            out.append(load_tape(path))
+            tape = load_tape(path)
         except Exception as exc:
             print(f"[tapes] skip unreadable {path}: {exc}", flush=True)
+            continue
+        bad = check_tape_identity(tape, args)
+        if bad:
+            rejected.append((path, bad))
+            continue
+        out.append(tape)
+    if rejected:
+        detail = "\n".join(f"  {p}: {'; '.join(b)}" for p, b in rejected)
+        raise SystemExit(
+            f"[tapes] {len(rejected)} tape(s) in {d} do not match this "
+            f"configuration:\n{detail}\nThese were built for a different "
+            f"task/model/k. Point --tape_dir elsewhere or rebuild with --overwrite."
+        )
     return out
 
 
@@ -487,19 +574,24 @@ def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict],
 def run_views(args) -> None:
     if not torch.cuda.is_available():
         raise SystemExit("CUDA required for --mode views")
-    tapes = list_tapes(args)
-    if not tapes:
-        raise SystemExit(f"no tapes in {tape_root(args)} — run --mode collect")
     # Scope a decode to a subset of the collected tapes. Deliberately a separate
     # flag from --indices, which selects what to *collect* and defaults to a
     # curated six; reusing it here would silently shrink every sweep to those six.
+    scope = None
     if args.view_indices and str(args.view_indices).strip():
-        want = set(parse_indices(args.view_indices, 0))
-        tapes = [t for t in tapes if int(t["idx"]) in want]
-        if not tapes:
-            raise SystemExit(f"no tapes match --view_indices {args.view_indices}")
-        print(f"[views] scoped to {len(tapes)} tapes: "
-              f"{sorted(int(t['idx']) for t in tapes)}", flush=True)
+        scope = sorted(set(parse_indices(args.view_indices, 0)))
+    tapes = list_tapes(args, scope)
+    if not tapes:
+        where = tape_root(args)
+        if scope:
+            raise SystemExit(f"no tapes in {where} match --view_indices {args.view_indices}")
+        raise SystemExit(f"no tapes in {where} — run --mode collect")
+    if scope:
+        got = sorted(int(t["idx"]) for t in tapes)
+        missing = [i for i in scope if i not in got]
+        print(f"[views] scoped to {len(tapes)} tapes: {got}"
+              + (f" (MISSING {missing} — will be reported as missing, not wrong)"
+                 if missing else ""), flush=True)
     ns = make_ns(args)
     wrapper = maybe_load_model(args, ns)
     arms = [a.strip() for a in args.view_arms.split(",") if a.strip()]
@@ -1069,6 +1161,142 @@ def run_compare(args) -> Dict:
     with open(os.path.join(args.out_dir, "COMPARE.md"), "w") as f:
         f.write("\n".join(lines) + "\n")
     print("\n".join(lines), flush=True)
+    if out["verdict"] != "identical" and not args.allow_diverge:
+        # A non-zero exit is the only thing a shell driver will notice. Without it
+        # a failed parity check just prints and the sweep proceeds on bad numbers.
+        raise SystemExit(
+            f"PARITY FAILED ({out['verdict']}): {a} vs {b} — "
+            f"{n_ident}/{n} identical. Refusing to certify grouped decoding. "
+            f"Pass --allow_diverge to record the comparison anyway."
+        )
+    return out
+
+
+def run_latency(args) -> Dict:
+    """Censoring-aware latency report: the three quantities kept separate.
+
+    A run that hits the budget is a right-censored observation, not a measurement.
+    Averaging it with completed runs produces a number that is neither the mean
+    completion latency (too low: censored runs would have run longer) nor a
+    restricted cost (too high: it counts unfinished work as if it were a solve).
+    So this reports, distinctly:
+
+      1. tokens-to-EOS, over completed runs only, with the censored count named;
+      2. correctness under the stopping policy, where a run that never emitted EOS
+         did not solve the problem no matter what text it contains;
+      3. work under the fixed cap, which is a restricted compute cost and is the
+         only aggregate that censored runs can legitimately enter.
+
+    Comparisons against the baseline are paired over the baseline's own completed
+    and correct items, because that is the set where a latency claim is meaningful
+    and where an arm cannot win by simply failing differently.
+    """
+    rows = [r for r in load_rows(args.out_dir) if r.get("judger_s") is not None]
+    if not rows:
+        raise SystemExit("no timed rows in rows.jsonl")
+    drop = {a.strip() for a in (args.exclude_arms or "").split(",") if a.strip()}
+    rows = [r for r in rows if r["method"] not in drop]
+    cap = int(args.judger_budget)
+    base = args.baseline_arm
+
+    by_arm: Dict[str, Dict[int, Dict]] = {}
+    for r in rows:
+        by_arm.setdefault(r["method"], {})[int(r["idx"])] = r
+    universe = sorted({int(r["idx"]) for r in rows})
+    tps = _unbatched_tps(rows) or 42.5
+
+    def censored(r):
+        return int(r["tokens"]) >= cap or not r.get("eos")
+
+    per_arm = {}
+    for arm, items in sorted(by_arm.items()):
+        done = [r for r in items.values() if not censored(r)]
+        cens = [r for r in items.values() if censored(r)]
+        solved = [r for r in items.values() if r.get("eos") and r.get("correct")]
+        per_arm[arm] = {
+            "n": len(items),
+            "missing": [i for i in universe if i not in items],
+            "n_completed": len(done),
+            "n_censored": len(cens),
+            "solved_under_policy": len(solved),
+            "acc_under_policy": len(solved) / len(items) if items else None,
+            "mean_tokens_completed": (sum(r["tokens"] for r in done) / len(done)) if done else None,
+            "restricted_tokens": sum(min(int(r["tokens"]), cap) for r in items.values()),
+            "restricted_is_lower_bound": len(cens) > 0,
+        }
+
+    paired = {}
+    if base in by_arm:
+        anchor = sorted(i for i, r in by_arm[base].items() if r.get("eos") and r.get("correct"))
+        for arm, items in sorted(by_arm.items()):
+            if arm == base:
+                continue
+            common = [i for i in anchor if i in items]
+            if not common:
+                continue
+            b_tok = sum(int(by_arm[base][i]["tokens"]) for i in common)
+            a_tok = sum(int(items[i]["tokens"]) for i in common)
+            a_cens = [i for i in common if censored(items[i])]
+            kept = [i for i in common if items[i].get("eos") and items[i].get("correct")]
+            paired[arm] = {
+                "anchor_items": common,
+                "missing_from_anchor": [i for i in anchor if i not in items],
+                "baseline_tokens": b_tok,
+                "arm_tokens": a_tok,
+                "arm_tokens_is_lower_bound": bool(a_cens),
+                "censored_items": a_cens,
+                "ratio": a_tok / b_tok if b_tok else None,
+                "solves_kept": kept,
+                "solves_lost": [i for i in common if i not in kept],
+                "speedup_on_kept": (
+                    sum(int(by_arm[base][i]["tokens"]) for i in kept) /
+                    sum(int(items[i]["tokens"]) for i in kept)
+                ) if kept else None,
+            }
+
+    out = {"cap": cap, "tok_per_s": tps, "baseline": base,
+           "universe": universe, "arms": per_arm, "paired_vs_baseline": paired}
+    with open(os.path.join(args.out_dir, "latency.json"), "w") as f:
+        json.dump(out, f, indent=2)
+
+    L = ["# Latency, with censoring made explicit", "",
+         f"Budget cap **{cap}** tokens · measured **{tps:.2f}** tok/s · "
+         f"baseline `{base}`" + (f" · excluded: {', '.join(sorted(drop))}" if drop else ""), "",
+         "`latency = tokens / tok_per_s`. A censored run only gives a lower bound.", "",
+         "| arm | n | missing | completed | censored | solved (EOS+correct) | acc | mean tok (completed) | restricted tok @cap |",
+         "|---|---:|---|---:|---:|---:|---:|---:|---|"]
+    for arm, d in per_arm.items():
+        mt = f"{d['mean_tokens_completed']:.0f}" if d["mean_tokens_completed"] is not None else "—"
+        rt = f"{'≥' if d['restricted_is_lower_bound'] else ''}{d['restricted_tokens']}"
+        miss = ",".join(str(i) for i in d["missing"]) or "—"
+        acc = f"{d['acc_under_policy']:.3f}" if d["acc_under_policy"] is not None else "—"
+        L.append(f"| `{arm}` | {d['n']} | {miss} | {d['n_completed']} | {d['n_censored']} | "
+                 f"{d['solved_under_policy']} | {acc} | {mt} | {rt} |")
+    L += ["", "Mean tokens is over completed runs only, so arms with different "
+              "censored counts are means over different item sets and are not "
+              "comparable to each other. Use the paired table below instead.", ""]
+
+    L += [f"## Paired against `{base}`, on its completed-and-correct items", "",
+          "| arm | anchor items | missing | baseline tok | arm tok | ratio | solves kept | solves lost | speedup on kept |",
+          "|---|---|---|---:|---|---|---|---|---|"]
+    for arm, p in paired.items():
+        at = f"{'≥' if p['arm_tokens_is_lower_bound'] else ''}{p['arm_tokens']}"
+        ratio = (f"{'≥' if p['arm_tokens_is_lower_bound'] else ''}{p['ratio']:.3f}"
+                 if p["ratio"] is not None else "—")
+        sp = f"{p['speedup_on_kept']:.2f}x" if p["speedup_on_kept"] else "—"
+        L.append(f"| `{arm}` | {','.join(map(str, p['anchor_items']))} | "
+                 f"{','.join(map(str, p['missing_from_anchor'])) or '—'} | "
+                 f"{p['baseline_tokens']} | {at} | {ratio} | "
+                 f"{','.join(map(str, p['solves_kept'])) or 'none'} | "
+                 f"{','.join(map(str, p['solves_lost'])) or 'none'} | {sp} |")
+    L += ["", "**ratio > 1 means the arm spends more tokens than the baseline on the "
+              "baseline's own solved items, i.e. it is slower.** A `≥` marks a lower "
+              "bound: the arm was still censored there, so de-censoring can only move "
+              "the ratio up. `speedup on kept` is the honest win restricted to items "
+              "the arm also solved — quote it only together with the solves it lost.", ""]
+    with open(os.path.join(args.out_dir, "LATENCY.md"), "w") as f:
+        f.write("\n".join(L) + "\n")
+    print("\n".join(L), flush=True)
     return out
 
 
@@ -1326,7 +1554,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="report",
                     choices=["smoke", "collect", "views", "isolated", "isolated_frozen",
-                             "budget", "loops", "compare", "answers", "report"])
+                             "budget", "loops", "compare", "answers", "latency", "report"])
+    ap.add_argument("--allow_diverge", action="store_true",
+                    help="record a failed --mode compare instead of exiting non-zero")
+    ap.add_argument("--baseline_arm", default="real",
+                    help="arm that --mode latency pairs every other arm against")
+    ap.add_argument("--exclude_arms", default="",
+                    help="arms to drop from --mode latency (e.g. known-bad batched probes)")
+    ap.add_argument("--tape_dir_exact", action="store_true",
+                    help="use --tape_dir verbatim instead of adding a task/model/k subdir")
     ap.add_argument("--budget_arms", default="real")
     ap.add_argument("--loop_ngram", type=int, default=8)
     ap.add_argument("--loop_window", type=int, default=256)
@@ -1395,6 +1631,8 @@ def main():
         run_compare(args)
     elif args.mode == "answers":
         run_answers(args)
+    elif args.mode == "latency":
+        run_latency(args)
     else:
         write_report(args)
 

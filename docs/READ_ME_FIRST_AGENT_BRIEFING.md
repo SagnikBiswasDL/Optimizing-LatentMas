@@ -55,21 +55,32 @@ This single equation should drive the whole plan, and it has three consequences:
   token count is a faithful and hardware-independent latency proxy. This makes the
   experiments cheaper and the result far more robust than wall-clock timing.
 
-### The latency result already half-exists
+### ⚠️ SEAL is currently a net latency LOSS. Retracted claim, read this.
 
-Restricting to same-item pairs where **both arms terminated and both were correct**
-(the only honest latency comparison available):
+An earlier version of this file reported "1.31x–1.63x lower latency at preserved
+correctness" from the items where both arms terminated and were correct. **That was
+a selected subset and the number is not a speedup.** Run `--mode latency`:
 
-| item | `real` | SEAL coef 40 | SEAL coef 60 |
-|---|---|---|---|
-| 0 | 61.1s / 2600 tok | 42.9s / 1807 tok (**1.42x**) | 37.4s / 1599 tok (**1.63x**) |
-| 4 | 180.1s / 7653 tok | 137.6s / 5896 tok (**1.31x**) | not run |
+| arm | anchor items | baseline tok | arm tok | ratio | kept | lost | speedup on kept |
+|---|---|---:|---|---|---|---|---|
+| `none` | 0,4,10,18 | 23163 | ≥27705 | **≥1.196** | — | 4,10,18 | 0.83x |
+| `real_seal40` | 0,4,10,18 | 23163 | ≥24087 | **≥1.040** | 0,4 | 10,18 | 1.33x |
+| `real_seal60` | 0 only | 2600 | 1599 | 0.615 | 0 | — | 1.63x |
 
-**1.31x to 1.63x latency reduction at preserved correctness.** That is the paper, in
-embryo, at n=3 observations over 2 items. Extending and de-censoring this is the
-highest-value research task in the repo. Note also that coef 60 beat coef 40 on the
-one item both ran, and 60 is the largest coefficient ever tried — the coefficient
-sweep is unfinished and is the cheapest possible win.
+Paired over the four items the **baseline** completes and gets right, SEAL40 spends
+**at least 4% more tokens than baseline**, because it converts items 10 and 18 from
+solved-and-terminating into capped runs. A capped run books the full 8192 and would
+book more if uncapped, so **de-censoring can only make this worse.** The "1.33x" is
+real but is conditional on the two items SEAL kept, and quoting it without the two it
+lost is the same selection error that produced the retracted cache result.
+
+`real_seal60` looks best in the table on one item and has **n=1** completed-correct
+observation. It is not evidence.
+
+**So there is currently no latency result, in either direction.** What exists is a
+mechanism worth chasing: on problems it does not break, steering cuts tokens 23–31%.
+The open question is whether a coefficient exists that captures that without
+destroying termination. Nothing in the data says one does.
 
 ### The blocker: 60% of the data is right-censored
 
@@ -90,22 +101,72 @@ occurs in capped runs. That check has been done; do not redo it.
 
 ## 1. The three landmines
 
-**(a) Batched decoding is broken. Use `--decode_bs 1`.**
-Batching the Judger through `decode_batch` fails a byte-level parity check: batch
-6 gave 1.75x throughput and **halved the solves** (0.667 → 0.333), with 0 of 6
-generations identical to their unbatched counterparts. One cause is fixed (a
-missing `padding_side="left"`); the remaining cause is position handling — a single
-`cache_position` is shared across a batch whose KV caches and prompts are both
-left-padded to different real lengths, so each sequence gets a different-sized
-artificial RoPE gap between cache and prompt. This is the most dangerous thing in
-the repo because the failure is silent and looks like a normal accuracy number.
-If you want the throughput back, **fixing this properly is the single highest-value
-engineering task available** — it is what makes n=30 affordable. Verify any fix
-with `--mode compare`, which diffs two arms' saved generations byte-for-byte.
-This also puts a question mark on earlier batched results from
-`exp_frozen_seal.py` and `exp_one_role.py`, which is where the **GSM8K SEAL
-numbers** came from. They are less exposed (a frozen cache is uniform across the
-batch, so only prompt padding bites) but they are not cleared. Check before citing.
+**(a) Grouped decoding changes greedy outputs, and it is NOT a bug you can fix.**
+Batching the Judger fails a byte-level parity check: batch 6 gave 1.75x throughput
+and **halved the solves** (0.667 → 0.333), with 0 of 6 generations identical to
+their unbatched counterparts.
+
+An earlier version of this file blamed a shared `cache_position` opening a
+per-sequence RoPE gap. **That explanation is wrong and has been retracted.**
+`scripts/diag_batch_parity.py` settles it on CPU in about 5 seconds:
+
+- Through a direct `model()` call, a shared `cache_position` *does* corrupt
+  positions (item with a 6-short cache gets positions `[14,15,16]` instead of
+  `[5,6,7]`). But that is not the production path.
+- Through `generate()` — which is what `decode_batch` calls — positions are
+  **correct**, because `generate()` re-derives per-sequence `position_ids` from the
+  attention mask and ignores the shared `cache_position` for that purpose.
+- In **float32, 0 of 48** batched items diverged from their unbatched runs, with
+  cache shifts up to 15 positions.
+- In **bfloat16, 7 of 48** diverged — and at the same rate whether the cache shift
+  was nonzero (5/35) or exactly zero (2/13).
+
+Divergence tracks **dtype, not position**. The cause is that batch size changes
+reduction order in the attention and GEMM kernels, perturbing logits at the
+1e-3 level; greedy `argmax` occasionally flips on a near-tie, and the trajectories
+separate from there. In the real run, divergence starts 455–1571 characters in, not
+at character 0 — exactly the signature of "identical until the first close call."
+
+**Consequences, which matter more than the diagnosis:**
+- There is **no fix** that makes batch 6 bit-match batch 1 in bf16. Do not plan one.
+  Batch-invariant kernels or fp32 decode would do it, and both cost more than the
+  1.75x they buy.
+- Batching is still **scientifically usable under a fixed batch composition**: if
+  every arm decodes the same items in the same groups at the same batch size, all
+  arms get the same numerical treatment and the paired comparison is valid. What you
+  may never do is compare a batched arm to an unbatched one.
+- The safeguard is now enforced: `--mode compare` **exits non-zero** on divergence,
+  and the driver's `blitz`/`sweep`/`localize30`/`aime25_sweep` stages require a
+  parity certificate for the batch size they are about to use, falling back to
+  `DECODE_BS=1` rather than proceeding. `ALLOW_UNCERTIFIED_BATCH=1` overrides, loudly.
+
+**(a′) The same evidence says the n=6 measurement is dominated by noise.**
+`real__bs16` is not corrupt data. It is the same model, prompts, cache and greedy
+policy, differing only by a semantically-neutral change in arithmetic order — and
+accuracy moved **0.667 → 0.333**, with items 4 and 10 flipping correct→wrong. Two of
+the baseline's four solves are that fragile. **Any effect smaller than ±2 items on
+this set is unmeasurable**, which includes every SEAL effect reported so far. Greedy
+decoding gave false confidence here: it is reproducible run-to-run, but it is not
+stable against perturbations that ought to be irrelevant. Plan for multiple samples
+per item, or a much larger n, before believing any arm difference.
+
+**(a″) Audit of the other batched results.** Every experiment sharing this decoder
+sets `padding_side="left"` correctly; `exp_aime_localize.py` was the only one that
+did not, and that is fixed. Default batch sizes are `1` for AIME but **4**
+(`exp_one_role.py`) and **20** (`exp_math_ladder.py`) elsewhere, so the GSM8K/MATH
+numbers — including the **GSM8K SEAL result** — were collected batched, in bf16.
+
+The structural check they need, they pass: `exp_frozen_seal.py` loops
+`for batch: for arm in (frozen, frozen_seal)`, so both arms see the same items in the
+same group at the same batch size. That makes them paired and internally valid. Two
+caveats survive:
+
+- The resume filter (`need = [it for it in batch if method not in done]`) can leave
+  the two arms with **different** `B` on a resumed run, silently breaking the pairing.
+- Those scripts record `"judger_s": t_j / B` — batch wall clock divided by batch size.
+  That is amortized throughput, **not single-request latency**, and must never be
+  quoted as a latency result. `exp_aime_localize.py` deliberately records `None`
+  instead for grouped rows.
 
 **(b) `rows.jsonl` mixes trusted and deliberately-untrusted arms.**
 Naive aggregation over all rows gives 0.5, which is meaningless. Specifically:
@@ -204,29 +265,49 @@ problems is real; it is the accuracy side that breaks.
   not a variance problem — but it also means **n=6 carries no variance estimate at
   all**. If you want error bars without 30 items, sampling at temperature with
   several draws per item is the cheaper route to a distribution.
-- CPU tests exist and are fast: `tests/test_decode_group.py` (batch/row alignment,
-  timing attribution, pricing) and `tests/test_segment_kv.py` (KV slicing and
-  role-aware eviction). `--mode budget`, `loops`, `answers`, `compare` are all
-  CPU-only and run off saved generations, so iterate there for free.
+- CPU tests exist and are fast (69 total, ~4s): `tests/test_decode_group.py`
+  (batch/row alignment, timing attribution, pricing), `tests/test_segment_kv.py`
+  (KV slicing, role-aware eviction), and `tests/test_safeguards.py` (tape identity,
+  the parity gate, censoring-aware latency). `--mode budget`, `loops`, `answers`,
+  `compare`, `latency` are all CPU-only and run off saved generations, so iterate
+  there for free. `scripts/diag_batch_parity.py` reproduces the batching failure on
+  CPU with a random-weight model in seconds — no GPU, no checkpoint.
+- **Tape reuse is now validated.** `tape_root` appends a `task__model__k` subdir, and
+  a tape is rejected on load unless its task, k, model and question hash match the
+  current config. Previously `aime25_sweep` swapped `out_dir` but kept `TAPE_DIR`, so
+  AIME-2025 item 0 would have silently decoded against AIME-2024's cache. Tapes
+  written before this carry no `identity` block and are reported as unverifiable
+  rather than assumed good.
 
 ## 6. Unexplored, ordered for a latency deliverable
 
-1. **Raise the budget to de-censor the data** (§0). Without this there is no
-   denominator and no mean. Cheapest high-value action in the repo.
-2. **Finish the SEAL coefficient sweep.** Only 40 and 60 have been tried; 60 was
-   better than 40 and is the largest ever run. `parse_arm` means a whole sweep runs
-   in **one model load** (`real_seal20`, `real_seal80`, ...). This directly extends
-   the 1.31–1.63x result and is where the headline number will come from.
-3. **Fix batched decoding** (§1a). A separate, multiplicative ~1.75x on the tok/s
-   side, and it is what makes n=30 affordable. Verify with `--mode compare`.
-4. **n=30 unbiased tokens-to-solution for `real` vs `real_seal*`** — the actual
-   experiment behind the paper, and it de-confounds §1c for free.
-5. **Serving-stack throughput** (vLLM, speculative decoding). Raises the 42.5 tok/s
-   floor and is orthogonal to the steering work, so it composes with it. Untouched.
+1. **Establish the noise floor before measuring anything** (§1a′). A
+   semantically-neutral perturbation moved accuracy 0.667 → 0.333, so the current
+   design cannot resolve the effects being claimed. Either sample k≥4 per item at
+   temperature, or go to n=30, and report paired item-level uncertainty. Everything
+   below is uninterpretable without this, and it is the cheapest thing to fix.
+2. **Raise the budget to de-censor** (§0). 12 of 20 runs are censored; no mean is
+   computable. Note the artifacts store no token IDs, so extended runs **cannot be
+   resumed** — they re-decode from scratch, and you should verify the new run
+   reproduces the old prefix before trusting the extension.
+3. **Screen coefficients on the regression items first.** SEAL40 broke items 10 and
+   18; any candidate that also breaks them is dead, so screen there for ~2 items of
+   cost before spending the full cohort. `parse_arm` runs the whole sweep in **one
+   model load** (`real_seal20`, `real_seal80`, ...). Expect non-monotonicity; pick one
+   fixed coefficient by aggregate token cost subject to preserved correctness, with
+   **no per-item oracle selection.**
+4. **Then, and only then, n=30 with the frozen coefficient**, plus AIME-2025 as a
+   holdout with its own tape directory. Report every item, including failures.
+5. **Serving-stack throughput** (vLLM, speculative decoding, batch-invariant
+   kernels). This is the *other* lever and it is entirely untouched. It raises the
+   42.5 tok/s floor, composes with any token reduction, and unlike steering it cannot
+   cost accuracy. For a latency deliverable this may well be the better bet.
+   Caveat: batching improves throughput, not single-request latency — do not multiply
+   the two (§1a″).
 6. **Per-role localization** (`c1`/`c2`/`c3`/`c23`), never run: harness, segment-aware
    KV slicing, and eviction are written and unit-tested. Frame as **KV memory**, not
-   latency (§0). Same for AIME-2025 holdout and K-sweeps — worth doing, but they are
-   not the latency result.
+   latency (§0), and note that a memory win only becomes a throughput win if you show
+   the freed memory buys useful concurrency. Same for K-sweeps.
 
 ## 7. One meta-warning
 

@@ -44,9 +44,20 @@ directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
   throughput is **42.51 ± 0.31 tok/s**, invariant while the cache ranges 0→962 positions
   and 0→150 MB. So `latency = tokens / 42.5`, cache surgery cannot be a latency win
   (only a KV-memory win), and **token count is a hardware-independent latency proxy.**
-  Best honest result so far: SEAL gives **1.31–1.63x lower latency at preserved
-  correctness** (items 0 and 4). Caveat: 12 of 20 runs are censored at the 8192 cap, so
-  no *mean* is computable yet.
+- **⚠️ SEAL is a net latency LOSS, and the earlier "1.31–1.63x" is retracted.** Paired
+  over the four items the baseline completes and solves, SEAL40 spends **≥4% more**
+  tokens (≥24087 vs 23163), because it turns items 10 and 18 into capped runs;
+  de-censoring can only worsen that. The 1.33x holds only on the two items it kept.
+  Run `--mode latency` for the censoring-aware table. 12 of 20 runs are censored.
+- **⚠️ The n=6 result is inside the noise floor.** `real__bs16` differs from `real`
+  only by bf16 arithmetic order, and accuracy moved **0.667 → 0.333** (items 4 and 10
+  flipped). Greedy determinism is not stability. No effect smaller than ±2 items on
+  this set is measurable, which is every SEAL effect measured so far.
+- **Batched-decode divergence is bf16 batch-variance, not the documented RoPE gap
+  (retracted).** `scripts/diag_batch_parity.py`: fp32 diverges 0/48, bf16 7/48, at
+  equal rates for zero and nonzero cache shift; `generate()` derives correct
+  per-sequence positions. There is no fix; batching is valid only under fixed batch
+  composition, and `--mode compare` now exits non-zero to enforce it.
 - **If you are a fresh agent, read `READ_ME_FIRST_AGENT_BRIEFING.md` before this file.**
   It lists the invalidated claims, the silent batching bug, and which of these bullets
   are superseded. This brief is layered chronologically, so later entries correct

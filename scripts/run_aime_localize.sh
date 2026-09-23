@@ -193,13 +193,54 @@ seal () {
 # sweep is trusted. Re-decodes the six items we already have exact numbers for,
 # as one batch, under the label real__bs<N>, then diffs the text byte-for-byte.
 # Cheap (~6 min) and it gates everything below.
+parity_sentinel () { echo "${PERSIST_DIR:-$ROOT_DIR}/PARITY_OK_bs${DECODE_BS}"; }
+
+# Any stage that decodes with DECODE_BS>1 must call this first. Grouped decoding
+# has already been measured to change greedy outputs and halve accuracy, and
+# `--mode compare` only *prints* that; without a hard gate the sweep proceeds and
+# writes corrupted rows that look ordinary. Parity is per batch size, so the
+# sentinel is too.
+require_parity () {
+  [[ ${DECODE_BS:-1} -le 1 ]] && return 0
+  if [[ -f "$(parity_sentinel)" ]]; then
+    echo "[localize] parity certified for bs=$DECODE_BS: $(parity_sentinel)" | tee -a "$LOG"
+    return 0
+  fi
+  if [[ ${ALLOW_UNCERTIFIED_BATCH:-0} == 1 ]]; then
+    echo "[localize] WARNING: decoding at bs=$DECODE_BS with NO parity certificate." \
+      "Rows from this stage are not comparable to unbatched rows." | tee -a "$LOG"
+    return 0
+  fi
+  echo "[localize] REFUSING to decode at bs=$DECODE_BS: no parity certificate." >&2
+  echo "[localize]   run: bash $0 parity      (certifies this batch size)" >&2
+  echo "[localize]   or:  DECODE_BS=1 bash $0 ${stage:-<stage>}" >&2
+  echo "[localize]   or:  ALLOW_UNCERTIFIED_BATCH=1 ... (rows will be flagged uncomparable)" >&2
+  return 1
+}
+
 parity () {
   local idx=${INDICES:-0,1,2,4,10,18}
+  if [[ ${DECODE_BS:-1} -le 1 ]]; then
+    echo "[localize] parity is meaningless at DECODE_BS=1; set DECODE_BS>1" >&2
+    return 2
+  fi
   run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
-  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real
   run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real \
-    --decode_bs "$DECODE_BS" --method_tag "bs${DECODE_BS}" --view_indices "$idx"
-  run_py --mode compare --compare_arms "real,real__bs${DECODE_BS}"
+    --decode_bs 1 --view_indices "$idx"
+  ALLOW_UNCERTIFIED_BATCH=1 run_py --mode views --task aime2024 --judger_budget 8192 \
+    --view_arms real --decode_bs "$DECODE_BS" --method_tag "bs${DECODE_BS}" \
+    --view_indices "$idx"
+  # Non-zero exit here is the gate. Do not add --allow_diverge.
+  if run_py --mode compare --compare_arms "real,real__bs${DECODE_BS}"; then
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$(parity_sentinel)"
+    echo "[localize] PARITY PASSED — certificate written to $(parity_sentinel)" | tee -a "$LOG"
+  else
+    rm -f "$(parity_sentinel)"
+    echo "[localize] PARITY FAILED at bs=$DECODE_BS — batched sweeps stay blocked." \
+      "See docs/READ_ME_FIRST_AGENT_BRIEFING.md on bf16 batch-invariance." | tee -a "$LOG"
+    run_py --mode report || true
+    return 1
+  fi
   run_py --mode report
 }
 
@@ -210,6 +251,7 @@ parity () {
 sweep () {
   local arms=${SWEEP_ARMS:-real,none,real_seal40,real_seal60}
   need_seal_vector "$arms" || return 1
+  require_parity || return 1
   run_py --mode collect --task aime2024 --n "$N" --indices "0-$((N - 1))" \
     --judger_budget 8192
   run_py --mode views --task aime2024 --judger_budget 8192 --view_arms "$arms" \
@@ -225,6 +267,7 @@ sweep () {
 # Judger actually reads, as an accuracy and KV-memory question.
 localize30 () {
   local arms=${LOC_ARMS:-c1,c2,c3,c23,evict_seg}
+  require_parity || return 1
   run_py --mode collect --task aime2024 --n "$N" --indices "0-$((N - 1))" \
     --judger_budget 8192
   run_py --mode views --task aime2024 --judger_budget 8192 --view_arms "$arms" \
@@ -233,6 +276,10 @@ localize30 () {
 }
 
 # Held-out generalization: the same table on AIME 2025, into its own out_dir.
+# TAPE_DIR is deliberately left alone: exp_aime_localize.py now appends a
+# task/model/k subdirectory to it, so 2025 cannot pick up 2024's tapes, and a
+# stale tape is rejected on load rather than silently decoded against the wrong
+# question. Before that, this stage swapped out_dir only and reused the 2024 tapes.
 aime25_sweep () {
   local out="${ROOT_DIR}_aime25"
   local save=$ROOT_DIR save_log=$LOG
@@ -241,6 +288,7 @@ aime25_sweep () {
   LOG=$out/localize.log
   local arms=${SWEEP_ARMS:-real,none,real_seal40,real_seal60}
   need_seal_vector "$arms" || { ROOT_DIR=$save; LOG=$save_log; return 1; }
+  require_parity || { ROOT_DIR=$save; LOG=$save_log; return 1; }
   run_py --mode collect --task aime2025 --n "$N" --indices "0-$((N - 1))" \
     --judger_budget 8192
   run_py --mode views --task aime2025 --judger_budget 8192 --view_arms "$arms" \
@@ -303,10 +351,22 @@ blitz () {
   run_py --mode collect --task aime2024 --n "$N" --indices "0-$((N - 1))" \
     --judger_budget 8192
   # Certify grouped decode against the committed n=1 rows before trusting it.
-  run_py --mode views --task aime2024 --judger_budget 8192 --view_arms real \
-    --decode_bs "$DECODE_BS" --method_tag "bs${DECODE_BS}" \
-    --view_indices "${INDICES:-0,1,2,4,10,18}" || true
-  run_py --mode compare --compare_arms "real,real__bs${DECODE_BS}" || true
+  # These used to end in `|| true`, which made the certification decorative: a
+  # failed parity check printed a warning and the data run below batched anyway.
+  if [[ ${DECODE_BS:-1} -gt 1 ]]; then
+    ALLOW_UNCERTIFIED_BATCH=1 run_py --mode views --task aime2024 \
+      --judger_budget 8192 --view_arms real --decode_bs "$DECODE_BS" \
+      --method_tag "bs${DECODE_BS}" --view_indices "${INDICES:-0,1,2,4,10,18}"
+    if run_py --mode compare --compare_arms "real,real__bs${DECODE_BS}"; then
+      date -u +%Y-%m-%dT%H:%M:%SZ > "$(parity_sentinel)"
+    else
+      rm -f "$(parity_sentinel)"
+      echo "[localize] parity failed at bs=$DECODE_BS; falling back to DECODE_BS=1." \
+        "This costs throughput and is the correct trade." | tee -a "$LOG"
+      DECODE_BS=1
+    fi
+  fi
+  require_parity || return 1
   # The data run, time-boxed.
   run_py --mode views --task aime2024 --judger_budget 8192 --view_arms "$arms" \
     --decode_bs "$DECODE_BS" --seal_vector "$SEAL_VECTOR" \

@@ -349,44 +349,98 @@ Items 4 and 10 flipped from correct to wrong (`110`→`134`, `104`→`33`), and 
 batched. So grouping bought 1.75x and cost **half the solves**. Not a tie-break
 perturbation — systematic degradation.
 
-Two things caused it and only one is fixed. `exp_aime_localize.py` never set
-`tokenizer.padding_side = "left"`, which every other batched script in this repo
-does; with right-padding, each prompt shorter than the batch maximum predicts its
-first token from a pad position. That is now fixed. What remains is position
-encoding: `decode_batch` passes a single `cache_position = arange(pmax, pmax + L)`
-shared across the batch, so once the cache is left-padded to `pmax` and the prompt
-is left-padded to `L`, every sequence shorter than the maximum gets an artificial
-RoPE gap between where its real cache ends and its real prompt begins, of a size
-that differs per item. The 1.75x is also well short of the ~4x the arithmetic
-predicted, so per-step cost grows faster with batch than weight-streaming alone
-would explain.
+### Why (revised 2026-09-23; the first explanation was wrong)
 
-**Consequence:** every accuracy number must come from `--decode_bs 1` until this
-is fixed. The probe rows are kept under the label `real__bs16` rather than
-deleted, since the failure is a result. (That label records the *configured* cap;
-the realized batch was 6, because the parity run was scoped to six tapes.)
+`exp_aime_localize.py` never set `tokenizer.padding_side = "left"`, which every
+other batched script in this repo does. That is fixed — and it is **not** the
+explanation: the right-padded attempt is `run_logs/blitz_aborted.txt` (21:37 UTC),
+which was killed on the warning and produced **no rows**. All six `real__bs16` rows
+come from `run_logs/blitz.txt` (21:41 UTC) with zero padding warnings.
 
-**This also puts a question mark on earlier batched results in this repo.**
-`exp_frozen_seal.py` and `exp_one_role.py` batch through the same `decode_batch`,
-which is where the GSM8K SEAL numbers came from. They are less exposed — a frozen
-cache is identical across the batch, so the cache-padding half of the problem
-vanishes and only prompt padding remains, and they do set `padding_side` — but
-"less exposed" is not "unaffected", and it should be checked with the same
-byte-level `--mode compare` before those numbers go in a paper.
+This document previously blamed a shared `cache_position = arange(pmax, pmax + L)`
+opening a per-item RoPE gap. **Retracted.** `scripts/diag_batch_parity.py` runs the
+real `pad_caches_left`/`decode_batch` wiring against a tiny random-weight Qwen3 on
+CPU and measures it directly:
+
+- Calling `model()` **directly** with a shared `cache_position`, an item whose cache
+  is 6 short of `pmax` does get positions `[14,15,16]` instead of `[5,6,7]`, and its
+  first-step argmax flips. So the mechanism is real — but this is not the code path.
+- Through **`generate()`**, which is what `decode_batch` calls, positions are correct:
+  `generate()` re-derives per-sequence `position_ids` from the attention mask.
+- **float32: 0 of 48** batched items diverged, with cache shifts up to 15 positions.
+- **bfloat16: 7 of 48** diverged, at statistically indistinguishable rates for
+  nonzero shift (5/35) and zero shift (2/13).
+
+Divergence tracks dtype, not position. The cause is **batch-variance in bf16**:
+batch size changes kernel reduction order, logits move at the 1e-3 level, and greedy
+`argmax` flips on near-ties. The per-item divergence points (455–1571 characters in,
+not 0) fit that and not a structural position error, which would bite at token 1.
+
+The 1.75x also falls well short of the ~4x the arithmetic predicted, so per-step cost
+grows faster with batch than weight-streaming alone explains.
+
+**Consequences.** There is no fix that makes bf16 batch 6 bit-match batch 1, so
+"repair batching" is not a task. Grouped decoding stays valid only under a **fixed
+batch composition** — same items, same groups, same batch size for every arm — and
+may never be compared against unbatched rows. `--mode compare` now **exits non-zero**
+on divergence, and `blitz`/`sweep`/`localize30`/`aime25_sweep` require a parity
+certificate for their batch size or fall back to `DECODE_BS=1`.
+
+The probe rows are kept under `real__bs16` rather than deleted, because the failure
+is a result. (That label records the *configured* cap; the realized batch was 6, since
+the parity run was scoped to six tapes.)
+
+**And the sharper reading:** `real__bs16` differs from `real` only in arithmetic
+order, yet accuracy moved 0.667 → 0.333 with items 4 and 10 flipping. That is a free
+noise estimate, and it says two of the baseline's four solves are unstable under a
+perturbation that should not matter. **No effect smaller than ±2 items is measurable
+on this set** — which covers every SEAL effect reported here. Greedy decoding is
+reproducible but not stable, and it gave false confidence.
+
+### Audit of the other batched results
+
+`exp_frozen_seal.py`, `exp_one_role.py` and `exp_math_ladder.py` share this decoder,
+and their default batch sizes are 1 for AIME but **4** and **20** elsewhere — so the
+GSM8K/MATH numbers, including the **GSM8K SEAL result**, were collected batched in
+bf16. All three do set `padding_side="left"`; `exp_aime_localize.py` was the only
+offender.
+
+The structural check that matters, they pass. `exp_frozen_seal.py` loops
+`for batch: for arm in (frozen, frozen_seal)`, so both arms see the same items in the
+same group at the same batch size and receive the same numerical treatment. That is a
+valid paired comparison, and it is the pattern to preserve. Two caveats remain:
+
+- The resume filter `need = [it for it in batch if method not in done]` can leave the
+  two arms with **different** `B` on a resumed run, silently breaking the pairing.
+- They record `"judger_s": t_j / B` — batch wall clock over batch size. That is
+  amortized throughput, **not single-request latency**, and cannot support a latency
+  claim. `exp_aime_localize.py` records `None` for grouped rows instead, on purpose.
 
 ### Order of operations
 
-1. `bash scripts/run_aime_localize.sh parity` — ~6 min. Certifies grouped
-   decoding and measures the actual speedup. Gates everything below.
-2. `bash scripts/run_aime_localize.sh sweep` — ~1.5 h. n=30 AIME-2024 for
-   `real`, `none`, `real_seal40`, `real_seal60`: 120 decodes that would have cost
-   ~5 h unbatched. This is the main data yield. It answers three things at once —
-   the real accuracy of the method at a defensible n, whether the cache matters
-   at all (`none`), and whether SEAL buys tokens without costing accuracy.
-3. `bash scripts/run_aime_localize.sh localize30` — ~1.7 h. The localization arms
+1. `bash scripts/run_aime_localize.sh parity` — ~6 min, and **expect it to fail** on
+   the evidence above. It now writes a certificate on success and leaves batched
+   stages blocked on failure. Run it anyway: it is how you learn the batch size you
+   are allowed to use, and it costs six minutes.
+2. **Establish the noise floor.** A perturbation that should not matter moved accuracy
+   0.667 → 0.333, so the current design cannot resolve the effects being claimed.
+   Either sample k≥4 per item at temperature or go to n=30, and report paired
+   item-level uncertainty. Steps 3–5 are uninterpretable without this.
+3. `bash scripts/run_aime_localize.sh sweep` — ~1.5 h at `DECODE_BS=1` (~5 h if the
+   parity gate blocks batching, which it should). n=30 AIME-2024 for `real`, `none`,
+   and the SEAL coefficients. Answers the real accuracy at a defensible n, whether
+   the cache matters once the item selection is no longer curated, and whether SEAL
+   buys tokens without costing termination.
+4. `bash scripts/run_aime_localize.sh localize30` — ~1.7 h. The localization arms
    at n=30, now framed as accuracy/KV-memory rather than latency.
-4. `bash scripts/run_aime_localize.sh aime25_sweep` — ~1.5 h. Held-out AIME 2025,
-   into its own `out_dir`. Only worth it once AIME-2024 says something.
+5. `bash scripts/run_aime_localize.sh aime25_sweep` — ~1.5 h. Held-out AIME 2025,
+   into its own `out_dir` *and* its own tape subdirectory. Only worth it once
+   AIME-2024 says something.
+
+Report with `--mode latency --exclude_arms real__bs16`, which keeps tokens-to-EOS,
+correctness under the stopping policy, and work-under-cap separate, pairs each arm
+against the baseline's own completed-and-correct items, and marks censored aggregates
+as lower bounds instead of averaging them into a meaningless mean.
 
 n=6 is the reason several earlier conclusions had to be walked back; at that size
 one item is 17 accuracy points. Everything above is n=30 for that reason.
