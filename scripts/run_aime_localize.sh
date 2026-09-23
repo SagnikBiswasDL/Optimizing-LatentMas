@@ -369,6 +369,41 @@ insight () {
 }
 
 # ===========================================================================
+# Stage A: is the GPU actually being used? Batch-1 decode of a 14B bf16 model is
+# memory-bound, so the ceiling is weights/bandwidth: ~162 tok/s on an H200. We
+# measured 42.5, i.e. 26% of roofline, with no attention kernel selected, no CUDA
+# graphs and a DynamicCache. Recovering that is a latency win on every item at no
+# accuracy cost, and it makes every stage below roughly twice as cheap — so it runs
+# first for economic reasons even if the speedup is not itself the result.
+# ===========================================================================
+throughput () {
+  local out=${THROUGHPUT_OUT:-$ROOT_DIR/throughput.json}
+  echo "[localize] throughput probe -> $out" | tee -a "$LOG"
+  "$PY" -u scripts/diag_throughput.py --model "${MODEL:-Qwen/Qwen3-14B}" \
+    --prefix_len "${PREFIX_LEN:-700}" --new_tokens "${PROBE_TOKENS:-256}" \
+    --seal_vector "$SEAL_VECTOR" --seal_layer "${SEAL_LAYER:-28}" \
+    --out "$out" 2>&1 | tee -a "$LOG"
+  persist
+}
+
+# Same dev-set decode on the fast path, to confirm the speedup does not move
+# accuracy. Not bit-identical is expected and fine (different kernels, bf16); a
+# different accuracy is not.
+fastparity () {
+  local idx=${INDICES:-0,1,2,4,10,18}
+  local attn=${FAST_ATTN:-flash_attention_2}
+  echo "[localize] fast-path accuracy check: attn=$attn static+compile" | tee -a "$LOG"
+  run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget 8192
+  run_py --mode views --task aime2024 --view_arms real --view_indices "$idx" \
+    --judger_budget 8192 --method_tag fast --decode_bs 1 \
+    --attn_impl "$attn" --static_cache --compile_decode
+  # Byte parity will fail across kernels; what matters is that accuracy holds, so
+  # record the comparison rather than gating on it.
+  run_py --mode compare --compare_arms "real,real__fast" --allow_diverge
+  run_py --mode report
+}
+
+# ===========================================================================
 # The coefficient decision run. Question: can steering make the Judger finish
 # sooner without dropping a correct answer?
 #
@@ -474,6 +509,25 @@ EOF
     echo "[localize] no candidate completed the cohort; nothing to score" | tee -a "$LOG"
   fi
   echo "[localize] efficiency used ${SECONDS}s of ${budget}s" | tee -a "$LOG"
+}
+
+# The whole program, in dependency order, unattended. Each phase writes a DONE_
+# sentinel so a lost pod resumes rather than repeats, and `restore` pulls finished
+# rows back from the durable volume at every stage start.
+program () {
+  echo "[localize] ===== phase A: throughput =====" | tee -a "$LOG"
+  throughput
+  echo "[localize] ===== phase A2: fast-path accuracy =====" | tee -a "$LOG"
+  fastparity || echo "[localize] fast path unusable; later phases stay on the eager path" | tee -a "$LOG"
+  finish throughput
+  echo "[localize] ===== phase B: coefficient decision =====" | tee -a "$LOG"
+  EFFICIENCY_S=${EFFICIENCY_S:-7200} efficiency
+  finish efficiency
+  echo "[localize] ===== phase C: held-out confirmation =====" | tee -a "$LOG"
+  if confirm24; then finish confirm24; else
+    echo "[localize] nothing promoted, so no confirmation run" | tee -a "$LOG"; fi
+  run_py --mode latency --exclude_arms real__bs16 || true
+  echo "[localize] program complete in ${SECONDS}s" | tee -a "$LOG"
 }
 
 # Held-out confirmation on the other 24 AIME-2024 items. Gated on a promotion,
@@ -632,6 +686,9 @@ case "$stage" in
   quick) quick ;;
   seal) seal ;;
   insight) insight ;;
+  throughput) throughput ;;
+  fastparity) fastparity ;;
+  program) program ;;
   efficiency) efficiency ;;
   confirm24) confirm24 ;;
   blitz) blitz ;;
@@ -649,7 +706,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 efficiency|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 program|throughput|fastparity|efficiency|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist

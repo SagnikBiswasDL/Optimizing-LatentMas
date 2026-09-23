@@ -24,7 +24,7 @@ def cfg(**kw):
     d = dict(
         tape_dir="", tape_dir_exact=False, out_dir="/out", task="aime2024",
         model_name="Qwen/Qwen3-14B", k=10, allow_diverge=False,
-        baseline_arm="real", exclude_arms="", judger_budget=8192,
+        baseline_arm="real", exclude_arms="", judger_budget=8192, decode_path="",
     )
     d.update(kw)
     return argparse.Namespace(**d)
@@ -125,10 +125,53 @@ def _fixture(tmp_path, rows, texts):
     return str(out)
 
 
-def _row(arm, idx, tokens, correct, eos, judger_s=100.0):
+def _row(arm, idx, tokens, correct, eos, judger_s=100.0, path="sdpa+dynamic"):
     return {"method": arm, "idx": idx, "tokens": tokens, "correct": correct,
             "eos": eos, "judger_s": judger_s, "task": "aime2024",
-            "pred": "1", "cache_pos": 100, "cache_mb": 1.0}
+            "pred": "1", "cache_pos": 100, "cache_mb": 1.0, "decode_path": path}
+
+
+# --------------------------------------------------------- decode provenance
+
+def test_decode_path_names_the_kernels():
+    class M:
+        class config:
+            _attn_implementation = "flash_attention_2"
+
+    w = argparse.Namespace(model=M(), use_static_cache=True, compiled=True)
+    assert E.decode_path(w) == "flash_attention_2+static+compile"
+    w2 = argparse.Namespace(model=M(), use_static_cache=False, compiled=False)
+    assert E.decode_path(w2) == "flash_attention_2+dynamic"
+
+
+def test_mixing_decode_paths_is_refused():
+    """Different kernels change reduction order, and bf16 greedy is not invariant."""
+    rows = [_row("real", 0, 100, True, True, path="sdpa+dynamic"),
+            _row("cand", 0, 90, True, True, path="sdpa+static+compile")]
+    with pytest.raises(SystemExit) as ei:
+        E.assert_one_decode_path(rows, "test")
+    assert "mixes decode paths" in str(ei.value)
+
+
+def test_one_decode_path_is_accepted():
+    rows = [_row("real", 0, 100, True, True), _row("cand", 0, 90, True, True)]
+    assert E.assert_one_decode_path(rows, "test") == "sdpa+dynamic"
+
+
+def test_decode_path_filter_scopes_an_analysis():
+    rows = [_row("real", 0, 100, True, True, path="sdpa+dynamic"),
+            _row("real", 1, 90, True, True, path="sdpa+static+compile")]
+    got = E.filter_decode_path(rows, cfg(decode_path="sdpa+static+compile"))
+    assert [r["idx"] for r in got] == [1]
+
+
+def test_latency_refuses_mixed_paths(tmp_path):
+    rows = [_row("real", 0, 1000, True, True, path="sdpa+dynamic"),
+            _row("fast", 0, 900, True, True, path="sdpa+static+compile")]
+    out = _fixture(tmp_path, rows, {})
+    with pytest.raises(SystemExit) as ei:
+        E.run_latency(cfg(out_dir=out, decode_path=""))
+    assert "mixes decode paths" in str(ei.value)
 
 
 def test_compare_exits_nonzero_when_parity_fails(tmp_path):

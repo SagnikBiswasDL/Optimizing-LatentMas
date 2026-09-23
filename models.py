@@ -70,10 +70,16 @@ class ModelWrapper:
         # fallback: normal transformers path
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
         _ensure_pad_token(self.tokenizer)
+        # Attention kernel is a load-time choice and materially changes decode speed
+        # at the 8k-16k contexts this pipeline runs at. Default stays whatever
+        # transformers picks, so existing results are unaffected unless asked.
+        _attn = getattr(args, "attn_implementation", None) or os.environ.get("SEAL_ATTN_IMPL") or ""
+        _extra = {"attn_implementation": _attn} if _attn else {}
         with torch.no_grad():
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_name,
                 torch_dtype=(torch.bfloat16 if torch.cuda.is_available() else torch.float32),
+                **_extra,
             )
         if len(self.tokenizer) != self.model.get_input_embeddings().weight.shape[0]:
             self.model.resize_token_embeddings(len(self.tokenizer))

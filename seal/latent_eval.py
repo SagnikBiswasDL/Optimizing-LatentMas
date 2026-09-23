@@ -137,6 +137,28 @@ def pad_caches_left(caches, device):
     return from_legacy(layers), past_mask, pmax
 
 
+def to_static_cache(past, model, max_len: int):
+    """Copy an injected KV cache into a StaticCache so CUDA graphs can be used.
+
+    LatentMAS builds its cache from custom latent forward passes rather than from a
+    prompt, so it arrives as a DynamicCache and has to be moved rather than grown.
+    Verified bit-faithful: the copy reproduces DynamicCache generations exactly.
+    """
+    from transformers import StaticCache
+
+    legacy = past.to_legacy_cache() if hasattr(past, "to_legacy_cache") else past
+    k0 = legacy[0][0]
+    stat = StaticCache(config=model.config, max_batch_size=k0.shape[0],
+                       max_cache_len=int(max_len), device=k0.device, dtype=k0.dtype)
+    # StaticCache allocates lazily on first update; force it so we can write into it.
+    stat.early_initialization(k0.shape[0], k0.shape[1], k0.shape[3], k0.dtype, k0.device)
+    for li, (k, v) in enumerate(legacy):
+        n = k.shape[-2]
+        stat.layers[li].keys[:, :, :n] = k
+        stat.layers[li].values[:, :, :n] = v
+    return stat
+
+
 def decode_batch(
     wrapper, judger_ids, judger_mask, caches, budget,
     temperature=0.0, top_p=1.0, top_k: Optional[int] = None,
@@ -144,12 +166,16 @@ def decode_batch(
     device = wrapper.device
     jids = judger_ids.to(device)
     jmask = judger_mask.to(device)
+    static = bool(getattr(wrapper, "use_static_cache", False))
     if all(c is None for c in caches):
         past, full_mask, cache_position = None, jmask, None
     else:
         past, past_mask, pmax = pad_caches_left(caches, device)
         full_mask = torch.cat([past_mask, jmask], dim=1)
         cache_position = torch.arange(pmax, pmax + jids.shape[1], device=device)
+        if static:
+            past = to_static_cache(
+                past, wrapper.model, pmax + jids.shape[1] + int(budget) + 8)
     sample = float(temperature) > 0
     gen_kwargs = dict(
         input_ids=jids,
@@ -168,6 +194,9 @@ def decode_batch(
             gen_kwargs["top_k"] = int(top_k)
     if cache_position is not None:
         gen_kwargs["cache_position"] = cache_position
+    if static and past is None:
+        # No injected cache to move, so let generate() allocate a static one.
+        gen_kwargs["cache_implementation"] = "static"
     out = wrapper.model.generate(**gen_kwargs)
     seqs = out.sequences
     gen_start = jids.shape[1]

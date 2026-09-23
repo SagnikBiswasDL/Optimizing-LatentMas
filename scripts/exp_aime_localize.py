@@ -148,12 +148,28 @@ def maybe_load_model(args, ns):
     from models import ModelWrapper
 
     print(f"[load] {args.model_name} device={args.device}", flush=True)
+    if getattr(args, "attn_impl", ""):
+        # ModelWrapper does not expose this, and it has to be set at load time.
+        ns.attn_implementation = args.attn_impl
+        os.environ["SEAL_ATTN_IMPL"] = args.attn_impl
     wrapper = ModelWrapper(args.model_name, auto_device(args.device), use_vllm=False, args=ns)
     # Decoder-only batched generation reads the next token from the last position,
     # so right-padding would make every prompt shorter than the batch maximum
     # predict from a pad token. Harmless at batch 1, silently corrupting above it.
     if getattr(wrapper, "tokenizer", None) is not None:
         wrapper.tokenizer.padding_side = "left"
+    wrapper.use_static_cache = bool(getattr(args, "static_cache", False))
+    wrapper.compiled = False
+    if getattr(args, "compile_decode", False):
+        # reduce-overhead means CUDA graphs, which is where most of the batch-1 win
+        # lives; it needs static shapes, hence --static_cache alongside it. Batch-1
+        # decode of a 14B bf16 model runs at ~26% of HBM roofline without this.
+        if not wrapper.use_static_cache:
+            raise SystemExit("--compile_decode requires --static_cache")
+        wrapper.model.forward = torch.compile(
+            wrapper.model.forward, mode="reduce-overhead", fullgraph=False)
+        wrapper.compiled = True
+    print(f"[load] decode_path={decode_path(wrapper)}", flush=True)
     return wrapper
 
 
@@ -491,6 +507,49 @@ def list_tapes(args, want_indices: Optional[Sequence[int]] = None) -> List[Dict]
     return out
 
 
+def decode_path(wrapper) -> str:
+    """Identify the kernels a row came from, e.g. `sdpa+dynamic` or `flash_attention_2+static+compile`.
+
+    Two rows from different paths are not comparable at the token level even though
+    both are "greedy at temperature 0", for the same reason two batch sizes are not.
+    """
+    m = getattr(wrapper, "model", None)
+    if m is None:
+        return "unknown"
+    attn = getattr(getattr(m, "config", None), "_attn_implementation", None) or "unknown"
+    parts = [str(attn)]
+    parts.append("static" if getattr(wrapper, "use_static_cache", False) else "dynamic")
+    if getattr(wrapper, "compiled", False):
+        parts.append("compile")
+    return "+".join(parts)
+
+
+def filter_decode_path(rows: List[Dict], args) -> List[Dict]:
+    """Scope an analysis to one decode path. Rows written before provenance existed
+    carry no path, so they are selectable as `unrecorded`."""
+    want = (getattr(args, "decode_path", "") or "").strip()
+    if not want:
+        return rows
+    kept = [r for r in rows if (r.get("decode_path") or "unrecorded") == want]
+    if not kept:
+        seen = sorted({r.get("decode_path") or "unrecorded" for r in rows})
+        raise SystemExit(f"no rows with decode_path={want!r}; present: {seen}")
+    return kept
+
+
+def assert_one_decode_path(rows: Sequence[Dict], what: str) -> Optional[str]:
+    """Refuse to aggregate rows produced by different kernels."""
+    paths = {r.get("decode_path") or "unrecorded" for r in rows}
+    if len(paths) > 1:
+        raise SystemExit(
+            f"{what} mixes decode paths {sorted(paths)}. Token counts from different "
+            f"kernels are not comparable (bf16 greedy decoding is not invariant to "
+            f"reduction order). Re-decode every arm on one path, or scope the "
+            f"analysis with --decode_path."
+        )
+    return next(iter(paths)) if paths else None
+
+
 def decode_group(wrapper, ns, args, items: Sequence[Dict], caches: Sequence[Any],
                  method: str, extras: Optional[Sequence[Optional[Dict]]] = None,
                  seal_on: Optional[bool] = None) -> List[Dict]:
@@ -547,6 +606,12 @@ def decode_group(wrapper, ns, args, items: Sequence[Dict], caches: Sequence[Any]
             "cache_pos": 0 if cache is None else int(num_positions(cache)),
             "cache_mb": 0.0 if cache is None else float(kv_mb(cache)),
             "critical": int(it["idx"]) in CRITICAL,
+            # Which kernels produced this row. Changing the attention implementation
+            # or turning on CUDA graphs changes reduction order, and bf16 greedy
+            # decoding is not invariant to that (7/48 trajectories flipped in
+            # scripts/diag_batch_parity.py). So a row is only comparable to rows from
+            # the same path, and the analysis modes refuse to mix them.
+            "decode_path": decode_path(wrapper),
         }
         extra = (extras or [None] * n)[b]
         if extra:
@@ -1196,6 +1261,8 @@ def run_latency(args) -> Dict:
         raise SystemExit("no timed rows in rows.jsonl")
     drop = {a.strip() for a in (args.exclude_arms or "").split(",") if a.strip()}
     rows = [r for r in rows if r["method"] not in drop]
+    rows = filter_decode_path(rows, args)
+    assert_one_decode_path(rows, "--mode latency")
     cap = int(args.judger_budget)
     base = args.baseline_arm
 
@@ -1329,6 +1396,8 @@ def run_promote(args) -> Dict:
     40 regressed.
     """
     rows = [r for r in load_rows(args.out_dir) if r.get("judger_s") is not None]
+    rows = filter_decode_path(rows, args)
+    assert_one_decode_path(rows, "--mode promote")
     by = {(r["method"], int(r["idx"])): r for r in rows}
     cap = int(args.promote_cap)
     tag = args.promote_tag
@@ -1822,6 +1891,14 @@ def main():
                     help="arms to drop from --mode latency (e.g. known-bad batched probes)")
     ap.add_argument("--tape_dir_exact", action="store_true",
                     help="use --tape_dir verbatim instead of adding a task/model/k subdir")
+    ap.add_argument("--decode_path", default="",
+                    help="scope an analysis to rows produced by one kernel path")
+    ap.add_argument("--attn_impl", default="",
+                    help="attention kernel at load time, e.g. flash_attention_2")
+    ap.add_argument("--static_cache", action="store_true",
+                    help="move the injected KV cache into a StaticCache (needed for CUDA graphs)")
+    ap.add_argument("--compile_decode", action="store_true",
+                    help="torch.compile(mode=reduce-overhead); requires --static_cache")
     ap.add_argument("--budget_arms", default="real")
     ap.add_argument("--loop_ngram", type=int, default=8)
     ap.add_argument("--loop_window", type=int, default=256)
