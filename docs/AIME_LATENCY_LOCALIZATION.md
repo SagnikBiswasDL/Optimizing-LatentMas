@@ -247,14 +247,24 @@ run that never emitted EOS and burned the whole budget.
 | real_seal40 | 6 | 0.500 | 6745 | 0.33 |
 | real_seal60 | 2 | (1.000) | 4896 | 0.50 |
 
-**The latent cache is doing real work.** Deleting it outright halves accuracy
-(0.667 → 0.333) and collapses termination (EOS 0.67 → 0.17). This is the first
-direct evidence on AIME that the upstream agents contribute something the Judger
-cannot reconstruct alone, and it cuts against the content-insensitivity readings
-from the shuffled-cache experiments: shuffling the cache was survivable, but
-removing it is not. Note *how* it fails — without the cache the Judger mostly
-stops terminating, so the cache's contribution looks like knowing when the problem
-is finished, not just what to say.
+**The cache result is confounded by item selection and must not be quoted as
+evidence.** Deleting the cache takes accuracy 0.667 → 0.333 and EOS 0.67 → 0.17,
+which looks like strong evidence that the upstream agents contribute something the
+Judger cannot reconstruct. It is not, and the reason is in §0: `{4,10,18}` were
+chosen *because* Real K=10 solves them and Frozen/Mean-Replay does not. The
+`real`-minus-`none` difference is exactly items **4 and 10** — both from that
+selected set. So the arm gap is close to circular: we picked items where the real
+cache uniquely wins, then measured that the real cache wins.
+
+What this run legitimately shows is narrower: the harness reproduces the known
+ladder (`real` = 4/6 with all three critical items kept), and the *mechanism* of
+failure without a cache is refusal to terminate rather than wrong answers — 4 of 6
+`none` runs never box anything at all (§3b). The mechanism claim is not
+selection-dependent in the same way, because it is about how the failures look
+rather than how many there are.
+
+**An unbiased estimate needs the other 24 AIME-2024 items.** Until then, treat
+"the latent cache helps on AIME" as untested, not supported.
 
 **SEAL at the Judger is a net loss on AIME, and the risk we flagged is exactly
 what happened.** Accuracy falls 0.667 → 0.500 and mean tokens go *up* (6591 →

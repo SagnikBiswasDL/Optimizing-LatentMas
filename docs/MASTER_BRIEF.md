@@ -40,10 +40,16 @@ directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
   mid-computation at the budget. So accuracy here may be measuring convergence *speed*,
   not reasoning ability, and SEAL's damage was making items **not finish** rather than
   answer wrong. Next run (`insight`) extends the budget to settle it.
-- **The latent cache earns its keep on AIME (2026-09-22, measured, n=6):** deleting the
-  upstream cache halves accuracy (**0.667 → 0.333**) and collapses termination
-  (**EOS 0.67 → 0.17**). Shuffling the cache was survivable; removing it is not. The
-  cache's contribution looks like knowing when the problem is *done*.
+- **If you are a fresh agent, read `READ_ME_FIRST_AGENT_BRIEFING.md` before this file.**
+  It lists the invalidated claims, the silent batching bug, and which of these bullets
+  are superseded. This brief is layered chronologically, so later entries correct
+  earlier ones.
+- **⚠️ The "cache helps on AIME" result is CONFOUNDED — do not quote it.** Deleting the
+  cache gives 0.667 → 0.333, but the n=6 focus set contains `{4,10,18}`, which were
+  *selected* because Real K=10 solves them and Frozen does not. The entire arm gap is
+  items 4 and 10, both from that set. It is circular. What survives is the *mechanism*:
+  without a cache, 4 of 6 runs never box an answer at all, so the failure is refusal to
+  terminate rather than wrong answers. **An unbiased estimate needs the other 24 items.**
 - **SEAL at the Judger is a net loss on AIME (same run):** acc **0.667 → 0.500** and
   mean tokens go *up* (6591 → 6745) because EOS rate halves. It is a −31%/−23% token
   win on the items it keeps, and it uniquely solves item 1, but it breaks termination
