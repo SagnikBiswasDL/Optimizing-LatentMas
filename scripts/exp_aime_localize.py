@@ -885,6 +885,96 @@ def write_report(args) -> Dict:
 BUDGETS = (512, 1024, 1536, 2048, 3072, 4096, 6144, 8192)
 
 
+_BOX = re.compile(r"\\boxed\{([^{}]*)\}")
+
+
+def _as_int(s: str) -> str:
+    d = re.sub(r"[^0-9]", "", s or "")
+    return str(int(d)) if d else ""
+
+
+def run_answers(args) -> Dict:
+    """Did the model ever write the right answer, and where? CPU only.
+
+    This separates three failure modes that all look identical in an accuracy
+    column: wrote the answer then talked itself out of it, wrote it and we failed
+    to extract it, or never reached an answer at all. The third is the only one a
+    token budget or a stopping rule can be blamed for.
+    """
+    rows = load_rows(args.out_dir)
+    tdir = os.path.join(args.out_dir, "texts")
+    if not rows or not os.path.isdir(tdir):
+        raise SystemExit("need rows.jsonl + texts/ — run --mode views first")
+    pool = load_pool(args.task)
+    arms = [a.strip() for a in (args.budget_arms or "").split(",") if a.strip()]
+    per_arm: Dict[str, Dict] = {}
+    items: List[Dict] = []
+    for r in sorted(rows, key=lambda r: (r["method"], int(r["idx"]))):
+        if arms and r["method"] not in arms:
+            continue
+        idx = int(r["idx"])
+        p = os.path.join(tdir, f"{idx:04d}_{r['method']}.txt")
+        if not os.path.isfile(p) or idx >= len(pool):
+            continue
+        text = open(p).read()
+        gold = _as_int(str(pool[idx].get("gold") or ""))
+        boxes = [(m.start(), _as_int(m.group(1))) for m in _BOX.finditer(text)]
+        hits = [pos for pos, v in boxes if gold and v == gold]
+        rec = {
+            "idx": idx, "method": r["method"], "correct": bool(r["correct"]),
+            "eos": bool(r.get("eos")), "tokens": int(r["tokens"]),
+            "n_boxed": len(boxes),
+            "wrote_gold": bool(hits),
+            "first_gold_frac": (hits[0] / len(text)) if hits and text else None,
+            "final_boxed": boxes[-1][1] if boxes else None,
+        }
+        items.append(rec)
+        a = per_arm.setdefault(r["method"], {
+            "n": 0, "correct": 0, "wrote_gold": 0, "no_boxed_at_all": 0, "eos": 0})
+        a["n"] += 1
+        a["correct"] += int(rec["correct"])
+        a["wrote_gold"] += int(rec["wrote_gold"])
+        a["no_boxed_at_all"] += int(rec["n_boxed"] == 0)
+        a["eos"] += int(rec["eos"])
+    # The headline: if these two columns never disagree, no answer was ever
+    # produced and then lost, so accuracy is bounded by reaching an answer.
+    lost = [r for r in items if r["wrote_gold"] and not r["correct"]]
+    out = {"task": args.task, "n": len(items), "per_arm": per_arm,
+           "wrote_gold_but_marked_wrong": lost, "items": items}
+    with open(os.path.join(args.out_dir, "answers.json"), "w") as f:
+        json.dump(out, f, indent=2)
+    lines = [
+        "# Where the answer appears", "",
+        "| arm | n | correct | ever wrote gold | never boxed anything | eos |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
+    for m, a in sorted(per_arm.items()):
+        lines.append(
+            f"| {m} | {a['n']} | {a['correct']} | {a['wrote_gold']} | "
+            f"{a['no_boxed_at_all']} | {a['eos']} |"
+        )
+    lines += ["", "| arm | idx | ok | eos | tokens | #boxed | gold first seen | final boxed |",
+              "|---|---:|---|---|---:|---:|---:|---:|"]
+    for r in items:
+        frac = "never" if r["first_gold_frac"] is None else f"{100.0 * r['first_gold_frac']:.0f}%"
+        lines.append(
+            f"| {r['method']} | {r['idx']} | {int(r['correct'])} | "
+            f"{'Y' if r['eos'] else 'N'} | {r['tokens']} | {r['n_boxed']} | {frac} | "
+            f"{r['final_boxed'] or '-'} |"
+        )
+    lines += ["", f"**Wrote the gold answer yet graded wrong: {len(lost)} of {len(items)}.**"]
+    if not lost:
+        lines.append(
+            "Nothing was produced and then lost, so extraction and self-doubt are "
+            "both ruled out: every failure here is a failure to reach an answer at "
+            "all within the budget."
+        )
+    with open(os.path.join(args.out_dir, "ANSWERS.md"), "w") as f:
+        f.write("\n".join(lines) + "\n")
+    print("\n".join(lines), flush=True)
+    return out
+
+
 def run_compare(args) -> Dict:
     """Diff two arms' saved generations token-for-token. CPU only.
 
@@ -1236,7 +1326,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="report",
                     choices=["smoke", "collect", "views", "isolated", "isolated_frozen",
-                             "budget", "loops", "compare", "report"])
+                             "budget", "loops", "compare", "answers", "report"])
     ap.add_argument("--budget_arms", default="real")
     ap.add_argument("--loop_ngram", type=int, default=8)
     ap.add_argument("--loop_window", type=int, default=256)
@@ -1303,6 +1393,8 @@ def main():
         run_loops(args)
     elif args.mode == "compare":
         run_compare(args)
+    elif args.mode == "answers":
+        run_answers(args)
     else:
         write_report(args)
 

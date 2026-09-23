@@ -279,6 +279,49 @@ The cache result (a 2-item gap, and a mechanism visible in the EOS rate) is wort
 believing directionally. The SEAL result is one lost solve away from neutral and
 needs n=30 before it is quotable.
 
+## 3b. Every failure is a failure to *reach* an answer (2026-09-23, free)
+
+`--mode answers` scans the saved generations for `\boxed{}` and asks whether the
+gold answer appears anywhere, at any point, regardless of how the run was graded.
+Across all 26 generations:
+
+| arm | n | correct | ever wrote gold | never boxed anything |
+|---|---:|---:|---:|---:|
+| real | 6 | 4 | **4** | 2 |
+| none | 6 | 2 | **2** | 4 |
+| real_seal40 | 6 | 3 | **3** | 3 |
+| real_seal60 | 2 | 2 | **2** | 0 |
+| real__bs16 | 6 | 2 | **2** | 3 |
+
+**"Correct" and "ever wrote the gold answer" never disagree — 0 of 26 cases.**
+That rules out two whole classes of explanation at once. Nothing is being
+produced and then thrown away, so the model is not talking itself out of answers,
+and our extraction is not losing them either. And the failures do not merely pick
+the wrong answer: in almost every failing run the count of boxed expressions is
+**zero**. The model is still mid-computation when the budget ends.
+
+This is the third and strongest version of the same correction. We thought the
+waste was non-termination, then degenerate looping, then verbosity. It is none of
+those: **the failing items never get to an answer inside 8192 tokens.** Which
+means accuracy on this set may be measuring convergence *speed* rather than
+reasoning ability — and if so, every accuracy number in this project needs reading
+that way, including the cache result in §3, where `none`'s collapse shows up
+precisely as 4 of 6 items never boxing anything.
+
+It also reframes SEAL cleanly. SEAL did not make items 10 and 18 *wrong*; it made
+them **not finish**, taking both from solved-with-EOS to zero boxed answers. And
+`real__bs16` item 4 is the one exception worth noting in the other direction: it
+terminated with a confident wrong answer (`134`), so the batching bug does not
+merely truncate, it changes the reasoning.
+
+**The one experiment that resolves this is a budget extension** — `insight` stage,
+~45 min. Give items 1 and 2 three times the budget under `real`: if they converge,
+the ceiling here is speed and not capability. Give items 10 and 18 twice the budget
+under `seal40`: if they come back, SEAL only slowed convergence rather than
+breaking it. The same stage runs `shuf` to separate the cache's *content* from its
+mere presence, the control that is missing between `real` (0.667) and `none`
+(0.333).
+
 ### Grouped decoding failed parity — do not use it for accuracy (2026-09-22)
 
 Measured, not predicted. Six items, batch of 6, left-padded prompts and

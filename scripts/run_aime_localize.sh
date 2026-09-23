@@ -3,7 +3,8 @@
 # then role-budgeted eviction. Restart-safe. GPU from `collect` onward.
 #
 #   bash scripts/run_aime_localize.sh smoke
-#   bash scripts/run_aime_localize.sh blitz     # fixed GPU window, value-ordered. START HERE.
+#   bash scripts/run_aime_localize.sh insight   # ~45 min: budget-limit + cache-content probes
+#   bash scripts/run_aime_localize.sh blitz     # fixed GPU window, value-ordered
 #   bash scripts/run_aime_localize.sh parity    # ~6 min: certify grouped decode. RUN FIRST.
 #   bash scripts/run_aime_localize.sh sweep     # ~1.5h: n=30, real/none/seal40/seal60
 #   bash scripts/run_aime_localize.sh localize30   # ~1.7h: n=30 localization arms
@@ -250,6 +251,45 @@ aime25_sweep () {
   LOG=$save_log
 }
 
+# The insight run. `--mode answers` showed that across every arm, "graded correct"
+# and "ever wrote the gold answer" never disagree, and the failures never emit a
+# boxed answer at all. So nothing is being produced and then lost: every failure
+# is a failure to *reach* an answer inside 8192 tokens. Two questions follow, and
+# this stage asks both. Unbatched throughout, because batching failed parity.
+insight () {
+  local vec_ok=1
+  need_seal_vector real_seal40 || vec_ok=0
+  run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" \
+    --judger_budget 8192
+
+  # Q1. Budget-limited or capability-limited? Items 1 and 2 never reach an answer
+  # in any arm. If 3x the budget solves them, then accuracy at a fixed budget is
+  # measuring convergence *speed*, not reasoning ability, and every number in this
+  # project has to be read that way. If it does not, the ceiling is the model's.
+  run_py --mode views --task aime2024 --view_arms real --view_indices 1,2 \
+    --judger_budget 24576 --method_tag b24k --decode_bs 1
+
+  # Q1b. Was SEAL's damage speed or correctness? It pushed items 10 and 18 from
+  # solved-with-EOS to never-finishing. At 2x budget, either they come back (SEAL
+  # only slowed convergence) or they do not (SEAL broke the reasoning).
+  if [[ $vec_ok -eq 1 ]]; then
+    run_py --mode views --task aime2024 --view_arms real_seal40 --view_indices 10,18 \
+      --judger_budget 16384 --method_tag b16k --decode_bs 1 \
+      --seal_vector "$SEAL_VECTOR" --seal_layer "${SEAL_LAYER:-28}"
+  fi
+
+  # Q2. Does the cache's *content* matter, or only its presence? `none` halves
+  # accuracy; `shuf` hands the Judger a different problem's cache at the same
+  # size. Landing near `real` means the cache works as generic scaffolding;
+  # landing near `none` means the upstream agents encode something specific.
+  run_py --mode views --task aime2024 --view_arms shuf \
+    --view_indices "${INDICES:-0,1,2,4,10,18}" --judger_budget 8192 --decode_bs 1
+
+  run_py --mode report
+  run_py --mode answers --task aime2024 \
+    --budget_arms real,none,shuf,real_seal40,real__b24k,real_seal40__b16k
+}
+
 # One command for a fixed GPU window. Arms run in value order and the sweep
 # stops cleanly between batches when the budget expires, so whatever finished is
 # complete and persisted rather than half-written. BLITZ_MIN sets the window.
@@ -345,6 +385,7 @@ case "$stage" in
   smoke) smoke ;;
   quick) quick ;;
   seal) seal ;;
+  insight) insight ;;
   blitz) blitz ;;
   parity) parity ;;
   sweep) sweep ;;
@@ -360,7 +401,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist

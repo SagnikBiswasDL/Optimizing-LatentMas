@@ -34,6 +34,12 @@ directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
   The real latency target is Judger tokens: the items we get **wrong** are exactly the ones
   that never emit EOS and burn the full 8192 budget (188s vs 60s for a solved item).
   Full numbers + next steps: `AIME_LATENCY_LOCALIZATION.md`.
+- **Every AIME failure we have is a failure to *reach* an answer (2026-09-23):** across
+  all 26 generations, "graded correct" and "ever wrote the gold answer anywhere" **never
+  disagree (0/26)**, and failing runs emit **zero** boxed expressions — still
+  mid-computation at the budget. So accuracy here may be measuring convergence *speed*,
+  not reasoning ability, and SEAL's damage was making items **not finish** rather than
+  answer wrong. Next run (`insight`) extends the budget to settle it.
 - **The latent cache earns its keep on AIME (2026-09-22, measured, n=6):** deleting the
   upstream cache halves accuracy (**0.667 → 0.333**) and collapses termination
   (**EOS 0.67 → 0.17**). Shuffling the cache was survivable; removing it is not. The
