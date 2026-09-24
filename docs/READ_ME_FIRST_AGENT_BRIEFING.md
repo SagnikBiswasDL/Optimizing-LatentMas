@@ -55,6 +55,42 @@ This single equation should drive the whole plan, and it has three consequences:
   token count is a faithful and hardware-independent latency proxy. This makes the
   experiments cheaper and the result far more robust than wall-clock timing.
 
+### The 42.5 tok/s floor, measured against the hardware ceiling (H200, 2026-09-24)
+
+`scripts/diag_throughput.py` prices the floor against a roofline. Batch-1 decode of a
+14B bf16 model is memory-bound, so the ceiling is weights over bandwidth:
+29.6 GB / 4.8 TB/s = 6.17 ms/token = **162 tok/s**. Measured: **43.8 tok/s, 27% of
+roofline**. So there is a 3.7x headroom in serving, independent of token count.
+
+**Do not reach for `StaticCache` to close it.** It looks like a 1.72x win and is not:
+
+```
+generate + dynamic                     43.7 tok/s   1.00x
+generate + static, auto len 956        75.4 tok/s   1.72x   <- the trap
+generate + static, max_cache_len 9216  14.9 tok/s   0.34x
+generate + static, max_cache_len 16384 12.3 tok/s   0.28x
+```
+
+StaticCache attends over every *allocated* slot each step, masked, while the dynamic
+cache attends over the slots actually filled. Its cost therefore scales with the
+allocation, not the true length. A probe that generates 256 tokens from a 700-token
+prefix allocates ~956 slots and measures 1.72x; the Judger allocates
+`prefix + judger_budget` ~= 9000 because the budget is 8192, and there the same path
+is **3x slower**. This was confirmed end-to-end in the pipeline before it was caught:
+AIME item 0 ran at 23.7 tok/s and item 1 at 28.1 tok/s on `sdpa+static`, against 42.6
+and 42.5 on `sdpa+dynamic`.
+
+`scripts/diag_static_cache_len.py` sweeps the allocation and isolates the effect.
+An earlier commit message (`3c9f0cb`) claims 1.70x and cites it as a reason to run the
+cohort on that path. That claim is retracted; the cohort ran on `sdpa+dynamic`.
+
+**The opportunity this leaves.** The 1.72x at tight allocation is real, and it is not
+an attention effect — hand-rolled decode at `max_cache_len=1024` is *slower* than
+dynamic (40.1 vs 45.2), so the gain lives in `generate()`'s per-step overhead (no cache
+concat, no mask rebuild). Capturing it requires allocating close to the true length and
+growing on demand, rather than allocating the whole budget up front. That is the
+unexplored serving lever; see §6.
+
 ### ⚠️ SEAL is currently a net latency LOSS. Retracted claim, read this.
 
 An earlier version of this file reported "1.31x–1.63x lower latency at preserved
@@ -357,13 +393,32 @@ problems is real; it is the accuracy side that breaks.
    **no per-item oracle selection.**
 4. **Then, and only then, n=30 with the frozen coefficient**, plus AIME-2025 as a
    holdout with its own tape directory. Report every item, including failures.
-5. **Serving-stack throughput** (vLLM, speculative decoding, batch-invariant
-   kernels). This is the *other* lever and it is entirely untouched. It raises the
-   42.5 tok/s floor, composes with any token reduction, and unlike steering it cannot
-   cost accuracy. For a latency deliverable this may well be the better bet.
-   Caveat: batching improves throughput, not single-request latency — do not multiply
-   the two (§1a″).
-6. **Per-role localization** (`c1`/`c2`/`c3`/`c23`), never run: harness, segment-aware
+5. **CUDA graphs with a tightly-allocated static cache. This is the most concrete
+   serving lever and the mechanism is now known.** `generate()` compiles the forward
+   automatically when it is handed a compileable cache — `generation/utils.py:2759`
+   calls `_valid_auto_compile_criteria`, which requires
+   `past_key_values.is_compileable` (line 2149), and `StaticCache.is_compileable` is
+   `True`. That auto-compile, not attention or Python overhead, is where the 1.72x in
+   §0 comes from: a hand-rolled eager loop on the *same* static cache at the *same*
+   length runs at 40.1 tok/s, slower than dynamic's 45.2.
+
+   So CUDA graphs are worth ~1.7x, but they are gated on a static cache, whose masked
+   attention tax grows with the allocation and overwhelms the gain at
+   `max_cache_len ~= 9000` (0.34x). The fix is to allocate near the true length and
+   grow on demand — segment the decode, and on exhausting a segment copy into a larger
+   static cache and continue. Greedy decoding makes segmented and single-shot
+   generation equivalent, and `--mode prefix` already exists to verify that a longer
+   run retraces a shorter one. Use a small fixed ladder of sizes (2048, 4096, 8192) so
+   only a handful of shapes are ever compiled; every distinct `max_cache_len` costs a
+   recompilation. Two traps: do not also call `torch.compile(model.forward)` yourself
+   (it collides with generate's compiled call and takes the interpreter down with no
+   traceback), and re-verify the layer-28 SEAL hook still fires once compiled, since a
+   hook dropped from the captured graph would silently measure the unsteered model.
+6. **Other serving-stack throughput** (vLLM, speculative decoding, batch-invariant
+   kernels), entirely untouched. Raises the 42.5 tok/s floor, composes with any token
+   reduction, and unlike steering cannot cost accuracy. Caveat: batching improves
+   throughput, not single-request latency — do not multiply the two (§1a″).
+7. **Per-role localization** (`c1`/`c2`/`c3`/`c23`), never run: harness, segment-aware
    KV slicing, and eviction are written and unit-tested. Frame as **KV memory**, not
    latency (§0), and note that a memory win only becomes a throughput win if you show
    the freed memory buys useful concurrency. Same for K-sweeps.
