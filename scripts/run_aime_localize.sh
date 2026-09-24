@@ -455,8 +455,15 @@ efficiency () {
   # --- Stage 1: de-censor the baseline. Items 1 and 2 never finished at 8192, so
   # the baseline's own token total is currently a lower bound, and the whole
   # comparison is against an unknown number.
-  if have_time $(( per_item * 2 )) "stage1 de-censor baseline"; then
-    run_py --mode views --task aime2024 --view_arms real --view_indices 1,2 \
+  #
+  # Only the censored items need re-running when the reusable rows carry the same
+  # decode-path provenance as the new ones. Rows written before provenance existed
+  # do not, and --mode promote refuses a mixed set, so set BASELINE_INDICES to the
+  # full cohort when rebuilding a baseline on a different or newly-recorded path.
+  local base_idx=${BASELINE_INDICES:-1,2}
+  local n_base; n_base=$(( $(tr -cd ',' <<<"$base_idx" | wc -c) + 1 ))
+  if have_time $(( per_item * n_base )) "stage1 de-censor baseline ($base_idx)"; then
+    run_py --mode views --task aime2024 --view_arms real --view_indices "$base_idx" \
       --judger_budget "$cap" --method_tag "$tag" --decode_bs 1 \
       --time_budget_s "$(remaining)"
     # Did the longer run retrace the shorter one? If not, extended and original
