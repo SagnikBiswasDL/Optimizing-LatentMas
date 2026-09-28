@@ -421,3 +421,26 @@ def test_latency_mean_tokens_uses_completed_runs_only(tmp_path):
     # real completed items 0 and 1 only -> mean over {1000, 2000}, not the 8192
     assert res["arms"]["real"]["mean_tokens_completed"] == pytest.approx(1500.0)
     assert res["arms"]["real"]["n_censored"] == 1
+
+
+def test_parse_arm_reads_a_positive_coefficient():
+    assert E.parse_arm("real_seal40") == ("real", 40.0)
+    assert E.parse_arm("real_seal7.5") == ("real", 7.5)
+
+
+def test_parse_arm_reads_a_negative_coefficient():
+    """The sign is the open question: positive coefficients lengthen output on
+    AIME, so the opposite sign has to be expressible to be tested."""
+    assert E.parse_arm("real_seal-40") == ("real", -40.0)
+    assert E.parse_arm("frozen_seal-7.5") == ("frozen", -7.5)
+
+
+def test_parse_arm_leaves_unsteered_arms_alone():
+    for name in ("real", "none", "frozen", "c23", "real__b16k"):
+        assert E.parse_arm(name) == (name, None)
+
+
+def test_parse_arm_does_not_mistake_a_trailing_dash_for_a_coefficient():
+    # A bare sign is not a number; this must not parse as coef 0 or crash.
+    assert E.parse_arm("real_seal-") == ("real_seal-", None)
+    assert E.parse_arm("real_seal") == ("real_seal", None)

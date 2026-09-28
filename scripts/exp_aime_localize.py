@@ -96,15 +96,23 @@ VIEW_ARMS = (
 )
 
 
-_SEAL_ARM = re.compile(r"^(?P<base>.+)_seal(?P<coef>\d+(?:\.\d+)?)$")
+_SEAL_ARM = re.compile(r"^(?P<base>.+)_seal(?P<coef>-?\d+(?:\.\d+)?)$")
 
 
 def parse_arm(name: str):
-    """`real_seal40` -> ("real", 40.0); plain arms -> (name, None).
+    """`real_seal40` -> ("real", 40.0); `real_seal-40` -> ("real", -40.0);
+    plain arms -> (name, None).
 
     Encoding the coefficient in the arm name keeps each setting a distinct,
     restart-safe row and lets one process sweep coefficients without reloading
     the model — the steering hook is attached once and armed per decode.
+
+    Negative coefficients are spellable because the sign is the open question:
+    the vector is `mean(execution) - mean(reflection + transition)`, so a
+    positive coefficient steers toward execution and should shorten output, and
+    on AIME it measurably lengthens it instead (item 10: 5848 tokens at coef 0,
+    10604 at 20, 14704 at 60, capped at 80). Testing the other sign costs two
+    items of GPU; until this regex accepted `-`, it could not be expressed.
     """
     m = _SEAL_ARM.match(name)
     if m:
