@@ -433,6 +433,44 @@ fastparity () {
 #  * Screening runs on the two items coef 40 broke. A coefficient that cannot hold
 #    those cannot pass the rule, so it is rejected for ~2 items of GPU instead of 6.
 # ===========================================================================
+# The same decision run with the coefficient sign flipped. Positive coefficients
+# lengthen the Judger's output monotonically on item 10 (5848 -> 10604 -> 14704 ->
+# capped; see docs/RESULTS_2026_09_24_COEFFICIENT_RUN.md), and the vector is
+# mean(execution) - mean(reflection + transition), so steering the other way is
+# the cheap test of whether the axis carries any brevity signal at all.
+#
+# BASELINE_INDICES defaults to the whole cohort here rather than the censored two,
+# because a baseline reused from another pod carries no decode-path provenance and
+# --mode promote refuses a mixed set.
+signflip () {
+  local flipped=${COEFS:-"-20,-40,-60"}
+  COEFS=$flipped BASELINE_INDICES=${BASELINE_INDICES:-0,1,2,4,10,18} efficiency
+}
+
+# k samples per item at temperature, recording length, correctness, and layer-28
+# activations. Two questions in one run: the noise floor (how far accuracy moves
+# when only the seed changes), and whether correct solutions to the *same* problem
+# differ in length at all — which is the precondition for brevity steering. If
+# every correct solution to a problem is the same length there is no terse mode to
+# steer toward, and that is worth one GPU-hour to learn before building a vector.
+samples () {
+  local idx=${INDICES:-0,1,2,4,10,18}
+  local k=${K_SAMPLES:-4}
+  local temp=${SAMPLE_TEMP:-0.6}
+  local cap=${SAMPLE_CAP:-16384}
+  local budget=${SAMPLES_S:-7200}
+  start_deadline "$budget"
+  local per_item=$(( cap * 100 / 4250 ))
+  echo "[localize] samples: k=$k temp=$temp cap=$cap items=$idx" \
+    "worst case $(( per_item * k * 6 / 60 ))min" | tee -a "$LOG"
+  run_py --mode collect --task aime2024 --n 6 --indices "$idx" --judger_budget "$cap"
+  run_py --mode samples --task aime2024 --view_arms "${SAMPLE_ARM:-real}" \
+    --view_indices "$idx" --judger_budget "$cap" --k_samples "$k" \
+    --temperature "$temp" --decode_bs 1 --act_window "${ACT_WINDOW:-128}" \
+    --time_budget_s "$(remaining)"
+  persist
+}
+
 efficiency () {
   local cap=${PROMOTE_CAP:-16384}
   local tag=${PROMOTE_TAG:-b16k}
@@ -710,6 +748,8 @@ case "$stage" in
   fastparity) fastparity ;;
   program) program ;;
   efficiency) efficiency ;;
+  signflip) signflip ;;
+  samples) samples ;;
   confirm24) confirm24 ;;
   blitz) blitz ;;
   parity) parity ;;
@@ -726,7 +766,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 program|throughput|fastparity|efficiency|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist

@@ -444,3 +444,79 @@ def test_parse_arm_does_not_mistake_a_trailing_dash_for_a_coefficient():
     # A bare sign is not a number; this must not parse as coef 0 or crash.
     assert E.parse_arm("real_seal-") == ("real_seal-", None)
     assert E.parse_arm("real_seal") == ("real_seal", None)
+
+
+# --- brevity sampling: the pooling must not encode length -------------------
+
+def test_window_recorder_drops_the_prefill_entry():
+    """The first forward is the prompt; its last position is not a generated
+    token, and mixing it in would put question-dependent state into a direction
+    meant to describe generation."""
+    rec = E.WindowRecorder(layer_index=0, window=8)
+    rec.buffer = [torch.full((1, 4), 99.0)]          # prefill
+    rec.buffer += [torch.full((1, 4), 1.0), torch.full((1, 4), 3.0)]
+    pooled = rec.pooled()
+    assert pooled is not None
+    assert torch.allclose(pooled, torch.full((4,), 2.0))  # not 34.33
+
+
+def test_window_recorder_needs_at_least_one_generated_token():
+    rec = E.WindowRecorder(layer_index=0, window=8)
+    rec.buffer = [torch.zeros((1, 4))]
+    assert rec.pooled() is None
+
+
+def test_window_recorder_stops_at_the_window():
+    """Pooling over a bounded window is what makes the representation
+    length-independent; an unbounded buffer would reintroduce the confound."""
+    rec = E.WindowRecorder(layer_index=0, window=3)
+    for _ in range(50):
+        rec._hook(None, None, torch.zeros((1, 2, 4)))
+    assert len(rec.buffer) == 4  # prefill + window
+
+
+def test_window_pooling_is_invariant_to_run_length():
+    short, long = E.WindowRecorder(0, 2), E.WindowRecorder(0, 2)
+    for rec, extra in ((short, 0), (long, 40)):
+        rec.buffer = [torch.full((1, 3), 7.0)]
+        rec.buffer += [torch.full((1, 3), 1.0), torch.full((1, 3), 2.0)]
+        rec.buffer += [torch.full((1, 3), 9.0)] * extra  # beyond the window
+        rec.buffer = rec.buffer[: rec.window + 1]
+    assert torch.allclose(short.pooled(), long.pooled())
+
+
+def test_variance_report_counts_items_usable_for_a_within_problem_contrast(capsys):
+    meta = [
+        # idx 0: two correct at different lengths -> usable
+        {"idx": 0, "sample": 0, "tokens": 3000, "correct": True, "eos": True},
+        {"idx": 0, "sample": 1, "tokens": 9000, "correct": True, "eos": True},
+        # idx 1: one correct only -> not usable for a within-problem contrast
+        {"idx": 1, "sample": 0, "tokens": 5000, "correct": True, "eos": True},
+        {"idx": 1, "sample": 1, "tokens": 8000, "correct": False, "eos": True},
+    ]
+    res = E.report_sample_variance(meta)
+    assert res[0]["n_correct"] == 2
+    assert res[0]["spread"] == pytest.approx(3.0)
+    assert res[1]["n_correct"] == 1 and res[1]["spread"] is None
+    assert "**1**" in capsys.readouterr().out  # exactly one usable item
+
+
+def test_variance_report_says_so_when_no_item_has_two_correct_samples(capsys):
+    meta = [{"idx": 0, "sample": 0, "tokens": 100, "correct": False, "eos": True},
+            {"idx": 0, "sample": 1, "tokens": 200, "correct": True, "eos": True}]
+    E.report_sample_variance(meta)
+    assert "cannot be estimated" in capsys.readouterr().out
+
+
+def test_samples_mode_refuses_greedy_decoding_before_touching_a_gpu():
+    """At temperature 0 every sample is the same run, so the variance this mode
+    exists to measure is zero by construction. Must fail on a laptop."""
+    with pytest.raises(SystemExit) as ei:
+        E.run_samples(cfg(temperature=0.0, k_samples=4))
+    assert "temperature" in str(ei.value)
+
+
+def test_samples_mode_refuses_a_single_sample():
+    with pytest.raises(SystemExit) as ei:
+        E.run_samples(cfg(temperature=0.6, k_samples=1))
+    assert "k_samples" in str(ei.value)

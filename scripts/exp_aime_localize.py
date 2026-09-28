@@ -644,6 +644,222 @@ def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict],
     return decode_group(wrapper, ns, args, [it], [cache], method, [extra], seal_on)[0]
 
 
+class WindowRecorder:
+    """Mean residual at one layer over the first `window` generated tokens.
+
+    Pooling over a fixed early window rather than the whole generation is
+    deliberate. A mean over *every* decode step is confounded with the quantity
+    we want to contrast: a 15k-token run averages 15k states and a 3k-token run
+    averages 3k, so a short-vs-long difference of means would partly encode
+    length itself instead of what distinguishes a terse trajectory from a verbose
+    one. A fixed window is length-independent by construction.
+
+    The early window is also the region a steering vector can act on. The hook
+    adds its delta at the current token on every step, so whatever makes a run
+    verbose has to be present before the run has committed to being long.
+    """
+
+    def __init__(self, layer_index: int, window: int = 128):
+        self.layer_index = int(layer_index)
+        self.window = int(window)
+        self.buffer: List[torch.Tensor] = []
+        self._handle = None
+
+    def _hook(self, _module, _inputs, output):
+        if len(self.buffer) <= self.window:
+            hs = output[0] if isinstance(output, tuple) else output
+            self.buffer.append(hs[:, -1, :].detach().float().to("cpu"))
+        return output
+
+    def register(self, model) -> None:
+        layers = model.model.layers
+        self._handle = layers[self.layer_index].register_forward_hook(self._hook)
+
+    def remove(self) -> None:
+        if self._handle is not None:
+            self._handle.remove()
+            self._handle = None
+
+    def reset(self) -> None:
+        self.buffer = []
+
+    def pooled(self) -> Optional[torch.Tensor]:
+        """Mean over generated tokens only, dropping the prefill entry.
+
+        The first recorded forward is the prompt, whose last position is the final
+        prompt token rather than a generated one; including it would mix a
+        question-dependent state into a direction meant to describe generation.
+        """
+        if len(self.buffer) < 2:
+            return None
+        gen = torch.cat(self.buffer[1:], dim=0)  # [steps, D] at batch 1
+        return gen.mean(dim=0)
+
+
+def run_samples(args) -> None:
+    """Decode each item k times at temperature, recording length and activations.
+
+    Answers two questions one run: how much does the outcome move when nothing
+    but the sampling seed changes (the noise floor, currently unknown, which is
+    why no accuracy claim at n=6 is defensible), and — among samples that are
+    *correct on the same problem* — does the token count vary at all. The second
+    is a prerequisite for any brevity-steering work: if every correct solution to
+    a problem lands at the same length, there is no terse-correct mode to steer
+    toward and no vector can find one.
+
+    Decodes at batch 1 throughout. Grouping would be cheaper but bf16 greedy
+    decoding is not batch-invariant, and here the dependent variable *is* the
+    token count, so the saving would be taken out of the measurement.
+    """
+    # Validate the invocation before asking for a GPU, so a bad sweep fails on a
+    # laptop instead of after a pod has been paid for and a model loaded.
+    if float(args.temperature) <= 0:
+        raise SystemExit(
+            "--mode samples needs --temperature > 0; at temperature 0 every sample "
+            "is the same greedy run and the variance being measured is zero by "
+            "construction"
+        )
+    k = int(args.k_samples)
+    if k < 2:
+        raise SystemExit("--k_samples must be >= 2 to estimate any variance")
+    if not torch.cuda.is_available():
+        raise SystemExit("CUDA required for --mode samples")
+
+    scope = None
+    if args.view_indices and str(args.view_indices).strip():
+        scope = sorted(set(parse_indices(args.view_indices, 0)))
+    tapes = list_tapes(args, scope)
+    if not tapes:
+        raise SystemExit(f"no tapes in {tape_root(args)} — run --mode collect")
+
+    ns = make_ns(args)
+    wrapper = maybe_load_model(args, ns)
+    arm = (args.view_arms or "real").split(",")[0].strip() or "real"
+    base, coef = parse_arm(arm)
+    if coef is not None:
+        if not args.seal_vector:
+            raise SystemExit("steered arm requested but --seal_vector is empty")
+        attach_judger_seal(wrapper, args.seal_vector, coef=coef,
+                           layer_index=args.seal_layer)
+
+    rec = WindowRecorder(int(args.seal_layer), int(args.act_window))
+    rec.register(wrapper.model)
+    feats: List[torch.Tensor] = []
+    meta: List[Dict] = []
+    already = seen_keys(load_rows(args.out_dir))
+    try:
+        for j in range(k):
+            # A distinct seed per sample, derived from --seed so the whole sweep
+            # is reproducible rather than merely random.
+            set_seed(int(args.seed) + 1009 * (j + 1))
+            for tape in tapes:
+                method = f"{arm}_t{str(args.temperature).replace('.', '')}__s{j}"
+                if args.method_tag:
+                    method = f"{method}_{args.method_tag}"
+                key = (int(tape["idx"]), method)
+                if key in already and not args.overwrite:
+                    print(f"[samples] skip {key}", flush=True)
+                    continue
+                cache, extra = view_cache(arm, tape, tapes, args)
+                it = {"idx": tape["idx"], "question": tape["question"],
+                      "gold": tape["gold"]}
+                rec.reset()
+                row = decode_one(wrapper, ns, args, it, cache, method, extra,
+                                 seal_on=coef is not None)
+                row["seal_coef"] = coef
+                row["sample"] = j
+                pooled = rec.pooled()
+                row["act_steps"] = max(0, len(rec.buffer) - 1)
+                append_row(args.out_dir, row)
+                already.add(key)
+                if pooled is not None:
+                    feats.append(pooled)
+                    meta.append({"idx": int(tape["idx"]), "sample": j,
+                                 "tokens": int(row["tokens"]),
+                                 "correct": bool(row["correct"]),
+                                 "eos": bool(row["eos"]),
+                                 "method": method})
+                del cache
+                torch.cuda.empty_cache()
+                persist_small(args)
+                if args.time_budget_s and time.time() - T_START > float(args.time_budget_s):
+                    print(f"[samples] time budget reached after sample {j} "
+                          f"idx {tape['idx']}; partial results are saved", flush=True)
+                    _save_samples(args, feats, meta)
+                    return
+    finally:
+        rec.remove()
+    _save_samples(args, feats, meta)
+    report_sample_variance(meta)
+
+
+def _save_samples(args, feats: Sequence[torch.Tensor], meta: Sequence[Dict]) -> None:
+    if not feats:
+        print("[samples] no activations captured", flush=True)
+        return
+    out = args.features_out or os.path.join(args.out_dir, "sample_features.npz")
+    os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+    X = torch.stack(list(feats), dim=0).numpy()
+    np.savez(
+        out,
+        X=X,
+        idx=np.array([m["idx"] for m in meta], dtype=np.int64),
+        sample=np.array([m["sample"] for m in meta], dtype=np.int64),
+        tokens=np.array([m["tokens"] for m in meta], dtype=np.int64),
+        correct=np.array([m["correct"] for m in meta], dtype=bool),
+        eos=np.array([m["eos"] for m in meta], dtype=bool),
+        layer_index=np.array([int(args.seal_layer)], dtype=np.int64),
+        act_window=np.array([int(args.act_window)], dtype=np.int64),
+    )
+    with open(out.replace(".npz", ".jsonl"), "w") as fh:
+        for m in meta:
+            fh.write(json.dumps(m) + "\n")
+    print(f"[samples] wrote {X.shape[0]} x {X.shape[1]} activations to {out}",
+          flush=True)
+
+
+def report_sample_variance(meta: Sequence[Dict]) -> Dict:
+    """Is there headroom for brevity, and how noisy is a single greedy run?"""
+    by_item: Dict[int, List[Dict]] = {}
+    for m in meta:
+        by_item.setdefault(int(m["idx"]), []).append(m)
+    print("\n## Per-item spread across samples\n", flush=True)
+    print("| idx | n | n correct | tokens (correct only) | spread | finished |")
+    print("|---:|---:|---:|---|---:|---:|")
+    usable = 0
+    out: Dict[int, Dict] = {}
+    for idx in sorted(by_item):
+        ms = by_item[idx]
+        ok = [m for m in ms if m["correct"]]
+        toks = sorted(m["tokens"] for m in ok)
+        spread = (toks[-1] / toks[0]) if len(toks) >= 2 and toks[0] else None
+        if len(toks) >= 2:
+            usable += 1
+        shown = ", ".join(str(t) for t in toks) if toks else "—"
+        print(f"| {idx} | {len(ms)} | {len(ok)} | {shown} | "
+              f"{('%.2fx' % spread) if spread else '—'} | "
+              f"{sum(1 for m in ms if m['eos'])}/{len(ms)} |")
+        out[idx] = {"n": len(ms), "n_correct": len(ok), "tokens_correct": toks,
+                    "spread": spread}
+    accs = {}
+    for j in sorted({m["sample"] for m in meta}):
+        sel = [m for m in meta if m["sample"] == j]
+        accs[j] = sum(1 for m in sel if m["correct"]) / max(1, len(sel))
+    print(f"\nPer-sample accuracy over the cohort: "
+          + ", ".join(f"s{j}={a:.3f}" for j, a in accs.items()))
+    if accs:
+        print(f"Accuracy range across identical-except-seed runs: "
+              f"**{min(accs.values()):.3f} to {max(accs.values()):.3f}** — this is the "
+              f"noise floor; no effect smaller than this is measurable on this set.")
+    print(f"\nItems with >=2 correct samples (usable for a within-problem "
+          f"short-vs-long contrast): **{usable}**.")
+    if usable == 0:
+        print("No item has two correct samples, so a within-problem brevity "
+              "contrast cannot be estimated at this k. Raise --k_samples or "
+              "widen the item set before building a vector.")
+    return out
+
+
 def run_views(args) -> None:
     if not torch.cuda.is_available():
         raise SystemExit("CUDA required for --mode views")
@@ -1880,7 +2096,15 @@ def main():
     ap.add_argument("--mode", default="report",
                     choices=["smoke", "collect", "views", "isolated", "isolated_frozen",
                              "budget", "loops", "compare", "answers", "latency",
-                             "promote", "prefix", "report"])
+                             "promote", "prefix", "samples", "report"])
+    ap.add_argument("--k_samples", type=int, default=4,
+                    help="samples per item in --mode samples (needs --temperature > 0)")
+    ap.add_argument("--act_window", type=int, default=128,
+                    help="generated tokens pooled per sample; a fixed window keeps "
+                         "the representation independent of generation length")
+    ap.add_argument("--features_out", default="",
+                    help="where --mode samples writes activations (default "
+                         "<out_dir>/sample_features.npz)")
     ap.add_argument("--candidate_arms", default="",
                     help="arms to score in --mode promote, e.g. real_seal20,real_seal60")
     ap.add_argument("--promote_cap", type=int, default=16384,
@@ -1963,6 +2187,8 @@ def main():
         run_collect(args)
     elif args.mode == "views":
         run_views(args)
+    elif args.mode == "samples":
+        run_samples(args)
     elif args.mode == "isolated":
         run_isolated(args, use_frozen=False)
     elif args.mode == "isolated_frozen":
