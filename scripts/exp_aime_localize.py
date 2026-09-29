@@ -860,7 +860,87 @@ def report_sample_variance(meta: Sequence[Dict]) -> Dict:
     return out
 
 
+def method_name(args, arm: str) -> str:
+    """The row label for an arm, including sampler and tag decorations."""
+    method = arm
+    if float(args.temperature) > 0:
+        method = f"{arm}_t{str(args.temperature).replace('.', '')}"
+    if args.method_tag:
+        method = f"{method}__{args.method_tag}"
+    return method
+
+
+def run_views_item_major(args, wrapper, ns, arms, tapes, already) -> None:
+    """Decode every arm for one item before moving to the next item.
+
+    Used for paired comparisons: see the note in run_views. Batch size is pinned
+    to 1 by the caller, so each (arm, item) is decoded on its own.
+    """
+    plan = [(t, a) for t in tapes for a in arms]
+    todo = [(t, a) for t, a in plan
+            if (int(t["idx"]), method_name(args, a)) not in already
+            or args.overwrite]
+    print(f"[views] item-major: {len(tapes)} items x {len(arms)} arms, "
+          f"{len(todo)} to run ({len(plan) - len(todo)} already present)",
+          flush=True)
+    done_pairs = 0
+    for tape in tapes:
+        wrote = 0
+        for arm in arms:
+            base, coef = parse_arm(arm)
+            method = method_name(args, arm)
+            key = (int(tape["idx"]), method)
+            if key in already and not args.overwrite:
+                print(f"[views] skip {key}", flush=True)
+                continue
+            if coef is not None:
+                wrapper.seal.coef = float(coef)
+                rc = getattr(wrapper.seal, "role_coefs", None)
+                if isinstance(rc, dict) and "judger" in rc:
+                    rc["judger"] = float(coef)
+                print(f"[views] SEAL armed coef={coef} layer={args.seal_layer}",
+                      flush=True)
+            cache, extra = view_cache(arm, tape, tapes, args)
+            item = {"idx": tape["idx"], "question": tape["question"],
+                    "gold": tape["gold"]}
+            rows = decode_group(wrapper, ns, args, [item], [cache], method,
+                               [extra], seal_on=coef is not None)
+            for row in rows:
+                row["seal_coef"] = coef
+                times = tape.get("times") or {}
+                paid = PAID_ROLES.get(base, UP_ROLES)
+                row["upstream_s"] = float(sum(float(times.get(r) or 0.0) for r in paid))
+                row["paid_roles"] = list(paid)
+                append_row(args.out_dir, row)
+                already.add(key)
+                wrote += 1
+            del cache
+            torch.cuda.empty_cache()
+            persist_small(args)
+        if wrote:
+            done_pairs += 1
+            try:
+                write_report(args)
+            except Exception as exc:  # report must never kill a long sweep
+                print(f"[views] report failed: {exc}", flush=True)
+        # Checked between items, not between arms, so the deadline can only cut a
+        # whole item and never split one item's arms across the boundary.
+        if args.time_budget_s and time.time() - T_START > float(args.time_budget_s):
+            print(f"[views] time budget {args.time_budget_s:.0f}s reached after "
+                  f"item {tape['idx']} — {done_pairs} items completed this run. "
+                  f"Rerun to resume; complete items are persisted.", flush=True)
+            return
+    persist_small(args)
+
+
 def run_views(args) -> None:
+    # Validated before the CUDA check and the model load: a misconfigured run
+    # should fail in a second, not after loading 14B of weights.
+    item_major = str(getattr(args, "arm_order", "arm")) == "item"
+    if item_major and max(1, int(args.decode_bs)) != 1:
+        # Batching groups items within one arm, which is incompatible with
+        # interleaving arms per item.
+        raise SystemExit("--arm_order item requires --decode_bs 1")
     if not torch.cuda.is_available():
         raise SystemExit("CUDA required for --mode views")
     # Scope a decode to a subset of the collected tapes. Deliberately a separate
@@ -891,6 +971,17 @@ def run_views(args) -> None:
     elif needs_seal:
         raise SystemExit("SEAL arms requested but --seal_vector is empty")
     already = seen_keys(load_rows(args.out_dir))
+
+    # Arm-major is the default: finish one arm across every item, then the next.
+    # For a *paired* comparison under a wall-clock deadline that is the wrong
+    # order, because running out of time leaves every baseline measured and only
+    # some steered partners, and unpaired rows cannot enter a paired test.
+    # item-major instead completes all arms for item i before starting item i+1,
+    # so a truncated run yields fewer complete pairs rather than many broken ones.
+    if item_major:
+        run_views_item_major(args, wrapper, ns, arms, tapes, already)
+        return
+
     for name in arms:
         base, coef = parse_arm(name)
         if coef is not None:
@@ -2148,6 +2239,12 @@ def main():
     ap.add_argument("--view_indices", default="",
                     help="Restrict --mode views to these already-collected tapes. "
                          "Empty means every tape on disk.")
+    ap.add_argument("--arm_order", choices=("arm", "item"), default="arm",
+                    help="arm: finish one arm across all items, then the next. "
+                         "item: finish all arms for one item before the next, so "
+                         "a deadline truncates whole pairs instead of leaving "
+                         "baselines without their steered partners. Requires "
+                         "--decode_bs 1.")
     ap.add_argument("--k", type=int, default=10)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--generate_bs", type=int, default=1)

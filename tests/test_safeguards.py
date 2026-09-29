@@ -520,3 +520,225 @@ def test_samples_mode_refuses_a_single_sample():
     with pytest.raises(SystemExit) as ei:
         E.run_samples(cfg(temperature=0.6, k_samples=1))
     assert "k_samples" in str(ei.value)
+
+
+# ------------------------------------------------- pre-registered paired test
+# The small sweep of 2026-09-29 showed token counts swinging >150% of baseline
+# between adjacent coefficients, so the paired analysis has to be trustworthy
+# before it is pointed at 6 GPU-hours of data.
+
+import paired_coef_test as P  # noqa: E402
+
+
+def _pair_row(idx, method, tokens, correct=True, eos=True):
+    return {"idx": idx, "method": method, "tokens": tokens,
+            "correct": correct, "eos": eos}
+
+
+def _pair_rows_file(tmp_path, rows):
+    p = tmp_path / "rows.jsonl"
+    p.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    return str(p)
+
+
+def _run(monkeypatch, path, coef="5"):
+    """Invoke the CLI without leaking sys.argv into other tests."""
+    monkeypatch.setattr(sys, "argv", ["paired_coef_test", "--rows", path,
+                                      "--coef", coef])
+    P.main()
+
+
+def test_load_pairs_only_keeps_items_with_both_arms(tmp_path):
+    path = _pair_rows_file(tmp_path, [
+        _pair_row(0, "real__b16k", 100), _pair_row(0, "real_seal5__b16k", 90),
+        _pair_row(1, "real__b16k", 100),                      # no steered partner
+        _pair_row(2, "real_seal5__b16k", 90),                 # no baseline partner
+    ])
+    pairs = P.load_pairs(path, "b16k", "5")
+    assert sorted(pairs) == [0]
+
+
+def test_load_pairs_does_not_confuse_coefficients_or_tags(tmp_path):
+    path = _pair_rows_file(tmp_path, [
+        _pair_row(0, "real__b16k", 100),
+        _pair_row(0, "real_seal50__b16k", 90),   # coef 50, not 5
+        _pair_row(1, "real__b16k", 100),
+        _pair_row(1, "real_seal5__fast", 90),    # different tag
+        _pair_row(2, "real__b16k", 100),
+        _pair_row(2, "real_seal5__b16k", 80),
+    ])
+    pairs = P.load_pairs(path, "b16k", "5")
+    assert sorted(pairs) == [2]
+
+
+def test_negative_coefficient_pairs_resolve(tmp_path):
+    path = _pair_rows_file(tmp_path, [
+        _pair_row(0, "real__b16k", 100), _pair_row(0, "real_seal-5__b16k", 90),
+    ])
+    assert sorted(P.load_pairs(path, "b16k", "-5")) == [0]
+
+
+def test_binom_sign_test_matches_known_values():
+    assert P.binom_two_sided(0, 0) == 1.0
+    assert P.binom_two_sided(5, 10) == pytest.approx(1.0)
+    # 10/10 one way: 2 * 0.5**10
+    assert P.binom_two_sided(10, 10) == pytest.approx(2 * 0.5 ** 10)
+    assert P.binom_two_sided(9, 10) == pytest.approx(2 * 11 * 0.5 ** 10)
+
+
+def test_permutation_test_is_exact_and_symmetric_for_small_n():
+    p_a, exact_a = P.perm_two_sided([-0.3] * 6)
+    p_b, exact_b = P.perm_two_sided([0.3] * 6)
+    assert exact_a and exact_b
+    # A unanimous effect of either sign is the most extreme of 2**6 assignments,
+    # and the test must not care which direction it points.
+    assert p_a == pytest.approx(p_b)
+    assert p_a == pytest.approx(2 / 64)
+
+
+def test_permutation_test_finds_no_effect_in_symmetric_noise():
+    p, _ = P.perm_two_sided([0.5, -0.5, 0.4, -0.4, 0.3, -0.3])
+    assert p > 0.9
+
+
+def test_permutation_test_switches_to_monte_carlo_and_never_returns_zero():
+    p, exact = P.perm_two_sided([-0.5] * 25, n_mc=2000, seed=1)
+    assert not exact
+    assert p > 0.0
+
+
+def test_censored_pairs_are_excluded_from_the_token_test(tmp_path, capsys, monkeypatch):
+    # The steered arm "saves" tokens on item 0 but ran item 1 into the cap. The
+    # capped pair must not be counted as a 60% saving.
+    path = _pair_rows_file(tmp_path, [
+        _pair_row(0, "real__b16k", 1000), _pair_row(0, "real_seal5__b16k", 800),
+        _pair_row(1, "real__b16k", 1000), _pair_row(1, "real_seal5__b16k", 400, eos=False),
+    ])
+    _run(monkeypatch, path)
+    out = capsys.readouterr().out
+    assert "usable for the token test (both finished, both correct): 1" in out
+    assert "steered 1" in out  # censoring reported
+
+
+def test_incorrect_pairs_are_excluded_from_the_token_test(tmp_path, capsys, monkeypatch):
+    path = _pair_rows_file(tmp_path, [
+        _pair_row(0, "real__b16k", 1000), _pair_row(0, "real_seal5__b16k", 800),
+        _pair_row(1, "real__b16k", 1000), _pair_row(1, "real_seal5__b16k", 100, correct=False),
+    ])
+    _run(monkeypatch, path)
+    out = capsys.readouterr().out
+    assert "both finished, both correct): 1" in out
+
+
+def test_decision_rule_rejects_a_saving_that_costs_accuracy(tmp_path, capsys, monkeypatch):
+    # Every item 30% shorter, but steering breaks two solves: must REJECT.
+    rows = []
+    for i in range(8):
+        rows += [_pair_row(i, "real__b16k", 1000),
+                 _pair_row(i, "real_seal5__b16k", 700, correct=i >= 2)]
+    _run(monkeypatch, _pair_rows_file(tmp_path, rows))
+    out = capsys.readouterr().out
+    assert "[FAIL] accuracy not worse" in out
+    assert "=> REJECT" in out
+
+
+def test_decision_rule_rejects_a_saving_that_costs_termination(tmp_path, capsys, monkeypatch):
+    rows = []
+    for i in range(8):
+        rows += [_pair_row(i, "real__b16k", 1000),
+                 _pair_row(i, "real_seal5__b16k", 700, eos=i >= 2)]
+    _run(monkeypatch, _pair_rows_file(tmp_path, rows))
+    out = capsys.readouterr().out
+    assert "[FAIL] censoring not worse" in out
+    assert "=> REJECT" in out
+
+
+def test_decision_rule_rejects_a_saving_too_small_to_matter(tmp_path, capsys, monkeypatch):
+    rows = []
+    for i in range(12):
+        rows += [_pair_row(i, "real__b16k", 1000), _pair_row(i, "real_seal5__b16k", 980)]
+    _run(monkeypatch, _pair_rows_file(tmp_path, rows))
+    out = capsys.readouterr().out
+    # Perfectly consistent, so significant, but only 2% -- not worth shipping.
+    assert "[FAIL] median saving >= 10%" in out
+    assert "=> REJECT" in out
+
+
+def test_decision_rule_rejects_a_large_saving_on_too_few_items(tmp_path, capsys, monkeypatch):
+    # Two items, both 30% shorter. Consistent, but 2 items cannot clear p<0.05:
+    # the smallest possible two-sided p at n=2 is 0.5.
+    rows = []
+    for i in range(2):
+        rows += [_pair_row(i, "real__b16k", 1000), _pair_row(i, "real_seal5__b16k", 700)]
+    _run(monkeypatch, _pair_rows_file(tmp_path, rows))
+    out = capsys.readouterr().out
+    assert "[FAIL] permutation p < 0.05" in out
+    assert "=> REJECT" in out
+
+
+def test_decision_rule_promotes_a_real_consistent_saving(tmp_path, capsys, monkeypatch):
+    rows = []
+    for i in range(20):
+        rows += [_pair_row(i, "real__b16k", 1000 + 10 * i),
+                 _pair_row(i, "real_seal5__b16k", int((1000 + 10 * i) * 0.75))]
+    _run(monkeypatch, _pair_rows_file(tmp_path, rows))
+    out = capsys.readouterr().out
+    assert "=> PROMOTE" in out
+    assert "-25.0%" in out
+
+
+def test_a_noisy_cohort_with_one_big_winner_is_not_promoted(tmp_path, capsys, monkeypatch):
+    # This is the shape of the 2026-09-29 data: one item much shorter, the rest
+    # scattered. The test must not promote on the strength of a single item.
+    deltas = [0.66, 1.2, 0.95, 1.4, 1.05, 0.9, 1.3, 1.1, 0.98, 1.15]
+    rows = []
+    for i, d in enumerate(deltas):
+        rows += [_pair_row(i, "real__b16k", 1000),
+                 _pair_row(i, "real_seal5__b16k", int(1000 * d))]
+    _run(monkeypatch, _pair_rows_file(tmp_path, rows))
+    out = capsys.readouterr().out
+    assert "=> REJECT" in out
+
+
+def test_item_major_rejects_batching_before_loading_a_model():
+    # The guard must fire without CUDA and without touching the weights: a
+    # misconfigured 6-hour run should fail in a second.
+    args = cfg(arm_order="item", decode_bs=4, view_arms="real", view_indices="",
+               temperature=0.0, method_tag="", overwrite=False)
+    with pytest.raises(SystemExit) as e:
+        E.run_views(args)
+    assert "decode_bs 1" in str(e.value)
+
+
+def test_arm_major_is_unaffected_by_the_new_guard():
+    # Batching is legitimate in the default order; the failure must then be the
+    # ordinary missing-CUDA one, not the ordering guard.
+    args = cfg(arm_order="arm", decode_bs=4, view_arms="real", view_indices="",
+               temperature=0.0, method_tag="", overwrite=False)
+    with pytest.raises(SystemExit) as e:
+        E.run_views(args)
+    assert "decode_bs" not in str(e.value)
+
+
+def test_method_name_matches_the_labels_the_analysis_pairs_on():
+    # paired_coef_test keys off these exact strings, so a change here silently
+    # unpairs a cohort.
+    assert E.method_name(cfg(temperature=0.0, method_tag="b16k"), "real") == "real__b16k"
+    assert (E.method_name(cfg(temperature=0.0, method_tag="b16k"), "real_seal5")
+            == "real_seal5__b16k")
+    assert E.method_name(cfg(temperature=0.0, method_tag=""), "real") == "real"
+    assert (E.method_name(cfg(temperature=0.6, method_tag="b16k"), "real")
+            == "real_t06__b16k")
+
+
+def test_analysis_pairs_the_labels_method_name_produces(tmp_path):
+    # Close the loop: generate labels from the runner and confirm the analysis
+    # groups them into one pair.
+    a = cfg(temperature=0.0, method_tag="b16k")
+    path = _pair_rows_file(tmp_path, [
+        _pair_row(7, E.method_name(a, "real"), 1000),
+        _pair_row(7, E.method_name(a, "real_seal5"), 800),
+    ])
+    pairs = P.load_pairs(path, "b16k", "5")
+    assert sorted(pairs) == [7]
+    assert pairs[7]["steer"]["tokens"] == 800

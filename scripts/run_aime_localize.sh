@@ -459,6 +459,51 @@ signflip () {
 # The screen also demands *shorter*, not merely correct. On a token-efficiency
 # question a correct-but-longer arm is already a failure, and letting it survive
 # costs a full cohort to rediscover that.
+# The full paired cohort at one coefficient. This is the experiment the screen
+# design could not do: §3.6 of the results doc showed token count swinging >150%
+# of baseline between adjacent coefficients, so per-item trajectory chaos has to
+# be averaged over many items rather than probed at two.
+#
+# Pair-major (--arm_order item) so that running out of wall clock costs whole
+# pairs instead of leaving baselines without steered partners. The analysis and
+# its decision rule were committed before any of this data existed; see
+# scripts/paired_coef_test.py.
+cohort () {
+  local cap=${PROMOTE_CAP:-16384}
+  local tag=${PROMOTE_TAG:-b16k}
+  local coef=${COHORT_COEF:-5}
+  local layer=${SEAL_LAYER:-28}
+  local budget=${COHORT_S:-25200}
+  # BSD seq leaves a trailing separator where GNU seq does not, and a trailing
+  # comma would both miscount the cohort and reach the index parser.
+  local items=${COHORT_ITEMS:-$(seq 0 29 | paste -sd, -)}
+  items="${items%,}"
+  local n_items; n_items=$(( $(tr -cd ',' <<<"$items" | wc -c) + 1 ))
+  need_seal_vector "real_seal${coef}" || return 1
+  start_deadline "$budget"
+  local per_item=$(( cap * 100 / 4250 ))
+
+  echo "[localize] cohort: coef=$coef items=$n_items cap=$cap tag=$tag" \
+    "budget=${budget}s per-pair<=$(( per_item * 2 ))s" | tee -a "$LOG"
+
+  # One collect for the whole cohort: tapes are reused across both arms and
+  # re-collecting per item would reload the model 30 times.
+  run_py --mode collect --task aime2024 --n 30 --indices "$items" \
+    --judger_budget "$cap"
+
+  run_py --mode views --task aime2024 --view_arms "real,real_seal${coef}" \
+    --view_indices "$items" --judger_budget "$cap" --method_tag "$tag" \
+    --decode_bs 1 --arm_order item \
+    --seal_vector "$SEAL_VECTOR" --seal_layer "$layer" \
+    --time_budget_s "$(remaining)"
+
+  run_py --mode report
+  "$PY" "$(dirname "$0")/paired_coef_test.py" --rows "$ROOT_DIR/rows.jsonl" \
+    --tag "$tag" --coef "$coef" \
+    --out "$ROOT_DIR/paired_coef${coef}.json" 2>&1 | tee -a "$LOG"
+  echo "[localize] cohort used ${SECONDS}s of ${budget}s" | tee -a "$LOG"
+}
+
 smallsweep () {
   local coefs=${COEFS:-"2,5,10,-2,-5,-10"}
   COEFS=$coefs \
@@ -795,6 +840,7 @@ case "$stage" in
   efficiency) efficiency ;;
   signflip) signflip ;;
   smallsweep) smallsweep ;;
+  cohort) cohort ;;
   samples) samples ;;
   confirm24) confirm24 ;;
   blitz) blitz ;;
@@ -812,7 +858,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|smallsweep|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|smallsweep|cohort|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist
