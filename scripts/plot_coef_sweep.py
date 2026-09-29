@@ -1,10 +1,18 @@
 """Token count against steering coefficient, both signs, on the screen items.
 
-The point of the figure: the curve is not monotonic through zero, it is a valley
-with its minimum AT zero. Steering the Judger in *either* direction along the
-SEAL axis makes it emit more tokens, which says the effect is a magnitude effect
-(a perturbation off the model's distribution) rather than the semantic
-execution-vs-reflection effect the vector is supposed to encode.
+The point of the figure, after the small-magnitude sweep of 2026-09-29: token
+count is not a smooth function of the coefficient at all. It is a sawtooth.
+Neighbouring coefficients that should be near-equivalent land in qualitatively
+different places -- item 18 sits at baseline at coef -5 and at +90% at coef -2;
+item 10 finishes at coef -2 and -10 but runs away at -5 in between.
+
+Decoding here is deterministic (greedy, fixed decode path, token counts reproduce
+exactly), so these are not measurement noise. A small change in the steering
+coefficient tips the Judger onto a different reasoning trajectory, and the length
+of that trajectory is close to arbitrary. The practical consequence is the reason
+this figure exists: a single run per (item, coefficient) cannot support a
+dose-response claim, because the spread between adjacent coefficients is larger
+than any effect we are trying to detect.
 
 Usage:
   python scripts/plot_coef_sweep.py --rows artifacts/aime_localize/rows.jsonl
@@ -104,8 +112,8 @@ def main() -> None:
     ]
     fig.legend(handles=handles, loc="lower center", ncol=3, frameon=False,
                fontsize=9, bbox_to_anchor=(0.5, -0.02))
-    fig.suptitle("Steering in either direction costs tokens; the minimum is at zero",
-                 fontsize=12.5)
+    fig.suptitle("Token count is a sawtooth in the steering coefficient, "
+                 "not a dose-response", fontsize=12.5)
     fig.tight_layout(rect=(0, 0.05, 1, 0.97))
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     fig.savefig(args.out, dpi=170, bbox_inches="tight")
@@ -115,10 +123,23 @@ def main() -> None:
         base = next((t for t in data[idx] if t[0] == 0.0), None)
         if not base:
             continue
-        worse = sum(1 for c, t, _, _ in data[idx] if c != 0 and t > base[1])
-        n = sum(1 for c, _, _, _ in data[idx] if c != 0)
-        print(f"item {idx}: {worse}/{n} steered settings emit MORE than baseline "
-              f"({base[1]} tokens)")
+        steered = [p for p in data[idx] if p[0] != 0]
+        worse = sum(1 for _, t, _, _ in steered if t > base[1])
+        # A setting only helps if it is shorter AND still correct AND terminated;
+        # censored runs are lower bounds and cannot be counted as short.
+        helped = [c for c, t, ok, eos in steered if eos and ok and t < base[1]]
+        print(f"item {idx}: {worse}/{len(steered)} steered settings emit MORE than "
+              f"baseline ({base[1]} tokens); "
+              f"{len(helped)} shorter-and-correct: {helped}")
+        # The spread between adjacent coefficients bounds what any single run can
+        # resolve. If it exceeds the effect size, the sweep is not measuring dose.
+        jumps = [(abs(b[1] - a[1]) / base[1], a[0], b[0])
+                 for a, b in zip(steered, steered[1:])]
+        if jumps:
+            worst = max(jumps)
+            print(f"  largest jump between adjacent coefficients: "
+                  f"{100 * worst[0]:.0f}% of baseline "
+                  f"(coef {worst[1]:g} -> {worst[2]:g})")
 
 
 if __name__ == "__main__":

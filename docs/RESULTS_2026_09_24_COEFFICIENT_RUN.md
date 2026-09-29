@@ -187,6 +187,80 @@ expectation. A cheaper variant also becomes interesting: sweep *small* magnitude
 (coef 2, 5, 10) to find where the perturbation cost begins, since everything
 tested so far is >= 20 and may simply be far off-distribution.
 
+> **Superseded in part by §3.6.** That sweep ran, and the claim above that the
+> minimum is "at zero" is wrong for item 18: coefficients 2, 5 and 10 all come in
+> below its baseline, with a minimum of -34% at coefficient 5. The "valley with
+> its minimum at zero" reading was an artifact of only ever sampling |coef| >= 20.
+> The magnitude-effect conclusion survives for item 10, which never improves at
+> any coefficient, but §3.6 shows the sweep resolves neither claim: adjacent
+> coefficients differ by up to 168% of baseline.
+
+## 3.6 The small-magnitude sweep (2026-09-29): the sweep cannot resolve the effect
+
+§3.5 proposed sweeping small coefficients on the theory that everything tested so
+far (|coef| >= 20 against a vector of raw norm 52.7) was simply far
+off-distribution. That ran: coefficients 2, 5, 10, -2, -5, -10 on the two screen
+items, 54 minutes, `DECODE_FLAGS="--decode_path sdpa+dynamic"`. **Zero survivors.**
+
+The headline finding is not about any coefficient. It is that **token count is not
+a smooth function of the coefficient**, so this experimental design cannot measure
+what it was built to measure.
+
+Item 18, every setting ever run (baseline 7,062):
+
+| coef | -60 | -40 | -20 | -10 | -5 | -2 | 0 | +2 | +5 | +10 | +20 | +60 | +80 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| tokens | 7,996 | 7,214 | cap | 7,298 | 7,017 | 13,451 | 7,062 | 5,392 | 4,684 | 6,194 | cap | cap | 6,050 |
+| vs base | +13% | +2% | — | +3% | -1% | **+90%** | — | -24% | **-34%** | -12% | — | — | -14% |
+
+Item 10, same settings (baseline 5,848): **0 of 8** terminating settings came in
+shorter, across the whole range -60 to +80. Four of twelve hit the cap.
+
+Read in isolation, item 18's positive side looks like exactly the hoped-for
+result: a monotone dip to -34% at coefficient 5, then a turn back up as
+perturbation cost takes over, with correctness preserved throughout. That reading
+does not survive the negative side. Coefficient -5 sits at baseline (-0.6%) while
+its neighbour -2 is +90%. On item 10, -2 and -10 both terminate while -5 between
+them runs into the cap.
+
+**This is not measurement noise.** Decoding is greedy on a fixed decode path, and
+§1 established that token counts reproduce exactly. Every number above is exact.
+What varies is the trajectory: a small change in the steering coefficient tips the
+Judger onto a different reasoning path, and the length of that path is close to
+arbitrary.
+
+The quantity that settles it, printed by `scripts/plot_coef_sweep.py`:
+
+* largest jump between **adjacent** coefficients, item 10: **168% of baseline** (-5 -> -2)
+* largest jump between adjacent coefficients, item 18: **146% of baseline** (+60 -> +80)
+
+The effect under investigation is on the order of 30%. When neighbouring settings
+of the independent variable differ by 150%, a single run per (item, coefficient)
+resolves nothing, and the apparent dip at +2/+5/+10 on item 18 is as easily three
+draws from a wide distribution as it is a dose-response.
+
+**What this costs the plan.** The small-magnitude hypothesis is not confirmed and
+not refuted; it is unmeasurable at n=2 items with one run per cell. Two honest
+routes remain, and they are not cheap:
+
+1. **Pay for the statistics.** Many more items per coefficient — 20-30, so
+   per-item trajectory chaos averages out and coefficients can be compared as
+   distributions. At ~385 s/item worst case that is ~3 GPU-hours per coefficient,
+   so ~10 GPU-hours for a three-point curve. This is the only route that can
+   produce a defensible token-efficiency claim about this vector.
+2. **Stop measuring this vector.** The one durable result across 24 settings is
+   that 0/8 terminating settings helped item 10 at any coefficient of either
+   sign. If a second or third item behaves like item 10, the direction is not a
+   brevity control at this injection site and the remaining GPU is better spent
+   elsewhere.
+
+Route 1 is also the correct precondition for the brevity vector: without a
+per-item noise band there is no way to tell a real 30% saving from trajectory
+luck. The `--mode samples` run (k=4 at temperature) measures a *different* band
+(within-item, under sampling) and is still worth having, but it does not
+substitute for item count, because the variation documented here is across
+coefficients at fixed item, not across runs at fixed coefficient.
+
 ## 4. What this run did not establish
 
 * **Nothing about accuracy at n=6.** The noise floor is +/-2 items (a
