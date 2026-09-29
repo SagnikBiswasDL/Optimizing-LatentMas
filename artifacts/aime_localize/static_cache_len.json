@@ -1,0 +1,38 @@
+{
+  "device": "NVIDIA H200",
+  "model": "Qwen/Qwen3-14B",
+  "prefix_len": 770,
+  "new_tokens": 64,
+  "rows": [
+    {
+      "cache": "dynamic",
+      "max_cache_len": null,
+      "tok_per_s": 45.2066830658886
+    },
+    {
+      "cache": "static",
+      "max_cache_len": 1024,
+      "tok_per_s": 40.09973272531032
+    },
+    {
+      "cache": "static",
+      "max_cache_len": 2048,
+      "tok_per_s": 40.241972993977825
+    },
+    {
+      "cache": "static",
+      "max_cache_len": 4096,
+      "tok_per_s": 38.27906269503141
+    },
+    {
+      "cache": "static",
+      "max_cache_len": 9216,
+      "tok_per_s": 25.800835162873774
+    },
+    {
+      "cache": "static",
+      "max_cache_len": 16384,
+      "tok_per_s": 17.65770695220102
+    }
+  ]
+}
