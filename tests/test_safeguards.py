@@ -742,3 +742,89 @@ def test_analysis_pairs_the_labels_method_name_produces(tmp_path):
     pairs = P.load_pairs(path, "b16k", "5")
     assert sorted(pairs) == [7]
     assert pairs[7]["steer"]["tokens"] == 800
+
+
+# ------------------------------------------------- latent channel ablation
+# The question is what the inter-agent KV channel carries, so the analysis has to
+# separate "the arm lost solves" from "the arm was never run on those items".
+
+import channel_ablation as C  # noqa: E402
+
+
+def _ch_row(idx, method, correct, tokens=1000, eos=True, cache_mb=100.0):
+    return {"idx": idx, "method": method, "correct": correct, "tokens": tokens,
+            "eos": eos, "cache_mb": cache_mb}
+
+
+def test_channel_load_strips_tag_and_ignores_seal_arms(tmp_path):
+    path = _pair_rows_file(tmp_path, [
+        _ch_row(0, "real__b16k", True),
+        _ch_row(0, "none__b16k", False),
+        _ch_row(0, "real_seal5__b16k", True),   # different experiment
+        _ch_row(0, "real__fast", True),         # different tag
+    ])
+    by = C.load(path, "b16k")
+    assert sorted(by) == ["none", "real"]
+
+
+def test_channel_compare_counts_gained_and_lost_separately(tmp_path):
+    base = {0: _ch_row(0, "real", True), 1: _ch_row(1, "real", True),
+            2: _ch_row(2, "real", False)}
+    arm = {0: _ch_row(0, "none", True), 1: _ch_row(1, "none", False),
+           2: _ch_row(2, "none", True)}
+    r = C.compare(base, arm, "none")
+    assert (r["gained"], r["lost"]) == (1, 1)
+    assert r["delta_items"] == 0
+    assert r["n_paired"] == 3
+
+
+def test_channel_compare_pairs_only_on_shared_items():
+    # The arm ran on one item only; the other two must not count as failures.
+    base = {i: _ch_row(i, "real", True) for i in range(3)}
+    arm = {0: _ch_row(0, "none", True)}
+    r = C.compare(base, arm, "none")
+    assert r["n_paired"] == 1
+    assert r["lost"] == 0
+
+
+def test_channel_a_total_collapse_is_significant():
+    base = {i: _ch_row(i, "real", True) for i in range(12)}
+    arm = {i: _ch_row(i, "none", False) for i in range(12)}
+    r = C.compare(base, arm, "none")
+    assert r["delta_items"] == -12
+    assert r["mcnemar_p"] < 0.01
+    assert r["delta_pct_ci"][1] < 0  # interval excludes zero
+
+
+def test_channel_identical_arms_give_a_wide_not_zero_interval():
+    # Equivalence is the weak direction of this design: with no discordant pairs
+    # the interval must still be reported wide, never as a point at zero.
+    base = {i: _ch_row(i, "real", i % 3 != 0) for i in range(30)}
+    arm = {i: _ch_row(i, "shuf", i % 3 != 0) for i in range(30)}
+    r = C.compare(base, arm, "shuf")
+    assert r["delta_items"] == 0
+    assert r["mcnemar_p"] == 1.0
+    lo, hi = r["delta_pct_ci"]
+    assert lo < 0 < hi and (hi - lo) > 0
+
+
+def test_channel_kv_mb_reports_the_cost_of_the_arm():
+    arm = {i: _ch_row(i, "c3", True, cache_mb=40.0) for i in range(4)}
+    base = {i: _ch_row(i, "real", True, cache_mb=120.0) for i in range(4)}
+    assert C.compare(base, arm, "c3")["kv_mb"] == 40.0
+    assert C.kv_mb(list(base.values())) == 120.0
+
+
+def test_channel_none_arm_costs_zero_kv():
+    # The `none` arm writes no cache, so cache_mb is absent rather than zero.
+    arm = {0: {"idx": 0, "method": "none", "correct": False, "tokens": 5,
+               "eos": True}}
+    assert C.kv_mb(list(arm.values())) == 0.0
+
+
+def test_channel_censored_runs_are_counted_not_scored_as_short():
+    base = {0: _ch_row(0, "real", True, tokens=1000)}
+    arm = {0: _ch_row(0, "shuf", False, tokens=16384, eos=False)}
+    r = C.compare(base, arm, "shuf")
+    assert r["censored"] == 1
+    assert r["mean_tokens_finished"] is None

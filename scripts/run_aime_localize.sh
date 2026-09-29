@@ -459,6 +459,44 @@ signflip () {
 # The screen also demands *shorter*, not merely correct. On a token-efficiency
 # question a correct-but-longer arm is already a failure, and letting it survive
 # costs a full cohort to rediscover that.
+# What the latent channel between agents actually carries.
+#
+# The Judger currently reads all three upstream roles' KV unconditionally. This
+# runs the arms that decide whether that content matters: `none` (no cache at all)
+# and `shuf` (another problem's cache, same size). Analysis and reading rules are
+# pre-registered in scripts/channel_ablation.py.
+#
+# Reuses the 30 tapes already collected, so there is no upstream cost -- only
+# Judger decodes. Item-major so a deadline truncates whole items and every item
+# present has every arm.
+channel () {
+  local cap=${PROMOTE_CAP:-16384}
+  local tag=${PROMOTE_TAG:-b16k}
+  local arms=${CHANNEL_ARMS:-"none,shuf"}
+  local budget=${CHANNEL_S:-25200}
+  local items=${COHORT_ITEMS:-$(seq 0 29 | paste -sd, -)}
+  items="${items%,}"
+  local n_items; n_items=$(( $(tr -cd ',' <<<"$items" | wc -c) + 1 ))
+  start_deadline "$budget"
+
+  echo "[localize] channel: arms=$arms items=$n_items cap=$cap tag=$tag" \
+    "budget=${budget}s" | tee -a "$LOG"
+
+  # Tapes must already exist; collect is a no-op that verifies identity.
+  run_py --mode collect --task aime2024 --n 30 --indices "$items" \
+    --judger_budget "$cap"
+
+  run_py --mode views --task aime2024 --view_arms "$arms" \
+    --view_indices "$items" --judger_budget "$cap" --method_tag "$tag" \
+    --decode_bs 1 --arm_order item --time_budget_s "$(remaining)"
+
+  run_py --mode report
+  "$PY" "$(dirname "$0")/channel_ablation.py" --rows "$ROOT_DIR/rows.jsonl" \
+    --tag "$tag" --arms "$arms" \
+    --out "$ROOT_DIR/channel_ablation.json" 2>&1 | tee -a "$LOG"
+  echo "[localize] channel used ${SECONDS}s of ${budget}s" | tee -a "$LOG"
+}
+
 # The full paired cohort at one coefficient. This is the experiment the screen
 # design could not do: §3.6 of the results doc showed token count swinging >150%
 # of baseline between adjacent coefficients, so per-item trajectory chaos has to
@@ -841,6 +879,7 @@ case "$stage" in
   signflip) signflip ;;
   smallsweep) smallsweep ;;
   cohort) cohort ;;
+  channel) channel ;;
   samples) samples ;;
   confirm24) confirm24 ;;
   blitz) blitz ;;
@@ -858,7 +897,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|smallsweep|cohort|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|smallsweep|cohort|channel|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist
