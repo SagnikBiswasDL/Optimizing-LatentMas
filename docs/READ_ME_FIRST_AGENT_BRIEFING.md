@@ -412,7 +412,40 @@ problems is real; it is the accuracy side that breaks.
    holdout is now pointless for this vector: there is no positive result to hold
    out. It becomes relevant again only if some future vector clears a 30-item
    cohort.
-5. **CUDA graphs with a tightly-allocated static cache. This is the most concrete
+> **Item 5 below is CLOSED as of 2026-09-29, and the growing-ladder fix is not
+> worth building.** `scripts/diag_static_mechanism.py` separated allocation from
+> true length, which every prior measurement had confounded, and fitted the cost:
+>
+> ```
+> static(L) = 11.1 + 0.00198 * L   ms/step      (flat in true length: ramp 0.985-0.998)
+> dynamic   = 23.1                 ms/step      (flat in length:      ramp 0.978)
+> ```
+>
+> The fit predicts 75.1 tok/s at the historical `L=956` probe, which measured 75.4.
+> Consequences, all arithmetic from those two lines:
+>
+> * **Break-even is `L = 6092`.** Above that allocation static is *slower* than
+>   dynamic, so a Judger needing ~7900 slots cannot win no matter how it allocates.
+> * **A tight allocation does not stay tight.** True length grows into it, so a
+>   tightly-allocated static cache gets steadily more expensive while dynamic stays
+>   flat. Perfect tight allocation over a 900+7000 generation is 138.4s vs dynamic
+>   161.9s — a **1.17x ceiling that cannot actually be reached**.
+> * **The 2048/4096/8192/16384 ladder is 1.01x**, i.e. nothing, and graph capture
+>   costs **~33s per distinct cache shape**: a 4-rung ladder pays ~130s of compile
+>   to save at most 23s per item.
+> * **The real defect is a 58x per-slot overhead** — 0.00198 ms/slot measured
+>   against 0.0000341 ms/slot required by HBM bandwidth (KV is 160.0 KB/token).
+>   Removing that would give ~2.1x at *any* allocation, and it is an
+>   implementation issue inside the static-cache attention path, not something
+>   this repo can allocate its way around.
+>
+> So the retraction in §0 was right that static loses, but its stated mechanism
+> ("attends over every allocated slot") was wrong by ~190x: the extra KV reads cost
+> 0.28 ms/token, while the measured penalty is 53.9 ms/token. Do not re-propose the
+> ladder. Raw data: `artifacts/diag/static_mechanism.json`.
+
+5. **[CLOSED 2026-09-29 — see the box above; kept for the mechanism it documents]**
+   **CUDA graphs with a tightly-allocated static cache. This is the most concrete
    serving lever and the mechanism is now known.** `generate()` compiles the forward
    automatically when it is handed a compileable cache — `generation/utils.py:2759`
    calls `_valid_auto_compile_criteria`, which requires

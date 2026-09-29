@@ -171,6 +171,68 @@ def run_one(model, tok, prefix_len: int, new_tokens: int,
     }
 
 
+def price_ladder(by: Dict[str, Dict], prefix: int = 900, new: int = 7000,
+                 ladder: Sequence[int] = (2048, 4096, 8192, 16384)) -> None:
+    """Fit cost(allocation) from the static runs and price the growing-ladder fix.
+
+    "Cost tracks allocation" makes the ladder the right *shape* of fix, but says
+    nothing about whether it is worth building. It is worth building only if the
+    integral of cost over a realistic generation beats the dynamic path, and the
+    catch is that a tight allocation stops being tight: true length grows into it,
+    so a tightly-allocated static cache gets more expensive exactly as the run
+    goes on, while the dynamic path is flat in length.
+    """
+    pts = {r["max_cache_len"]: r["step_ms_median"]
+           for r in by.values()
+           if r.get("cache") == "static" and r.get("max_cache_len")
+           and r.get("step_ms_median")}
+    dyn = [r["step_ms_median"] for r in by.values()
+           if r.get("cache") == "dynamic" and r.get("step_ms_median")]
+    if len(pts) < 2 or not dyn:
+        print("  (need two static allocations and one dynamic run to price the "
+              "ladder; skipping)")
+        return
+    (l1, c1), (l2, c2) = sorted(pts.items())[:2]
+    slope = (c2 - c1) / (l2 - l1)
+    base = c1 - slope * l1
+    d = max(dyn)  # the long dynamic run, the honest comparator
+    print(f"  fitted: static(L) = {base:.2f} + {slope:.6f}*L ms/step; "
+          f"dynamic = {d:.2f} ms/step flat")
+    if slope > 0:
+        print(f"  break-even allocation: L = {(d - base) / slope:.0f} slots "
+              f"(above this, static loses to dynamic)")
+    dyn_s = new * d / 1e3
+    ideal = sum(base + slope * (prefix + t) for t in range(new)) / 1e3
+    print(f"  on {prefix}+{new} tokens: dynamic {dyn_s:.1f}s, "
+          f"static at perfect tight allocation {ideal:.1f}s "
+          f"-> {dyn_s / ideal:.2f}x (an unachievable ceiling)")
+    t, total = prefix, 0.0
+    for L in ladder:
+        room = min(L - t, prefix + new - t)
+        if room <= 0:
+            continue
+        total += room * (base + slope * L)
+        t += room
+    if total:
+        print(f"  with the {list(ladder)} ladder: {total / 1e3:.1f}s "
+              f"-> {dyn_s / (total / 1e3):.2f}x")
+    # Graph capture is per distinct cache shape, so a finer ladder trades the
+    # allocation saving for recompilation.
+    cap = [r for r in by.values()
+           if r.get("cache") == "static" and r.get("wall_s") and r.get("tokens")
+           and r.get("step_ms_median")]
+    if cap:
+        r = cap[0]
+        cost = r["wall_s"] - r["tokens"] * r["step_ms_median"] / 1e3
+        print(f"  compile/capture per distinct shape: ~{cost:.0f}s, so a "
+              f"{len(ladder)}-rung ladder pays ~{len(ladder) * cost:.0f}s "
+              f"against a best-case {dyn_s - ideal:.1f}s saving per item")
+    bw = 160.0 * 1024 / 4.8e12 * 1e3
+    print(f"  per-slot overhead: {slope:.6f} ms vs {bw:.7f} ms required by "
+          f"bandwidth -> {slope / bw:.0f}x. Removing THAT, not growing the "
+          f"allocation, is where the {d / base:.1f}x would come from.")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="Qwen/Qwen3-14B")
@@ -267,7 +329,8 @@ def main() -> None:
         print(f"  static@9216 filling its allocation: "
               f"{fills['step_ms_median']} ms/step, ramp {fills['ramp_ratio']}")
         if (trap["ramp_ratio"] or 1) < 1.25 and (fills["ramp_ratio"] or 1) < 1.25:
-            print("  => cost tracks ALLOCATION (both flat). The ladder is the fix.")
+            print("  => cost tracks ALLOCATION, not true length (both flat).")
+            price_ladder(by)
         elif (fills["ramp_ratio"] or 1) >= 1.25:
             print("  => cost tracks TRUE LENGTH (the long run ramps). A large "
                   "allocation is NOT itself the problem, and the ladder buys "
