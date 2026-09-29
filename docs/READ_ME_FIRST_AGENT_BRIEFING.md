@@ -376,23 +376,42 @@ problems is real; it is the accuracy side that breaks.
 
 ## 6. Unexplored, ordered for a latency deliverable
 
-1. **Establish the noise floor before measuring anything** (§1a′). A
-   semantically-neutral perturbation moved accuracy 0.667 → 0.333, so the current
-   design cannot resolve the effects being claimed. Either sample k≥4 per item at
-   temperature, or go to n=30, and report paired item-level uncertainty. Everything
-   below is uninterpretable without this, and it is the cheapest thing to fix.
-2. **Raise the budget to de-censor** (§0). 12 of 20 runs are censored; no mean is
-   computable. Note the artifacts store no token IDs, so extended runs **cannot be
-   resumed** — they re-decode from scratch, and you should verify the new run
-   reproduces the old prefix before trusting the extension.
-3. **Screen coefficients on the regression items first.** SEAL40 broke items 10 and
-   18; any candidate that also breaks them is dead, so screen there for ~2 items of
-   cost before spending the full cohort. `parse_arm` runs the whole sweep in **one
-   model load** (`real_seal20`, `real_seal80`, ...). Expect non-monotonicity; pick one
-   fixed coefficient by aggregate token cost subject to preserved correctness, with
-   **no per-item oracle selection.**
-4. **Then, and only then, n=30 with the frozen coefficient**, plus AIME-2025 as a
-   holdout with its own tape directory. Report every item, including failures.
+> **Items 1–4 below are DONE as of 2026-09-29, and the answer was no.** The
+> 30-item paired cohort at the best available coefficient (5) returned a **powered
+> null**: median −6.0%, mean −1.0% with 95% CI [−12.4%, +11.8%], 11/21 items
+> shorter, permutation p=0.87, accuracy 22/30 → 22/30. See §3.7 of
+> `RESULTS_2026_09_24_COEFFICIENT_RUN.md`. Do not re-run a coefficient screen on
+> this vector. Two facts to carry forward:
+>
+> * **Never screen on items selected by outcome.** Items 10 and 18 were picked as
+>   "the items coef 40 broke" and turn out to rank 21/21 and 2/21 in the cohort —
+>   the two extremes. Every two-item screen built on them produced dramatic
+>   results that vanished at n=30. Draw screen items at random or stratify by
+>   baseline token count.
+> * **AIME-2024 is at its resolution limit for this question.** n=21 usable pairs
+>   gives 80% power for a 16% saving; detecting 10% needs 58 items and 5% needs
+>   244, against a 30-item benchmark. Any future token-efficiency claim below ~15%
+>   requires a different, larger benchmark, not a better analysis.
+>
+> The remaining live levers are items 5 and 6.
+
+1. ~~**Establish the noise floor before measuring anything**~~ (§1a′). Done by
+   going to n=30 paired: per-item spread is a 1.33x factor (SD of the log token
+   ratio 0.286), range −41.7% to +109.2%. That spread is not sampling noise —
+   greedy decoding is deterministic and token counts reproduce exactly — it is
+   real per-item heterogeneity in how steering redirects a trajectory, and it is
+   why single-item and two-item comparisons were worthless.
+2. ~~**Raise the budget to de-censor**~~ (§0). Done at cap 16384: censoring is now
+   3/30 baseline and 4/30 steered, and `--mode prefix` verified extensions retrace.
+   Still true that artifacts store no token IDs, so extended runs **cannot be
+   resumed** — they re-decode from scratch.
+3. ~~**Screen coefficients on the regression items first.**~~ Superseded, and the
+   advice was actively harmful: see the selection-on-outcome warning above. The
+   full signed sweep (−60 … +80, §3.5/§3.6) plus the cohort (§3.7) closed this.
+4. ~~**Then n=30 with the frozen coefficient**~~ — done, null. AIME-2025 as a
+   holdout is now pointless for this vector: there is no positive result to hold
+   out. It becomes relevant again only if some future vector clears a 30-item
+   cohort.
 5. **CUDA graphs with a tightly-allocated static cache. This is the most concrete
    serving lever and the mechanism is now known.** `generate()` compiles the forward
    automatically when it is handed a compileable cache — `generation/utils.py:2759`

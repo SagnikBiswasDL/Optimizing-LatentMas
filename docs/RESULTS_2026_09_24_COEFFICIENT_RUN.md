@@ -261,6 +261,70 @@ luck. The `--mode samples` run (k=4 at temperature) measures a *different* band
 substitute for item count, because the variation documented here is across
 coefficients at fixed item, not across runs at fixed coefficient.
 
+## 3.7 The 30-item paired cohort (2026-09-29): a powered null
+
+§3.6 said the only route to a defensible claim was to pay for statistics. That
+ran: the full AIME-2024 pool, all 30 items, each contributing an unsteered and a
+coefficient-5 run over the same upstream tape, greedy on `sdpa+dynamic`,
+pair-major so a deadline could only cost whole pairs. 2.7 hours, 30/30 pairs
+complete, 0 unpaired. Analysis and decision rule were committed in
+`scripts/paired_coef_test.py` **before** the data existed.
+
+**Result: REJECT.** Coefficient 5 does not reduce Judger tokens.
+
+| quantity | value |
+|---|---|
+| usable pairs (both arms finished and correct) | 21 of 30 |
+| median token change | **-6.0%** |
+| mean token change, 95% CI | **-1.0%  [-12.4%, +11.8%]** |
+| shorter on | 11 of 21 items (sign test p = 1.00) |
+| paired permutation p | 0.87 |
+| accuracy | 22/30 -> 22/30 (fixed 1, broke 1, McNemar p = 1.00) |
+| censored (hit cap) | baseline 3, steered 4 |
+
+Three of the four pre-registered clauses fail: the saving is under 10%, it is not
+significant, and censoring is slightly worse. Only "accuracy not worse" passes.
+
+**This is a real null, not an underpowered one.** Per-item spread is large (SD of
+the log ratio 0.286, a 1.33x factor; range -41.7% to +109.2%), but with n=21 the
+cohort still had 80% power to detect a 16% saving, and the confidence interval
+excludes everything at or beyond -13%. A saving big enough to matter would have
+shown up. What it cannot rule out is something small: detecting a 10% saving would
+need 58 items and a 5% saving 244, against a benchmark that contains 30. **For
+this vector at this site, AIME-2024 is at its resolution limit, and the answer
+within that limit is no.**
+
+### The methodological error this exposes
+
+Item 10 ranks **21st of 21** in the cohort (+109.2%, the largest increase) and
+item 18 ranks **2nd of 21** (-33.7%, the second largest decrease). The two items
+every screen since 2026-09-22 was built on are the two extremes of the
+distribution.
+
+That is not bad luck. Those two items were chosen, back in §2, as *"the items coef
+40 broke"* — selected on the outcome being measured. Every subsequent
+two-item screen inherited that selection, which is why small samples kept
+producing dramatic, contradictory, non-reproducing results: item 18's -34% at
+coefficient 5 and item 10's +109% at the same coefficient are both real, exact,
+deterministic numbers, and they are both unrepresentative. Averaged over the pool
+they cancel to -1%.
+
+Concretely, for future screens: **do not select screen items on the dependent
+variable.** If a cheap screen is wanted, draw items at random or stratify by
+baseline token count, and treat any two-item result as a smoke test that a run
+completed, never as evidence about an effect.
+
+### Status of the brevity-vector plan
+
+The premise was that a *better-targeted* direction (length-supervised rather than
+SEAL's execution-vs-reflection heuristic) would cut tokens where this one does
+not. Nothing here refutes that, but the cost of testing it is now known and it is
+not small: any candidate vector needs a 30-item paired cohort (~2.7 GPU-hours) to
+be evaluated at all, and a positive result under 15% cannot be established on this
+benchmark at any cohort size. A brevity vector is worth building only if the
+expected effect is large, or if the evaluation moves to a benchmark with enough
+items to resolve smaller ones.
+
 ## 4. What this run did not establish
 
 * **Nothing about accuracy at n=6.** The noise floor is +/-2 items (a
