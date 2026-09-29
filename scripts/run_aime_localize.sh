@@ -447,6 +447,27 @@ signflip () {
   COEFS=$flipped BASELINE_INDICES=${BASELINE_INDICES:-0,1,2,4,10,18} efficiency
 }
 
+# Small magnitudes, both signs. Everything tested through 2026-09-29 used
+# |coef| >= 20 against a vector whose raw norm is 52.7, so coefficient 20 displaces
+# the residual stream by ~38% of the direction's natural scale. Every one of those
+# settings emitted *more* tokens in either direction, which looks like an
+# off-distribution perturbation rather than a semantic effect. If that is right,
+# the interesting regime is the one never sampled: near zero, where the
+# perturbation is small enough that whatever semantics the direction carries might
+# still dominate.
+#
+# The screen also demands *shorter*, not merely correct. On a token-efficiency
+# question a correct-but-longer arm is already a failure, and letting it survive
+# costs a full cohort to rediscover that.
+smallsweep () {
+  local coefs=${COEFS:-"2,5,10,-2,-5,-10"}
+  COEFS=$coefs \
+  SCREEN_REQUIRE_SHORTER=${SCREEN_REQUIRE_SHORTER:-1} \
+  MAX_SURVIVORS=${MAX_SURVIVORS:-2} \
+  BASELINE_INDICES=${BASELINE_INDICES:-0,1,2,4,10,18} \
+    efficiency
+}
+
 # k samples per item at temperature, recording length, correctness, and layer-28
 # activations. Two questions in one run: the noise floor (how far accuracy moves
 # when only the seed changes), and whether correct solutions to the *same* problem
@@ -518,14 +539,38 @@ efficiency () {
       --decode_bs 1 --seal_vector "$SEAL_VECTOR" --seal_layer "$layer" \
       --time_budget_s "$(remaining)"
     # Survives only if it solves BOTH screen items under the stopping policy.
-    if "$PY" - "$ROOT_DIR/rows.jsonl" "real_seal${c}__${tag}" "$screen" <<'EOF'
+    if "$PY" - "$ROOT_DIR/rows.jsonl" "real_seal${c}__${tag}" "$screen" \
+         "real__${tag}" "${SCREEN_REQUIRE_SHORTER:-0}" <<'EOF'
 import json, sys
 path, arm, idxs = sys.argv[1], sys.argv[2], [int(x) for x in sys.argv[3].split(',')]
+base_arm, need_shorter = sys.argv[4], sys.argv[5] == "1"
 rows = [json.loads(l) for l in open(path)]
 by = {(r['method'], int(r['idx'])): r for r in rows}
-ok = all((arm, i) in by and by[(arm, i)].get('eos') and by[(arm, i)].get('correct')
-         for i in idxs)
-print(f"[screen] {arm} on {idxs}: " + ("SURVIVES" if ok else "eliminated"))
+reasons = []
+ok = True
+for i in idxs:
+    r = by.get((arm, i))
+    if r is None:
+        ok = False; reasons.append(f"idx{i}: missing"); continue
+    if not r.get('eos'):
+        ok = False; reasons.append(f"idx{i}: never terminated"); continue
+    if not r.get('correct'):
+        ok = False; reasons.append(f"idx{i}: wrong"); continue
+    # Correct-but-longer used to survive the screen and then consume a full
+    # cohort. Every coefficient tested through 2026-09-29 emitted MORE tokens
+    # than baseline in both directions, so on a token-efficiency question
+    # "shorter" belongs in the screen rather than being discovered later.
+    if need_shorter:
+        b = by.get((base_arm, i))
+        if b is None:
+            ok = False; reasons.append(f"idx{i}: no baseline {base_arm}"); continue
+        if int(r['tokens']) >= int(b['tokens']):
+            ok = False
+            reasons.append(f"idx{i}: {r['tokens']} >= baseline {b['tokens']}")
+            continue
+        reasons.append(f"idx{i}: {r['tokens']} < {b['tokens']}")
+print(f"[screen] {arm} on {idxs}: " + ("SURVIVES" if ok else "eliminated")
+      + (" (" + "; ".join(reasons) + ")" if reasons else ""))
 sys.exit(0 if ok else 1)
 EOF
     then
@@ -749,6 +794,7 @@ case "$stage" in
   program) program ;;
   efficiency) efficiency ;;
   signflip) signflip ;;
+  smallsweep) smallsweep ;;
   samples) samples ;;
   confirm24) confirm24 ;;
   blitz) blitz ;;
@@ -766,7 +812,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|smallsweep|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist
