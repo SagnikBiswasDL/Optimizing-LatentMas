@@ -126,6 +126,67 @@ collides with generate's compiled call and took the interpreter down with no
 Python traceback, which is why `diag_throughput.py` now flushes results per
 config instead of only at the end.
 
+## 3.5 The sign flip (2026-09-29): steering costs tokens in *both* directions
+
+Coefficients **-20/-40/-60**, same cap, same screen items, same rule. The baseline
+rows were recovered off the pod volume, so no baseline re-decode was needed.
+
+| coef | idx 0 | idx 1 | idx 2 | idx 4 | idx 10 | idx 18 |
+|---:|---|---|---|---|---|---|
+| **0** | 2,600 ✓ | 11,036 ✓ | 11,092 ✗ | 7,653 ✓ | **5,848 ✓** | **7,062 ✓** |
+| +20 | | | | | 10,604 ✓ | 16,384! ✗ |
+| +60 | | | | | 14,704 ✗ | 16,384! ✗ |
+| +80 | | | | | 16,384! ✗ | 6,050 ✓ |
+| -20 | | | | | 16,384! ✗ | 16,384! ✗ |
+| -40 | 2,703 ✓ | 16,384! ✗ | 16,384! ✗ | 7,444 ✗ | 9,850 ✓ | 7,214 ✓ |
+| -60 | 3,310 ✓ | 11,017 ✓ | 16,384! ✗ | 16,384! ✓ | 15,021 ✓ | 7,996 ✓ |
+
+`!` = hit the cap, so the token count is a lower bound and the run never
+terminated.
+
+Both survived the *screen* — the first candidates ever to do so, since the screen
+only asks for correctness on items 10 and 18 — and both were rejected on the
+cohort:
+
+| candidate | solves kept | solves lost | tokens on baseline's solves | vs baseline |
+|---|---|---|---:|---:|
+| `real_seal-40` | 0, 10, 18 | 1, 4 | 43,595 | **+27.5%** |
+| `real_seal-60` | 0, 1, 10, 18 | 4 (never terminated) | 53,728 | **+57.1%** |
+
+`-60` is the best-behaved arm yet on correctness: it keeps four of five baseline
+solves outright and *does* produce the right answer on item 4, but only by running
+into the cap, so under a stopping policy it has not delivered an answer. It pays
++57% tokens for that.
+
+**The finding is that the sign does not matter.** Counting every steered setting
+against its own baseline:
+
+* item 10: **6 of 6** emit more tokens than the unsteered 5,848
+* item 18: **5 of 6** emit more than the unsteered 7,062
+
+The single exception is +80 on item 18 (6,050, -14%), and that same coefficient
+runs item 10 into the cap. The curve through zero is not monotonic — it is a
+valley whose minimum is at **zero** (see `coef_sweep.png`, from
+`scripts/plot_coef_sweep.py`).
+
+That shape says the token increase is a **magnitude effect, not a direction
+effect**: displacing the residual stream at layer 28 by a fixed-norm vector makes
+the model ramble regardless of which way the vector points. It is not the
+execution-vs-reflection semantics the vector is supposed to carry. Non-monotonicity
+supports this too — -20 runs both screen items into the cap while the *larger*
+-40 and -60 do not, which is not how a semantic axis with a dose-response should
+behave.
+
+**Consequence for the brevity-vector plan.** The prediction is that *any*
+diff-of-means direction injected at this site with comparable norm will also
+lengthen output, so a length-supervised vector is not obviously exempt. Before
+spending GPU on extraction, it is worth running `--mode samples` to check whether
+correct solutions to the same problem even differ in length, and worth treating
+"does this vector reduce tokens at small coefficient" as a gate rather than an
+expectation. A cheaper variant also becomes interesting: sweep *small* magnitudes
+(coef 2, 5, 10) to find where the perturbation cost begins, since everything
+tested so far is >= 20 and may simply be far off-distribution.
+
 ## 4. What this run did not establish
 
 * **Nothing about accuracy at n=6.** The noise floor is +/-2 items (a
