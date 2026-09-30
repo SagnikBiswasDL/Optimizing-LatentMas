@@ -1,0 +1,43 @@
+{
+  "base": "real",
+  "tag": "b16k",
+  "base_correct": 22,
+  "base_n": 30,
+  "base_kv_mb": 108.296875,
+  "arms": [
+    {
+      "arm": "none",
+      "n_paired": 30,
+      "real_correct": 22,
+      "arm_correct": 21,
+      "gained": 0,
+      "lost": 1,
+      "delta_items": -1,
+      "delta_pct_ci": [
+        -9.9,
+        3.2
+      ],
+      "mcnemar_p": 1.0,
+      "censored": 8,
+      "mean_tokens_finished": 7813.3,
+      "kv_mb": 0.0
+    },
+    {
+      "arm": "shuf",
+      "n_paired": 30,
+      "real_correct": 22,
+      "arm_correct": 19,
+      "gained": 1,
+      "lost": 4,
+      "delta_items": -3,
+      "delta_pct_ci": [
+        -24.2,
+        4.2
+      ],
+      "mcnemar_p": 0.375,
+      "censored": 4,
+      "mean_tokens_finished": 7570.2,
+      "kv_mb": 108.3
+    }
+  ]
+}
