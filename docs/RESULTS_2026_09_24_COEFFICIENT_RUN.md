@@ -397,3 +397,47 @@ actual contribution. If `single` lands near 19/30 as the paper reports, then
 scaffolding is worth ~2 items and the latent channel ~1, and the claim becomes that
 most of the AIME24 gain is prompting rather than latent collaboration. Cost is one
 arm, 30 items, ~1.7 GPU-hours.
+
+### 5.1 Pre-registered reading of the `single` arm
+
+*Written 2026-09-30 while the arm was decoding, before any of its rows existed.*
+
+The decomposition is cleaner than assumed when it was proposed. Diffing the two
+user prompts, they are identical except for the two sentences announcing latent
+information (plus incidental `**bold**` markers around "provided Target
+Question"); same system message, same `\boxed{}` instruction, same
+step-by-step wording. So the two contrasts really do isolate one thing each:
+
+| contrast | what varies | what it measures |
+| --- | --- | --- |
+| `single` vs `none` | prompt text only (neither has a cache) | the multi-agent framing |
+| `none` vs `real` | cache only (prompt held fixed) | the latent KV transfer |
+| `single` vs `real` | both | the paper's headline comparison |
+
+`none` vs `real` is already the prompt-matched measurement of the contribution,
+and it is +1 item, CI [-9.9, +3.2] pp. The `single` arm cannot change that. What it
+decides is how the paper's +3.4 pp divides, and whether our harness reproduces
+their Single baseline at all. Three outcomes, all of which are informative:
+
+1. **`single` ≈ 19/30.** We reproduce the paper's baseline, and its +3 items
+   decompose as ~2 from prompt framing and ~1 from latents. The contribution the
+   paper names is the smaller half of its own effect.
+2. **`single` ≈ `none` ≈ 21/30.** The prompt text is inert; the paper's gap is our
+   `none`→`real` gap, one item, and §5's reading stands unchanged.
+3. **`single` > `real`.** The Judger prompt *hurts* when latents are absent, our
+   `none` floor was too pessimistic in a way that flatters LatentMAS, and in this
+   harness the whole pipeline buys nothing over one agent with a plain prompt.
+
+Outcome 3 is the one that would matter most and the one I am least able to
+dismiss, so it is named before the data rather than after.
+
+**A falsifiable prediction of my own confound explanation.** §5 above attributes
+`none`'s censoring (8/30 against `real`'s 3/30) to a prompt that promises context
+it does not supply. If that is right, `single` — which makes no such promise —
+should censor closer to 3 than to 8. If `single` censors ~8 as well, the
+explanation is wrong and the censoring is just what an unaided 14B model does on
+AIME at a 16384-token cap.
+
+**Power, stated in advance.** n=30 with ~22 correct: this run can detect a shift of
+roughly 4-5 items, not 1. Every number below is reported with its interval, and no
+one-item difference in either direction will be called a finding.
