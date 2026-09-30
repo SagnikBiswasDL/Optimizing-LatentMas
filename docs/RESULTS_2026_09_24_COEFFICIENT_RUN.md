@@ -562,3 +562,94 @@ measured on the authors' own benchmark and model:
 Both halves are needed. The first alone reads as a failed replication of a claim
 the benchmark cannot support either way. The second explains what the method is
 actually doing, and makes a prediction that §6.5 tests.
+
+---
+
+## 7. The `single` arm: the prompt is inert, and my confound story was wrong
+
+*Run 2026-09-30, 30/30 items. Read against the pre-registration in §5.1, which was
+committed before any of these rows existed.*
+
+### 7.1 Outcome (2): the multi-agent prompt does nothing
+
+| arm | prompt | cache | correct | median tokens | censored |
+| --- | --- | --- | --- | --- | --- |
+| `single` | plain CoT (paper's own baseline) | none | 21/30 | 11027 | 8 |
+| `none` | Judger prompt | none | 21/30 | 9308 | 8 |
+| `real` | Judger prompt | full | 22/30 | 5848 | 3 |
+
+The two prompts differ by exactly the sentences announcing latent information, so
+`single` → `none` is the prompt and nothing else. It is inert on **both** metrics:
+
+- accuracy: **+0 items**, CI [-13.1, 13.1] pp, p=1.00
+- tokens: 10 shorter / 14 longer, p=0.54, median **+5.7%**, CI [-14.9, +18.6]
+
+This was pre-registered outcome (2). The feared outcome (3) — `single` beating
+`real`, the pipeline buying nothing — did not happen.
+
+So the paper's reported gain is entirely on the cache side of the decomposition,
+and §5's reading stands unchanged: that gain is **one item**, and one item is not
+resolvable at n=30 by anyone, including the authors.
+
+Two sanity checks pass. Our `single` is 21/30 (70.0%) against the paper's 19/30
+(63.3%), the same ~2-item offset already seen on `real`, consistent with a
+16384-token cap against their 20000. And `single` → `real` is +1 item, reproducing
+the published +3.4 pp exactly.
+
+### 7.2 The paper's own comparison, in the metric that can see it
+
+`single` → `real` is the exact contrast the paper reports. On accuracy it is +1
+item, p=1.00. On tokens:
+
+```
+25 shorter / 3 longer / 2 undetermined      p < 0.0001
+median -26.4%   CI [-40.9, -19.9]
+end-to-end incl. upstream: -24.4%, 19/21 faster, p=0.0002
+```
+
+Against the authors' own baseline, on the authors' own benchmark and model, the
+method's effect is a **quarter of the answering agent's tokens**, at p<0.0001 —
+while the accuracy it is sold on cannot be resolved at all.
+
+### 7.3 A prediction of mine that came back against me
+
+§5 attributed `none`'s censoring (8/30 against `real`'s 3/30) to a prompt that
+promises latent context and supplies none, and §5.1 committed the test: `single`
+makes no such promise, so it should censor near 3, not 8.
+
+**`single` censored 8/30. The explanation was wrong.**
+
+Censoring does not track the prompt; it tracks the *cache*. Both cacheless arms sit
+at 8/30 whatever their prompt says, and attaching the cache cuts it to 3/30. A
+second, independent line already pointed this way: zero of the 30 `none` outputs
+ever mention absent context. Inspecting the censored generations shows what they
+actually do — open-ended mathematical search that never closes ("Wait, let's
+check...", "Let me try k=120"), in `real` and `none` alike.
+
+Two consequences, one of which is good news:
+
+- The §5 caveat is **withdrawn**. `none` is not a handicapped baseline; it is a
+  fair one. The `real` vs `none` comparison is cleaner than §5 claimed, not
+  dirtier.
+- The mechanism gets sharper. The cache's measurable job is to help the model
+  **stop**: 8/30 runaway generations become 3/30, and the median answer loses a
+  third of its tokens. That is a termination effect, not a correctness effect, and
+  it is what §6 measures.
+
+### 7.4 Interim: a 10x smaller cache keeps most of it
+
+`evict_uniform --evict_budget 64`, 11 of 30 items at the time of writing. Provenance
+from the row: `positions_in 770 -> positions_out 64`, ratio 0.083, sink retained,
+64 kept in each of 40 layers, **10.0 MB against 103.1 MB** on the same items.
+
+```
+none    -> evict64    8 shorter / 2 longer   p=0.109   median -16.8%   (n=9)
+evict64 -> real       9 shorter / 2 longer   p=0.065   median  -8.4%   (n=10)
+```
+
+**Interim, and not to be quoted.** Neither reaches significance at n=11 and the
+arm is still running. But the direction is that **8% of the KV bytes buys roughly
+two thirds of the token saving**, which is the diminishing-returns shape §6.5
+predicted for a threshold mechanism, and the opposite of what a saving graded in
+prefix length would look like. If it holds to n=30, the §6.4 null stops being
+range restriction and starts being the finding.
