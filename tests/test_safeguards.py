@@ -804,6 +804,77 @@ def _ch_row(idx, method, correct, tokens=1000, eos=True, cache_mb=100.0):
             "eos": eos, "cache_mb": cache_mb}
 
 
+def _arms(single, none_, real, cens=(0, 0, 0)):
+    """Three arms from per-item correctness flags, plus censored counts."""
+    def mk(flags, name, n_cens):
+        d = {}
+        for i, ok in enumerate(flags):
+            d[i] = _ch_row(i, name, ok, eos=(i >= n_cens))
+        return d
+    return {"single": mk(single, "single", cens[0]),
+            "none": mk(none_, "none", cens[1]),
+            "real": mk(real, "real", cens[2])}
+
+
+def test_decomposition_returns_none_until_all_three_arms_exist():
+    # Reporting a decomposition from two arms would silently invent the third.
+    by = _arms([True], [True], [True])
+    del by["single"]
+    assert C.decompose(by) is None
+
+
+def test_decomposition_splits_the_gap_into_prompt_and_cache(capsys):
+    # Outcome (1): single 4/10, none 6/10, real 7/10 -> framing +2, channel +1.
+    by = _arms([True] * 4 + [False] * 6,
+               [True] * 6 + [False] * 4,
+               [True] * 7 + [False] * 3)
+    d = C.decompose(by)
+    assert d["prompt_scaffolding"]["delta_items"] == 2
+    assert d["latent_channel"]["delta_items"] == 1
+    assert d["end_to_end"]["delta_items"] == 3
+    out = capsys.readouterr().out
+    assert "(1)" in out and "67%" in out
+
+
+def test_decomposition_flags_the_outcome_where_the_pipeline_loses(capsys):
+    # Outcome (3), the one pre-registered as hardest to dismiss: single > real.
+    by = _arms([True] * 8 + [False] * 2,
+               [True] * 5 + [False] * 5,
+               [True] * 6 + [False] * 4)
+    d = C.decompose(by)
+    assert d["end_to_end"]["delta_items"] < 0
+    assert "(3)" in capsys.readouterr().out
+
+
+def test_decomposition_calls_an_inert_prompt_inert(capsys):
+    # Outcome (2): single == none, so the whole gap is the cache.
+    by = _arms([True] * 5 + [False] * 5,
+               [True] * 5 + [False] * 5,
+               [True] * 7 + [False] * 3)
+    C.decompose(by)
+    assert "(2)" in capsys.readouterr().out
+
+
+def test_censoring_check_can_falsify_the_confound_story(capsys):
+    # real 1, none 9: if single also censors 9, the Judger prompt is not to blame.
+    by = _arms([True] * 5, [True] * 5, [True] * 5, cens=(9, 9, 1))
+    C.decompose(by)
+    assert "Falsifies the confound story" in capsys.readouterr().out
+
+
+def test_censoring_check_supports_the_confound_story_when_single_is_clean(capsys):
+    by = _arms([True] * 5, [True] * 5, [True] * 5, cens=(1, 9, 1))
+    C.decompose(by)
+    assert "Supports the confound story" in capsys.readouterr().out
+
+
+def test_contrast_is_symmetric_in_sign():
+    a = {i: _ch_row(i, "a", i < 3) for i in range(10)}
+    b = {i: _ch_row(i, "b", i < 7) for i in range(10)}
+    assert C.contrast(a, b)["delta_items"] == -C.contrast(b, a)["delta_items"]
+    assert C.contrast(a, b)["gained"] == C.contrast(b, a)["lost"]
+
+
 def test_channel_load_strips_tag_and_ignores_seal_arms(tmp_path):
     path = _pair_rows_file(tmp_path, [
         _ch_row(0, "real__b16k", True),

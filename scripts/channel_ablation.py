@@ -141,6 +141,96 @@ def compare(base: Dict[int, dict], arm: Dict[int, dict], name: str) -> Dict:
     }
 
 
+def contrast(lo_arm: Dict[int, dict], hi_arm: Dict[int, dict]) -> Dict:
+    """Paired accuracy difference hi - lo, on the items both arms ran.
+
+    Same machinery as `compare`, but neither side is privileged as "the
+    baseline", because the decomposition needs `single` vs `none` as well as
+    `none` vs `real`.
+    """
+    shared = sorted(set(lo_arm) & set(hi_arm))
+    n = len(shared)
+    gained = sum(1 for i in shared
+                 if hi_arm[i].get("correct") and not lo_arm[i].get("correct"))
+    lost = sum(1 for i in shared
+               if lo_arm[i].get("correct") and not hi_arm[i].get("correct"))
+    lo_ci, hi_ci = wilson_diff_ci(gained, lost, n)
+    return {
+        "n": n,
+        "lo_correct": sum(1 for i in shared if lo_arm[i].get("correct")),
+        "hi_correct": sum(1 for i in shared if hi_arm[i].get("correct")),
+        "delta_items": (sum(1 for i in shared if hi_arm[i].get("correct"))
+                        - sum(1 for i in shared if lo_arm[i].get("correct"))),
+        "gained": gained, "lost": lost,
+        "ci_pp": [round(100 * lo_ci, 1), round(100 * hi_ci, 1)],
+        "p": round(binom_two_sided(gained, gained + lost), 4),
+    }
+
+
+def decompose(by_arm: Dict[str, Dict[int, dict]]) -> Optional[Dict]:
+    """Split the paper's single-vs-LatentMAS gap into prompt and cache.
+
+    The two user prompts differ by exactly the sentences announcing latent
+    information, so `single`->`none` varies prompt text with the cache absent in
+    both, and `none`->`real` varies the cache with the prompt fixed. The paper
+    reports only the end-to-end `single`->`real` gap and attributes it to latent
+    collaboration.
+    """
+    if not all(a in by_arm for a in ("single", "none", "real")):
+        return None
+    single, none_, real = by_arm["single"], by_arm["none"], by_arm["real"]
+    scaffold = contrast(single, none_)
+    channel = contrast(none_, real)
+    endtoend = contrast(single, real)
+
+    print("\n" + "=" * 70)
+    print("DECOMPOSITION: how much of the gap is the prompt, and how much the cache")
+    print(f"  single {scaffold['lo_correct']}/{scaffold['n']}"
+          f"  ->  none {channel['lo_correct']}/{channel['n']}"
+          f"  ->  real {channel['hi_correct']}/{channel['n']}")
+    for label, d, what in (
+            ("prompt scaffolding (single -> none)", scaffold, "prompt text only"),
+            ("latent KV transfer (none -> real)", channel, "cache only"),
+            ("paper's comparison (single -> real)", endtoend, "both")):
+        print(f"  {label:<38} {d['delta_items']:+d} items  "
+              f"CI {str(d['ci_pp']):>15} pp  p={d['p']:.4f}   [{what}]")
+
+    # Named in advance in docs/RESULTS_2026_09_24_COEFFICIENT_RUN.md §5.1.
+    print("\n  Pre-registered outcome:")
+    if endtoend["delta_items"] < 0:
+        print("    (3) `single` beats `real`: in this harness the whole pipeline buys")
+        print("        nothing over one agent with a plain prompt, and the `none` floor")
+        print("        was pessimistic in a way that flattered LatentMAS.")
+    elif abs(scaffold["delta_items"]) <= 1:
+        print("    (2) the prompt text is inert; the paper's gap is the cache's gap.")
+    else:
+        share = (100.0 * scaffold["delta_items"] / endtoend["delta_items"]
+                 if endtoend["delta_items"] else float("nan"))
+        print(f"    (1) the framing carries {scaffold['delta_items']:+d} of the "
+              f"{endtoend['delta_items']:+d} item gap ({share:.0f}%); the latent "
+              f"channel carries {channel['delta_items']:+d}.")
+    print("    At n=30 a one-item difference is not a finding; quote the intervals.")
+
+    # Falsifiable prediction of the confound story in §5: if `none`'s censoring is
+    # caused by a prompt promising context it never supplies, `single` should not
+    # censor like `none`.
+    cens = {k: sum(1 for r in by_arm[k].values() if not r.get("eos"))
+            for k in ("single", "none", "real")}
+    print(f"\n  Censoring check — real {cens['real']}, none {cens['none']}, "
+          f"single {cens['single']} of 30 hit the cap.")
+    if cens["none"] > cens["real"]:
+        span = cens["none"] - cens["real"]
+        if cens["single"] - cens["real"] <= span / 2:
+            print("    => Supports the confound story: the arm that never promises "
+                  "latents does not run away. `none` is a pessimistic floor.")
+        else:
+            print("    => Falsifies the confound story: `single` runs away too, so "
+                  "the censoring is what an unaided model does at this cap, not an "
+                  "artefact of the Judger prompt.")
+    return {"prompt_scaffolding": scaffold, "latent_channel": channel,
+            "end_to_end": endtoend, "censored": cens}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--rows", default="artifacts/aime_localize/rows.jsonl")
@@ -225,13 +315,15 @@ def main() -> None:
             print("     (an interval overlapping zero is not proof of equivalence; "
                   "the bound is what to quote)")
 
+    decomp = decompose(by_arm)
+
     if args.out:
         with open(args.out, "w") as fh:
             json.dump({"base": args.base, "tag": args.tag,
                        "base_correct": sum(1 for r in base.values()
                                            if r.get("correct")),
                        "base_n": len(base), "base_kv_mb": base_kv,
-                       "arms": results}, fh, indent=2)
+                       "arms": results, "decomposition": decomp}, fh, indent=2)
         print(f"\nwrote {args.out}")
 
 
