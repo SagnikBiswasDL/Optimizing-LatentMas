@@ -1074,3 +1074,36 @@ def test_reading_attributes_the_saving_to_length_when_shuf_reproduces_it(capsys)
     capsys.readouterr()
     assert any_c["sign_test"]["p"] < 0.05, "12/12 shorter must be significant"
     assert right_c["sign_test"]["p"] > 0.05, "6-6 split must not be"
+
+
+def test_compression_curve_calls_a_saturating_saving_saturating(capsys):
+    # 8% of the bytes, two thirds of the saving: the shape that says most of the
+    # cache is not paying for itself.
+    by = {"none": {i: _t_row(i, 1000, cache_mb=0.0) for i in range(12)},
+          "evict_uniform": {i: _t_row(i, 800, cache_mb=10.0) for i in range(12)},
+          "real": {i: _t_row(i, 700, cache_mb=120.0) for i in range(12)}}
+    rows = T.compression_curve(by, ["none", "evict_uniform", "real"])
+    assert [r["arm"] for r in rows] == ["none", "evict_uniform", "real"]
+    assert "Saturating" in capsys.readouterr().out
+
+
+def test_compression_curve_calls_a_proportional_saving_proportional(capsys):
+    # Half the bytes, half the saving: no free compression.
+    by = {"none": {i: _t_row(i, 1000, cache_mb=0.0) for i in range(12)},
+          "evict_uniform": {i: _t_row(i, 900, cache_mb=60.0) for i in range(12)},
+          "real": {i: _t_row(i, 800, cache_mb=120.0) for i in range(12)}}
+    T.compression_curve(by, ["none", "evict_uniform", "real"])
+    assert "proportional" in capsys.readouterr().out.lower()
+
+
+def test_compression_curve_needs_a_midpoint_to_say_anything():
+    by = {"none": _t_arm([1000] * 5), "real": _t_arm([800] * 5)}
+    assert T.compression_curve(by, ["none", "real"]) is None
+
+
+def test_compression_curve_sorts_by_size_not_by_argument_order(capsys):
+    by = {"none": {i: _t_row(i, 1000, cache_mb=0.0) for i in range(12)},
+          "real": {i: _t_row(i, 700, cache_mb=120.0) for i in range(12)},
+          "evict_uniform": {i: _t_row(i, 800, cache_mb=10.0) for i in range(12)}}
+    rows = T.compression_curve(by, ["none", "real", "evict_uniform"])
+    assert [r["kv_mb"] for r in rows] == sorted(r["kv_mb"] for r in rows)

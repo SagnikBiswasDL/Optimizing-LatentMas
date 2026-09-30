@@ -226,6 +226,66 @@ def step(by: Dict[str, Dict[int, dict]], a: str, b: str, label: str) -> Optional
             "time_confounded": bool({a, b} & TIME_CONFOUNDED)}
 
 
+def compression_curve(by: Dict[str, Dict[int, dict]],
+                      arms: Sequence[str]) -> Optional[List[Dict]]:
+    """Token saving against KV bytes, for arms that differ only in cache size.
+
+    `none` (0 positions), an eviction arm (a fixed budget), and `real` (all of
+    them) are the same content at three sizes, so lining them up turns the two
+    isolated contrasts of §6 into a dose-response curve. The question is whether
+    the saving is graded in size -- in which case shipping fewer bytes costs
+    proportionally -- or saturates, in which case most of the bytes are waste.
+    """
+    present = [a for a in arms if a in by]
+    if not {"none", "real"} <= set(present) or len(present) < 3:
+        return None
+    ref = by["none"]
+    rows = []
+    for a in present:
+        mb = sum(float(r.get("cache_mb") or 0.0) for r in by[a].values()) / len(by[a])
+        s = sign_test(ref, by[a]) if a != "none" else None
+        m = magnitude(ref, by[a]) if a != "none" else None
+        rows.append({"arm": a, "kv_mb": round(mb, 1), "sign_test": s,
+                     "tokens": m, "n": len(by[a])})
+    rows.sort(key=lambda r: r["kv_mb"])
+
+    # `real` is the full cache by definition, not whichever arm happens to be
+    # largest; naming it keeps the percentages meaningful if an arm is missing.
+    full = next(r for r in rows if r["arm"] == "real")
+    print("\n" + "=" * 74)
+    print("COMPRESSION CURVE: token saving against the bytes you have to ship")
+    print(f"{'arm':<14} {'n':>3} {'KV MB':>7} {'% of full':>10} "
+          f"{'tokens vs none':>15} {'% of full saving':>17} {'p':>8}")
+    for r in rows:
+        mpct = (r["tokens"] or {}).get("median_pct")
+        fullpct = (full["tokens"] or {}).get("median_pct")
+        share = (f"{100 * mpct / fullpct:>16.0f}%"
+                 if mpct and fullpct else " " * 17)
+        print(f"{r['arm']:<14} {r['n']:>3} {r['kv_mb']:>7.1f} "
+              f"{100 * r['kv_mb'] / full['kv_mb'] if full['kv_mb'] else 0:>9.1f}% "
+              f"{(f'{mpct:+.1f}%' if mpct is not None else '--'):>15} {share} "
+              f"{(r['sign_test'] or {}).get('p', float('nan')):>8.4f}")
+
+    mids = [r for r in rows if r["arm"] not in ("none", "real") and r["tokens"]]
+    if mids and full["tokens"]:
+        mid = mids[0]
+        byte_frac = 100 * mid["kv_mb"] / full["kv_mb"] if full["kv_mb"] else 0.0
+        save_frac = 100 * mid["tokens"]["median_pct"] / full["tokens"]["median_pct"]
+        print(f"\n  {mid['arm']} ships {byte_frac:.0f}% of the bytes and captures "
+              f"{save_frac:.0f}% of the saving.")
+        if save_frac > 1.5 * byte_frac:
+            print("  => Saturating, not graded. Most of the cache is not paying for")
+            print("     itself, and the saving is closer to a threshold than a dose.")
+            print("     This is what §6.4's flat length regression predicted.")
+        elif save_frac < 0.67 * byte_frac:
+            print("  => Worse than proportional: the evicted positions mattered more")
+            print("     than their share of bytes. The saving is graded after all.")
+        else:
+            print("  => Roughly proportional: saving tracks bytes, so there is no")
+            print("     free compression here and §6.4's null was range restriction.")
+    return rows
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--rows", default="artifacts/aime_localize/rows.jsonl")
@@ -260,6 +320,16 @@ def main() -> None:
                  "single -> real (the paper's own comparison)"),
         ) if s]
 
+    # Eviction arms are the same content at a smaller size, so they extend the
+    # two isolated contrasts above into a curve.
+    evict_arms = [a for a in sorted(by) if a.startswith("evict")]
+    for a in evict_arms:
+        steps += [s for s in (
+            step(by, "none", a, f"none -> {a}   (a smaller cache, same content)"),
+            step(by, a, "real", f"{a} -> real   (what the evicted positions buy)"),
+        ) if s]
+    curve = compression_curve(by, ["none"] + evict_arms + ["real"])
+
     got = {(s["from"], s["to"]): s for s in steps}
     any_c, right_c = got.get(("none", "shuf")), got.get(("shuf", "real"))
     print("\n" + "=" * 74)
@@ -292,7 +362,8 @@ def main() -> None:
 
     if args.out:
         with open(args.out, "w") as fh:
-            json.dump({"tag": args.tag, "steps": steps}, fh, indent=2)
+            json.dump({"tag": args.tag, "steps": steps, "curve": curve}, fh,
+                      indent=2)
         print(f"\nwrote {args.out}")
 
 
