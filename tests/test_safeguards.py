@@ -947,3 +947,130 @@ def test_channel_censored_runs_are_counted_not_scored_as_short():
     r = C.compare(base, arm, "shuf")
     assert r["censored"] == 1
     assert r["mean_tokens_finished"] is None
+
+
+# ---------------------------------------------------------------------------
+# scripts/channel_token_cost.py -- the well-powered metric. The accuracy
+# ablation is a 30-way binomial; token count is continuous and deterministic
+# under greedy decoding, so it resolves effects accuracy cannot. These tests
+# pin the censoring logic, because that is where the analysis could quietly
+# start conditioning on the outcome again.
+# ---------------------------------------------------------------------------
+
+import channel_token_cost as T  # noqa: E402
+
+
+def _t_row(idx, tokens, eos=True, correct=True, cache_mb=100.0,
+           upstream_s=1.0, judger_s=100.0):
+    return {"idx": idx, "tokens": tokens, "eos": eos, "correct": correct,
+            "cache_mb": cache_mb, "upstream_s": upstream_s, "judger_s": judger_s}
+
+
+def _t_arm(specs):
+    return {i: _t_row(i, *s) if isinstance(s, tuple) else _t_row(i, s)
+            for i, s in enumerate(specs)}
+
+
+def test_sign_is_known_when_only_one_arm_is_censored():
+    # A stops at 5000, B is still going at the cap: B is longer, and throwing
+    # this pair away would discard the most informative observations.
+    a = _t_arm([5000])
+    b = {0: _t_row(0, 16384, eos=False)}
+    s = T.sign_test(a, b)
+    assert (s["shorter"], s["longer"], s["undetermined"]) == (0, 1, 0)
+
+
+def test_sign_is_unknown_only_when_both_arms_are_censored():
+    a = {0: _t_row(0, 16384, eos=False)}
+    b = {0: _t_row(0, 16384, eos=False)}
+    s = T.sign_test(a, b)
+    assert s["undetermined"] == 1
+    assert s["shorter"] == s["longer"] == 0
+
+
+def test_sign_test_uses_every_item_it_can():
+    # 30 items, 1 pair double-censored: 29 must still be counted.
+    a = _t_arm([1000] * 29 + [(16384, False)])
+    b = _t_arm([900] * 29 + [(16384, False)])
+    s = T.sign_test(a, b)
+    assert s["n_items"] == 30
+    assert s["shorter"] + s["longer"] + s["undetermined"] == 30
+    assert s["shorter"] == 29
+    assert s["p"] < 0.001
+
+
+def test_a_clean_split_is_not_significant():
+    a = _t_arm([1000] * 10)
+    b = _t_arm([900] * 5 + [1100] * 5)
+    assert T.sign_test(a, b)["p"] > 0.5
+
+
+def test_magnitude_excludes_censored_runs_because_their_length_is_unknown():
+    a = _t_arm([1000, 1000])
+    b = _t_arm([500, (16384, False)])
+    # only one completed pair remains, below the minimum, so no estimate
+    assert T.magnitude(a, b) is None
+
+
+def test_magnitude_is_a_ratio_not_a_difference():
+    a = _t_arm([1000, 2000, 4000])
+    b = _t_arm([500, 1000, 2000])
+    m = T.magnitude(a, b)
+    assert m["n"] == 3
+    assert m["median_pct"] == pytest.approx(-50.0, abs=0.1)
+
+
+def test_correctness_filter_is_reported_separately_not_applied_by_default():
+    # Conditioning on correctness is selection on the outcome; it must be an
+    # extra view, never the primary one.
+    a = _t_arm([1000] * 4)
+    b = {0: _t_row(0, 500), 1: _t_row(1, 500), 2: _t_row(2, 500, correct=False),
+         3: _t_row(3, 500)}
+    assert T.magnitude(a, b, require_correct=False)["n"] == 4
+    assert T.magnitude(a, b, require_correct=True)["n"] == 3
+
+
+def test_time_accounting_charges_the_upstream_roles():
+    # A channel that saves Judger time but costs more upstream than it saves is
+    # not a saving; the metric has to include both.
+    a = {i: _t_row(i, 1000, upstream_s=0.0, judger_s=100.0) for i in range(4)}
+    b = {i: _t_row(i, 500, upstream_s=80.0, judger_s=50.0) for i in range(4)}
+    t = T.time_magnitude(a, b)
+    assert t["median_pct"] > 0  # 130s against 100s: slower end to end
+    # The token view alone would have called this a 50% win.
+    assert T.magnitude(a, b)["median_pct"] < 0
+
+
+def test_shuf_time_is_flagged_as_confounded(capsys):
+    by = {"shuf": _t_arm([1000] * 5), "real": _t_arm([800] * 5)}
+    T.step(by, "shuf", "real", "shuf -> real")
+    assert "CONFOUNDED" in capsys.readouterr().out
+
+
+def test_real_vs_none_time_is_not_flagged(capsys):
+    by = {"none": _t_arm([(1000, True, True, 0.0)] * 5), "real": _t_arm([800] * 5)}
+    T.step(by, "none", "real", "none -> real")
+    assert "CONFOUNDED" not in capsys.readouterr().out
+
+
+def test_length_mismatch_is_not_reported_against_a_cacheless_arm(capsys):
+    # `none` carries 0 MB, so the "gap" is the cache itself and says nothing
+    # about whether a control was matched.
+    by = {"none": {i: _t_row(i, 1000, cache_mb=0.0) for i in range(5)},
+          "real": {i: _t_row(i, 800, cache_mb=100.0) for i in range(5)}}
+    T.step(by, "none", "real", "none -> real")
+    assert "per item" not in capsys.readouterr().out
+
+
+def test_reading_attributes_the_saving_to_length_when_shuf_reproduces_it(capsys):
+    # The deflationary outcome: an unrelated cache captures the saving, and
+    # upgrading it to the right problem's cache adds nothing detectable.
+    by = {"none": _t_arm([1000] * 12),
+          "shuf": _t_arm([750] * 12),
+          # half a touch shorter than shuf, half a touch longer: a wash
+          "real": _t_arm([740] * 6 + [760] * 6)}
+    any_c = T.step(by, "none", "shuf", "any cache")
+    right_c = T.step(by, "shuf", "real", "right cache")
+    capsys.readouterr()
+    assert any_c["sign_test"]["p"] < 0.05, "12/12 shorter must be significant"
+    assert right_c["sign_test"]["p"] > 0.05, "6-6 split must not be"
