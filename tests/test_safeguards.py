@@ -7,9 +7,11 @@ datasets, and an arm compared against a baseline over a different item set.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import sys
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -718,6 +720,52 @@ def test_arm_major_is_unaffected_by_the_new_guard():
     with pytest.raises(SystemExit) as e:
         E.run_views(args)
     assert "decode_bs" not in str(e.value)
+
+
+def test_single_arm_gets_the_papers_baseline_prompt_not_the_judger_prompt():
+    # The whole point of the `single` arm is that its prompt never mentions
+    # latents. If it silently inherited the Judger prompt the arm would measure
+    # nothing and look like a successful replication.
+    assert E.PROMPT_KIND.get("single") == "single"
+    assert E.PROMPT_KIND.get("real", "judger") == "judger"
+    assert E.PROMPT_KIND.get("none", "judger") == "judger"
+
+
+def test_single_and_none_differ_only_by_the_latent_sentences():
+    # `none` vs `real` is the latent channel with the prompt fixed; `single` vs
+    # `none` is the prompt text with the cache fixed (both absent). That reading
+    # only holds if the two prompts differ nowhere else that matters.
+    ns = SimpleNamespace(model_name="Qwen/Qwen3-14B", task="aime2024")
+    judger = E.build_agent_message_sequential_latent_mas(
+        role="judger", question="Q?", context="", method="latent_mas", args=ns)
+    sns = copy.copy(ns)
+    sns.method = "baseline"
+    single = E.build_agent_messages_single_agent(question="Q?", args=sns)
+    assert judger[0]["content"] == single[0]["content"]
+    assert "latent information" in judger[1]["content"]
+    assert "latent" not in single[1]["content"].lower()
+    for shared in ("Target Question: Q?", "\\boxed{YOUR_FINAL_ANSWER}",
+                   "reason step by step"):
+        assert shared in judger[1]["content"]
+        assert shared in single[1]["content"]
+
+
+def test_single_arm_pays_for_no_upstream_role():
+    # A single agent runs no Planner/Critic/Refiner, so charging it upstream
+    # time would understate exactly the cost the paper is trading away.
+    assert E.PAID_ROLES["single"] == ()
+    assert "single" in E.VIEW_ARMS
+
+
+def test_single_arm_is_decoded_without_a_cache():
+    cache, extra = E.view_cache("single", {"idx": 0}, [], cfg())
+    assert cache is None
+    assert extra == {"prompt_kind": "single"}
+
+
+def test_prompt_tensors_rejects_an_unknown_prompt_kind():
+    with pytest.raises(ValueError):
+        E.prompt_tensors(None, ["Q?"], SimpleNamespace(), "not_a_prompt")
 
 
 def test_method_name_matches_the_labels_the_analysis_pairs_on():

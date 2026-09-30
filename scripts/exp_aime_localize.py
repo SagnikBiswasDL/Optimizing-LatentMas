@@ -20,6 +20,7 @@ writes. If {4,10,18} survive, inter-agent *read* is wasteful.
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import io
 import json
@@ -40,7 +41,10 @@ if ROOT not in sys.path:
 
 from data import load_aime2024, load_aime2025, load_gpqa_diamond, load_humanevalplus  # noqa: E402
 from methods import default_agents  # noqa: E402
-from prompts import build_agent_message_sequential_latent_mas  # noqa: E402
+from prompts import (  # noqa: E402
+    build_agent_message_sequential_latent_mas,
+    build_agent_messages_single_agent,
+)
 from seal.cache_bank import kv_mb, num_positions  # noqa: E402
 from seal.latent_eval import (  # noqa: E402
     attach_judger_seal,
@@ -75,6 +79,9 @@ UP_ROLES = ("planner", "critic", "refiner")
 # silent-agent time as `real`; only `isolated`/`none` can bank the saving.
 PAID_ROLES = {
     "none": (),
+    # The paper's single-agent baseline: no upstream roles run, and its prompt
+    # never mentions latents. See PROMPT_KIND.
+    "single": (),
     "c1": ("planner",),
     "c2": ("planner", "critic"),
     "c12": ("planner", "critic"),
@@ -84,6 +91,7 @@ PAID_ROLES = {
 VIEW_ARMS = (
     "real",
     "none",
+    "single",
     "c3",
     "c23",
     "c1",
@@ -354,6 +362,36 @@ def judger_tensors(wrapper, questions, ns):
     return ids, mask
 
 
+def single_agent_tensors(wrapper, questions, ns):
+    """The paper's own single-agent baseline prompt (`prompts.py:694`).
+
+    It differs from the Judger prompt by exactly the two sentences announcing
+    that latent information is provided. That makes `single` vs `none` a clean
+    measurement of the prompt text alone, and `none` vs `real` a clean
+    measurement of the latent channel with the prompt held fixed.
+    """
+    # The builder asserts method == "baseline"; ns carries no `method` field.
+    sns = copy.copy(ns)
+    sns.method = "baseline"
+    messages = [build_agent_messages_single_agent(question=q, args=sns)
+                for q in questions]
+    _, ids, mask, _ = wrapper.prepare_chat_batch(messages, add_generation_prompt=True)
+    return ids, mask
+
+
+# Arms whose prompt is not the Judger prompt. Keyed by the base arm name, so a
+# SEAL variant of an arm inherits it.
+PROMPT_KIND = {"single": "single"}
+
+
+def prompt_tensors(wrapper, questions, ns, kind: str = "judger"):
+    if kind == "single":
+        return single_agent_tensors(wrapper, questions, ns)
+    if kind == "judger":
+        return judger_tensors(wrapper, questions, ns)
+    raise ValueError(f"unknown prompt kind {kind!r}")
+
+
 def load_frozen(path: str, device="cpu"):
     payload = load_unified_cache(path)
     return cache_as_past(payload, device=device), payload.get("meta") or {}
@@ -382,12 +420,16 @@ def load_tape(path: str) -> Dict:
 
 
 def view_cache(name: str, tape: Dict, others: Sequence[Dict], args) -> Any:
+    name, _coef = parse_arm(name)  # SEAL arms reuse their base arm's cache view
+    # The cacheless arms are answered before touching the tape, so they do not
+    # depend on upstream having run at all.
+    if name == "none":
+        return None, None
+    if name == "single":
+        return None, {"prompt_kind": "single"}
     past = tape["past"]
     spans = tape["spans"]
     k = int(tape.get("k") or args.k)
-    name, _coef = parse_arm(name)  # SEAL arms reuse their base arm's cache view
-    if name == "none":
-        return None, None
     if name == "real":
         return past, None
     if name == "c1":
@@ -560,7 +602,8 @@ def assert_one_decode_path(rows: Sequence[Dict], what: str) -> Optional[str]:
 
 def decode_group(wrapper, ns, args, items: Sequence[Dict], caches: Sequence[Any],
                  method: str, extras: Optional[Sequence[Optional[Dict]]] = None,
-                 seal_on: Optional[bool] = None) -> List[Dict]:
+                 seal_on: Optional[bool] = None,
+                 prompt_kind: str = "judger") -> List[Dict]:
     """Decode a group of items in one generate() call.
 
     generate() runs until every sequence in the batch finishes, so a group costs
@@ -578,7 +621,7 @@ def decode_group(wrapper, ns, args, items: Sequence[Dict], caches: Sequence[Any]
     if any(have) and not all(have):
         raise ValueError("cannot batch cached and cacheless items together")
     questions = [it["question"] for it in items]
-    jids, jmask = judger_tensors(wrapper, questions, ns)
+    jids, jmask = prompt_tensors(wrapper, questions, ns, prompt_kind)
     dev_caches = [None if c is None else to_dev(deep_clone(c), wrapper.device) for c in caches]
     if seal_on is None:
         seal_on = bool(args.seal_on and "_seal" in method)
@@ -640,8 +683,10 @@ def decode_group(wrapper, ns, args, items: Sequence[Dict], caches: Sequence[Any]
 
 
 def decode_one(wrapper, ns, args, it, cache, method: str, extra: Optional[Dict],
-               seal_on: Optional[bool] = None) -> Dict:
-    return decode_group(wrapper, ns, args, [it], [cache], method, [extra], seal_on)[0]
+               seal_on: Optional[bool] = None,
+               prompt_kind: str = "judger") -> Dict:
+    return decode_group(wrapper, ns, args, [it], [cache], method, [extra], seal_on,
+                        prompt_kind)[0]
 
 
 class WindowRecorder:
@@ -903,10 +948,12 @@ def run_views_item_major(args, wrapper, ns, arms, tapes, already) -> None:
             cache, extra = view_cache(arm, tape, tapes, args)
             item = {"idx": tape["idx"], "question": tape["question"],
                     "gold": tape["gold"]}
+            pk = PROMPT_KIND.get(base, "judger")
             rows = decode_group(wrapper, ns, args, [item], [cache], method,
-                               [extra], seal_on=coef is not None)
+                               [extra], seal_on=coef is not None, prompt_kind=pk)
             for row in rows:
                 row["seal_coef"] = coef
+                row["prompt_kind"] = pk
                 times = tape.get("times") or {}
                 paid = PAID_ROLES.get(base, UP_ROLES)
                 row["upstream_s"] = float(sum(float(times.get(r) or 0.0) for r in paid))
@@ -1017,10 +1064,12 @@ def run_views(args) -> None:
                               "gold": tape["gold"]})
                 caches.append(cache)
                 extras.append(extra)
+            pk = PROMPT_KIND.get(base, "judger")
             rows = decode_group(wrapper, ns, args, items, caches, method, extras,
-                                seal_on=coef is not None)
+                                seal_on=coef is not None, prompt_kind=pk)
             for tape, row in zip(chunk, rows):
                 row["seal_coef"] = coef
+                row["prompt_kind"] = pk
                 times = tape.get("times") or {}
                 paid = PAID_ROLES.get(base, UP_ROLES)
                 row["upstream_s"] = float(sum(float(times.get(r) or 0.0) for r in paid))

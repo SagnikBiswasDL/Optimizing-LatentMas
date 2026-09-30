@@ -13,7 +13,15 @@ THE ARMS THAT DECIDE IT
   real   all three roles. The published configuration.
   none   no cache at all; the Judger solves from the question alone. The floor.
   shuf   *another problem's* cache, same size, same structure. The placebo.
+  single the paper's own single-agent baseline: no cache AND no Judger prompt.
   c1/c2/c3/c12/c23   single roles and pairs, for localization.
+
+`single` separates two things the paper reports as one number. It differs from
+`none` by exactly the two sentences announcing that latent information is
+provided, so `single` vs `none` prices the multi-agent prompt scaffolding while
+`none` vs `real` prices the latent KV transfer with the prompt held fixed. The
+paper's headline compares `single` to `real` and attributes the whole gap to
+latent collaboration.
 
 `shuf` is the arm that makes this an experiment rather than an ablation. A cache
 from a different problem supplies exactly as many positions to attend over, so if
@@ -138,7 +146,7 @@ def main() -> None:
     ap.add_argument("--rows", default="artifacts/aime_localize/rows.jsonl")
     ap.add_argument("--tag", default="b16k")
     ap.add_argument("--base", default="real")
-    ap.add_argument("--arms", default="none,shuf,c1,c2,c3,c12,c23")
+    ap.add_argument("--arms", default="none,shuf,single,c1,c2,c3,c12,c23")
     ap.add_argument("--out", default="")
     args = ap.parse_args()
 
