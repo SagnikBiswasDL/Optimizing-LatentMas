@@ -10,6 +10,33 @@ methodological correction.
 
 ---
 
+> ### START HERE (added 2026-09-30)
+>
+> **The live result is §6 of `RESULTS_2026_09_24_COEFFICIENT_RUN.md`.** Everything
+> below in §1-§5 of this briefing is closed, and the closures matter more than the
+> attempts: steering is a powered null (§3.7 of the results doc), and the
+> CUDA-graphs lever is arithmetic, not an experiment (§4, 1.01x).
+>
+> What is true now, on the authors' own benchmark and model:
+>
+> - Deleting the latent channel costs **one item of thirty**, CI [-9.9, +3.2] pp.
+>   Accuracy on AIME24 cannot resolve this method's effect and never could; the
+>   paper's own gain is +3.4 pp, also one problem.
+> - Deleting it costs **33% of the Judger's tokens**, 23 shorter / 4 longer,
+>   p=0.0003 — and by §0 below, tokens *are* latency, exactly.
+> - A cache from an **unrelated problem** reproduces most of that saving
+>   (-21%, p=0.0009). Upgrading the placebo to the real cache adds -6%, p=0.087.
+>
+> So §0's "the goal is a latency result" turns out to be satisfied, but not by
+> serving engineering. It is satisfied by measuring what the method does and
+> finding that its benefit is length, largely independent of what was transferred.
+> Do not restart the serving work; read §4 first.
+>
+> Open question, one arm, already queued: does a **10x smaller** cache (64 of ~650
+> positions) keep the saving? See §6.5.
+
+---
+
 ## 0. The goal is a LATENCY result. Here is the whole latency model.
 
 **The end deliverable is a latency win, not an accuracy win.** Accuracy matters only

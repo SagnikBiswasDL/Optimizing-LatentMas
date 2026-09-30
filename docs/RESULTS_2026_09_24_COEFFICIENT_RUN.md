@@ -441,3 +441,124 @@ AIME at a 16384-token cap.
 **Power, stated in advance.** n=30 with ~22 correct: this run can detect a shift of
 roughly 4-5 items, not 1. Every number below is reported with its interval, and no
 one-item difference in either direction will be called a finding.
+
+---
+
+## 6. The channel does something, and it is not communication (2026-09-30)
+
+*This section is the reason the project has a claim at all. §3 and §4 closed two
+dead ends; §5 returned a null on the metric the paper reports. This is a positive,
+well-powered result on a metric the paper does not report.*
+
+`scripts/channel_token_cost.py`, run on the 178 rows already collected.
+
+### 6.1 Why accuracy was never going to work
+
+Accuracy on 30 AIME items is a 30-way binomial. §3.7 measured what that buys:
+80% power for a 16% effect, and 58 items needed for 10%. The paper's own AIME24
+gain is +3.4 pp, which is one problem. No amount of care makes 30 items resolve
+one problem.
+
+The Judger's **token count** is a different instrument. It is continuous, one
+measurement per item rather than one bit, and under greedy decoding on a fixed
+decode path it reproduces exactly (§3.6). The same 30 problems support a test with
+real power.
+
+### 6.2 The result
+
+Paired on the same items, `real` against `none` with the Judger prompt held fixed:
+
+| step | what changes | sign test (all 30 items) | median | 95% CI |
+| --- | --- | --- | --- | --- |
+| `none` → `shuf` | attach *any* cache, from a **different problem** | 23 shorter / 5 longer, **p=0.0009** | **-21%** | [-34.2, -15.3] |
+| `shuf` → `real` | make that cache the **right** problem's | 19 shorter / 9 longer, p=0.087 | -6% | [-16.1, -3.2] |
+| `none` → `real` | the published configuration | 23 shorter / 4 longer, **p=0.0003** | **-33%** | [-41.4, -22.9] |
+
+The channel is worth a third of the answering agent's tokens. **Most of that is
+reproduced by a cache belonging to a different problem.** Upgrading the placebo to
+the genuine article buys a further 6%, which does not reach significance at n=30.
+
+The saving survives full cost accounting. The upstream roles emit only `k=10`
+latent steps each and no text, so they cost **0.9 s against a 124 s Judger**.
+End-to-end, `none` → `real` is -37% wall clock, 20/22 faster, p=0.0001.
+
+So the two headline metrics point opposite ways, and both are defensible:
+
+- **Accuracy: null.** Deleting the channel costs one item of thirty, CI [-9.9, +3.2] pp.
+- **Tokens: -33%, p=0.0003.** And largely not attributable to the channel's contents.
+
+### 6.3 Two methodological commitments, encoded in the script rather than promised
+
+**The primary test discards nothing.** Keeping only pairs where both arms
+terminated conditions on the outcome — precisely the error §3.7 records us making
+with items 10 and 18. But the *sign* of a paired difference is identified under
+censoring: if one arm stops at 5000 tokens while the other is still running at the
+16384 cap, the second is longer, and no assumption is needed. So the primary test
+is an exact sign test over all 30 items, dropping only pairs where **both** hit the
+cap. Magnitudes require completed runs and are labelled as conditional; the
+correctness-filtered version is printed beside the unfiltered one to show the
+filter moves nothing (-21.1% either way on `none` → `shuf`).
+
+**`shuf`'s *time* is confounded, and the script prints the confound.** Item *i*
+borrows item *i+1*'s cache, so prefix length is matched only in the mean: 98.8 MB
+against 100.1 MB on average, but differing by 18 MB per item and up to 41. Token
+counts do not depend on prefix length; prefill and per-step attention do. The
+`shuf` time number is therefore not quoted as evidence, and `TIME_CONFOUNDED`
+marks it in the output.
+
+The placebo itself is verified rather than assumed: all 30 `shuf` rows record a
+`donor_idx`, and every donor's cache size matches `real[donor_idx]` to the byte.
+
+### 6.4 What the mechanism is not, yet
+
+The honest reading is *"largely not problem-specific information"*, which is
+weaker than *"not information"*. A donor cache is still a latent trace of a model
+reasoning about a competition maths problem. It could plausibly carry transferable
+mathematical procedure while carrying nothing about *this* problem.
+
+One mechanism is cheap to test and was tested for free: if what the Judger gains
+is simply a longer prefix — behaving as though it has already been reasoning, and
+so moving to conclude — then the saving should scale with prefix length. Within
+this data it does not. Regressing the per-item saving on the length of the cache
+actually attached, over 515-962 positions:
+
+```
+shuf:  spearman +0.12, permutation p=0.61   (n=20)
+real:  spearman +0.26, permutation p=0.24   (n=22)
+```
+
+No gradient, and the sign is if anything backwards. That is consistent with a
+**threshold** effect — any sufficient prefix, then flat — but the range is only
+1.9x, so it cannot exclude a gradient that acts far below 515 positions.
+
+### 6.5 The experiment that decides it, and what it is worth if it lands
+
+`evict_uniform` at `--evict_budget 64`: keep 64 of ~650 positions, a **10x smaller
+cache**, chosen by key-norm importance. Combined with `real` (~650) and `none` (0),
+one arm yields a three-point dose-response curve rather than a single contrast.
+
+- If 64 positions retain the saving, the effect is threshold-like, and LatentMAS's
+  measurable benefit is available at a tenth of the KV bytes. That is a
+  compression result with a real metric — **KV bytes at fixed accuracy** — and it
+  follows from a mechanism rather than from tuning.
+- If 64 positions lose it, the effect is graded in length after all, §6.4's null
+  was range restriction, and the next question is where the knee sits.
+
+Queued behind the `single` arm on the same pod (`/workspace/chain_evict64.sh`),
+~2.5 GPU-hours.
+
+### 6.6 Where this leaves the write-up
+
+The claim is no longer "we made LatentMAS faster", which was the fair criticism of
+§4. It is a mechanism claim plus an efficiency claim, both falsifiable and both
+measured on the authors' own benchmark and model:
+
+> On AIME24 with Qwen3-14B, LatentMAS's latent channel does not measurably change
+> accuracy (+1 item of 30, CI [-9.9, +3.2] pp), but it does cut the answering
+> agent's tokens by a third (p=0.0003) at negligible upstream cost. A cache from an
+> unrelated problem reproduces most of that saving, so the benefit is largely not
+> the transfer of problem-specific information.
+
+Both halves are needed. The first alone reads as a failed replication of a claim
+the benchmark cannot support either way. The second explains what the method is
+actually doing, and makes a prediction that §6.5 tests.
