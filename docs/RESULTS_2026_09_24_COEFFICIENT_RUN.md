@@ -335,3 +335,65 @@ items to resolve smaller ones.
 * `flash_attn` is not installed on the pod, so both flash configs failed to load
   and are unmeasured. At batch 1 this is unlikely to matter — decode is bound by
   weight bandwidth, not attention.
+
+## 5. The latent channel ablation (2026-09-29), and what the paper actually claims
+
+Arms run on all 30 AIME-2024 items, Qwen3-14B, cap 16384, `sdpa+dynamic`, paired
+per item, analysis pre-registered in `scripts/channel_ablation.py`.
+
+| arm | KV to Judger | correct | vs `real` | 95% CI | censored |
+|---|---|---|---|---|---|
+| `real` (planner+critic+refiner) | 108.3 MB | 22/30 | — | — | 3 |
+| `none` (no cache) | 0 MB | 21/30 | -1 item | [-9.9, +3.2] pp | 8 |
+| `shuf` (another problem's cache) | 108.3 MB | 19/30 | -3 items | [-24.2, +4.2] pp | 4 |
+
+### This reproduces the paper, it does not contradict it
+
+LatentMAS (arXiv 2511.20639), Table 2, AIME24, Qwen3-14B, **Sequential** setting:
+
+| | Single | TextMAS | LatentMAS | reported |
+|---|---|---|---|---|
+| accuracy | 63.3% (19/30) | 63.3% (19/30) | 66.7% (20/30) | **+3.4** |
+
+**The paper's own AIME24 gain is +3.4 pp, which on a 30-problem benchmark is one
+problem.** Our `real` - `none` gap is +1 item (+3.3 pp). The effect size matches
+almost exactly; the headline "up to 14.6% higher accuracy" comes from other tasks
+and settings, not this one. In the Hierarchical setting the paper reports 63.3 ->
+73.3 (19 -> 22 items) against Single, and our `real` is 22/30, so absolute levels
+line up too, ours running ~2 items above theirs (plausibly the token budget: 20000
+in the paper against 16384 here, plus protocol differences).
+
+So the finding is not "LatentMAS does not replicate". It is that **on AIME24 the
+published gain rests on a one-problem difference**, and our interval on that same
+difference, [-9.9, +3.2] pp, contains both their +3.4 and zero.
+
+### A confound in our own `none` arm
+
+`none` reuses the Judger prompt, which reads *"You are provided with latent
+information for reference"* while supplying none (`prompts.py:53`). The arm is
+therefore handicapped by an incoherent prompt, which is the likely source of its
+censoring jumping 3 -> 8: the Judger looks for context that does not exist and
+rambles. Note the direction — this makes `none` a *pessimistic* baseline, so the
+bound on the channel's contribution survives, and arguably tightens.
+
+`shuf` being numerically worse than `none` (19 vs 21) says the Judger does read the
+channel rather than ignoring it: a wrong problem's latents actively mislead. Both
+differences are inside noise at n=30 and are quoted as directions only.
+
+### The experiment this sets up
+
+`prompts.py:694` already contains `build_agent_messages_single_agent`, the paper's
+own Single baseline. Running it as a `single` arm on the same 30 items, same budget
+and decode path, gives an internally consistent decomposition with nothing
+confounded by prompt text:
+
+```
+single (plain CoT)  ->  none (judger prompt, no latents)  ->  real (full channel)
+```
+
+That separates two things the paper reports as one: the benefit of **multi-agent
+prompt scaffolding** from the benefit of **latent KV transfer**, which is the
+actual contribution. If `single` lands near 19/30 as the paper reports, then
+scaffolding is worth ~2 items and the latent channel ~1, and the claim becomes that
+most of the AIME24 gain is prompting rather than latent collaboration. Cost is one
+arm, 30 items, ~1.7 GPU-hours.
