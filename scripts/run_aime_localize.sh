@@ -469,6 +469,55 @@ signflip () {
 # Reuses the 30 tapes already collected, so there is no upstream cost -- only
 # Judger decodes. Item-major so a deadline truncates whole items and every item
 # present has every arm.
+# Jiayi's ask (see the `qwen` stage): the Qwen3 thinking sampler rather than
+# greedy, which is the setting the paper actually decodes in. Every result in
+# §6-§7 of the results doc is greedy, so the token effect is currently unproven
+# in the regime it needs to hold in.
+#
+# The one thing this stage must not do is sample the UPSTREAM agents. run_collect
+# copies --temperature into the namespace it builds the latent cache with, so
+# passing the sampler to both steps would change the cache as well as the decode
+# and stop being a clean comparison. Collect is therefore run at the default
+# temperature 0 and only the Judger decode samples.
+#
+# Rows land as `real_t06__<tag>` / `none_t06__<tag>`, distinct from the greedy
+# rows in the same file; channel_token_cost.py --sampler t06 selects them and
+# refuses to pool the two regimes.
+sampler () {
+  local cap=${PROMOTE_CAP:-16384}
+  local tag=${PROMOTE_TAG:-b16k}
+  local arms=${SAMPLER_ARMS:-"real,none"}
+  local temp=${SAMPLER_TEMP:-0.6}
+  local top_p=${SAMPLER_TOP_P:-0.95}
+  local top_k=${SAMPLER_TOP_K:-20}
+  local n_items=${SAMPLER_N:-15}
+  local items=${SAMPLER_ITEMS:-$(seq 0 $(( n_items - 1 )) | paste -sd, -)}
+  items="${items%,}"
+  n_items=$(( $(tr -cd ',' <<<"$items" | wc -c) + 1 ))
+  local budget=${SAMPLER_S:-12600}
+  start_deadline "$budget"
+
+  # Items are the first n by index, a fixed arbitrary rule. Never pick the subset
+  # by how the greedy run came out; see §3.7 on selecting items by outcome.
+  echo "[localize] sampler: arms=$arms items=$n_items temp=$temp top_p=$top_p" \
+    "top_k=$top_k cap=$cap tag=$tag budget=${budget}s" | tee -a "$LOG"
+
+  # Cache built greedily on purpose: only the Judger samples.
+  run_py --mode collect --task aime2024 --n "$n_items" --indices "$items" \
+    --judger_budget "$cap"
+
+  run_py --mode views --task aime2024 --view_arms "$arms" \
+    --view_indices "$items" --judger_budget "$cap" --method_tag "$tag" \
+    --temperature "$temp" --top_p "$top_p" --top_k "$top_k" \
+    --decode_bs 1 --arm_order item --time_budget_s "$(remaining)"
+
+  run_py --mode report
+  "$PY" "$(dirname "$0")/channel_token_cost.py" --rows "$ROOT_DIR/rows.jsonl" \
+    --tag "$tag" --sampler "t${temp//./}" \
+    --out "$ROOT_DIR/token_cost_t${temp//./}.json" 2>&1 | tee -a "$LOG"
+  echo "[localize] sampler used ${SECONDS}s of ${budget}s" | tee -a "$LOG"
+}
+
 channel () {
   local cap=${PROMOTE_CAP:-16384}
   local tag=${PROMOTE_TAG:-b16k}
@@ -880,6 +929,7 @@ case "$stage" in
   smallsweep) smallsweep ;;
   cohort) cohort ;;
   channel) channel ;;
+  sampler) sampler ;;
   samples) samples ;;
   confirm24) confirm24 ;;
   blitz) blitz ;;
@@ -897,7 +947,7 @@ case "$stage" in
   collect) run_py --mode collect --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
   views) run_py --mode views ;;
   isolated) run_py --mode isolated --task aime2024 --n 6 --indices "${INDICES:-0,1,2,4,10,18}" ;;
-  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|smallsweep|cohort|channel|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
+  *) echo "usage: $0 program|throughput|fastparity|efficiency|signflip|smallsweep|cohort|channel|sampler|samples|confirm24|insight|blitz|parity|sweep|localize30|aime25_sweep|quick|seal|smoke|focus|full|qwen|aime25|compare|budget|report" >&2; exit 2 ;;
 esac
 echo "[localize] DONE $stage $(date)" | tee -a "$LOG"
 persist
