@@ -32,8 +32,16 @@ methodological correction.
 > finding that its benefit is length, largely independent of what was transferred.
 > Do not restart the serving work; read §4 first.
 >
-> Open question, one arm, already queued: does a **10x smaller** cache (64 of ~650
-> positions) keep the saving? See §6.5.
+> - A cache **10x smaller** (64 of 770 positions, 10.0 MB against 108.3) scores the
+>   *same* 22/30, caps the *same* 3/30, and keeps 59% of the token saving — 6.4x
+>   more saving per byte than the full cache. See §7.4.
+>
+> Five arms, all n=30 on the same items: `real`, `none`, `shuf`, `single`,
+> `evict64`. The prompt scaffolding contributes nothing (§7.1), and one explanation
+> of mine was falsified by its own pre-registered test (§7.3).
+>
+> Open question: **where the compression knee is.** 64 positions was a first guess,
+> not a measured knee. One arm per budget, ~2.5 GPU-hours each.
 
 ---
 

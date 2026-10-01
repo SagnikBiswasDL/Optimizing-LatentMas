@@ -274,9 +274,12 @@ def compression_curve(by: Dict[str, Dict[int, dict]],
         print(f"\n  {mid['arm']} ships {byte_frac:.0f}% of the bytes and captures "
               f"{save_frac:.0f}% of the saving.")
         if save_frac > 1.5 * byte_frac:
-            print("  => Saturating, not graded. Most of the cache is not paying for")
-            print("     itself, and the saving is closer to a threshold than a dose.")
-            print("     This is what §6.4's flat length regression predicted.")
+            eff = save_frac / byte_frac if byte_frac else float("nan")
+            print(f"  => Saturating, not graded: {eff:.1f}x more saving per byte than")
+            print("     the full cache manages. Note what this does NOT say -- the")
+            print("     evicted positions may still buy a further, real reduction; the")
+            print("     claim is that they buy it far less efficiently. Check the")
+            print(f"     `{mid['arm']} -> real` step above before calling them waste.")
         elif save_frac < 0.67 * byte_frac:
             print("  => Worse than proportional: the evicted positions mattered more")
             print("     than their share of bytes. The saving is graded after all.")

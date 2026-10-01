@@ -636,20 +636,49 @@ Two consequences, one of which is good news:
   third of its tokens. That is a termination effect, not a correctness effect, and
   it is what §6 measures.
 
-### 7.4 Interim: a 10x smaller cache keeps most of it
+### 7.4 A 10x smaller cache costs nothing in accuracy and keeps most of the saving
 
-`evict_uniform --evict_budget 64`, 11 of 30 items at the time of writing. Provenance
-from the row: `positions_in 770 -> positions_out 64`, ratio 0.083, sink retained,
-64 kept in each of 40 layers, **10.0 MB against 103.1 MB** on the same items.
+`evict_uniform --evict_budget 64`, all 30 items. Provenance from the rows:
+`positions_in 770 -> positions_out 64`, ratio 0.083, sink retained, 64 kept in
+each of 40 layers, **10.0 MB against 108.3 MB**.
 
-```
-none    -> evict64    8 shorter / 2 longer   p=0.109   median -16.8%   (n=9)
-evict64 -> real       9 shorter / 2 longer   p=0.065   median  -8.4%   (n=10)
-```
+| arm | KV MB | % of full | correct | censored | tokens vs `none` | % of full saving | p |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `none` | 0.0 | 0% | 21/30 | 8 | — | — | — |
+| `evict64` | 10.0 | **9.2%** | **22/30** | **3** | **-19.6%** | **59%** | 0.0125 |
+| `real` | 108.3 | 100% | 22/30 | 3 | -33.0% | 100% | 0.0003 |
 
-**Interim, and not to be quoted.** Neither reaches significance at n=11 and the
-arm is still running. But the direction is that **8% of the KV bytes buys roughly
-two thirds of the token saving**, which is the diminishing-returns shape §6.5
-predicted for a threshold mechanism, and the opposite of what a saving graded in
-prefix length would look like. If it holds to n=30, the §6.4 null stops being
-range restriction and starts being the finding.
+At 9% of the bytes, `evict64` matches the full cache on **both** of the things the
+full cache was shown to do: accuracy identical at 22/30 (delta +0, CI [-13.1,
+13.1] pp), and runaway generations identical at 3/30 against the cacheless 8/30.
+It keeps 59% of the token saving, which is **6.4x more saving per byte** than the
+full cache manages.
+
+This settles §6.5 in favour of saturation, and promotes §6.4's flat
+length-regression from "possibly range restriction" to a consistent picture: the
+saving is not graded in how much cache you ship.
+
+**What this does not say.** `evict64 -> real` is 22 shorter / 7 longer, p=0.0081,
+median -8.4%. The discarded 91% of positions *do* buy a further, statistically
+real reduction. The claim is about efficiency per byte, not that the remainder is
+inert, and `channel_token_cost.py` now prints that caveat next to the verdict
+rather than leaving it to this paragraph.
+
+**Why this is the useful form of the result.** Eviction is by key-norm importance
+on the real cache, so it is not a content ablation — it is a compression. Put
+beside `shuf`, the two say different things that happen to point the same way:
+most of the benefit survives using a *different problem's* cache (§6.2), and most
+of it survives using *a tenth of this problem's* cache. Either way, what LatentMAS
+ships between agents is far more than what its measurable benefit requires.
+
+### 7.5 Status
+
+All five arms are complete at n=30 on the same items, same cap, same decode path:
+`real`, `none`, `shuf`, `single`, `evict64`. 238 rows, md5
+`72ad401517dc8ed376a59b758dedd67a`, transferred byte-exact off the pod and the
+analysis reproduced locally. The pod is stopped.
+
+The open question is no longer whether the channel does something, or whether it is
+communication, or whether it needs its bytes. It is **how far the compression
+goes** — 64 positions was a first guess, not a measured knee, and nothing here
+locates it. One arm per budget, ~2.5 GPU-hours each.
