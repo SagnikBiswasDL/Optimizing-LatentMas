@@ -58,11 +58,24 @@ import argparse
 import collections
 import json
 import math
+import re
 from math import comb
 from typing import Dict, List, Optional, Sequence, Tuple
 
 
-def load(rows_path: str, tag: str) -> Dict[str, Dict[int, dict]]:
+SAMPLER_RE = re.compile(r"(.+?)_t(\d+)\Z")
+
+
+def load(rows_path: str, tag: str, sampler: str = "") -> Dict[str, Dict[int, dict]]:
+    """Rows grouped by arm, for exactly one decoding regime.
+
+    `exp_aime_localize.method_name` labels a sampled run `real_t06` and a greedy
+    one `real`, and both live in the same file. Merging them would silently pool
+    two different distributions into one paired test, so this selects one regime
+    and refuses to mix: `sampler=""` keeps greedy only, `sampler="t06"` keeps
+    temperature-0.6 rows only and strips the suffix so the arm names line up.
+    """
+    want = sampler.strip().lstrip("_")
     by: Dict[str, Dict[int, dict]] = collections.defaultdict(dict)
     with open(rows_path) as fh:
         for line in fh:
@@ -76,6 +89,12 @@ def load(rows_path: str, tag: str) -> Dict[str, Dict[int, dict]]:
             arm = m[: -(len(tag) + 2)] if tag else m
             if "_seal" in arm:  # steering is a different experiment
                 continue
+            hit = SAMPLER_RE.fullmatch(arm)
+            got = f"t{hit.group(2)}" if hit else ""
+            if got != want:
+                continue
+            if hit:
+                arm = hit.group(1)
             by[arm][int(r["idx"])] = r
     return dict(by)
 
@@ -293,11 +312,17 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--rows", default="artifacts/aime_localize/rows.jsonl")
     ap.add_argument("--tag", default="b16k")
+    ap.add_argument("--sampler", default="",
+                    help="decoding regime to analyse: '' for greedy, 't06' for "
+                         "temperature 0.6. Never pools the two.")
     ap.add_argument("--out", default="")
     args = ap.parse_args()
 
-    by = load(args.rows, args.tag)
-    print(f"arms available at tag `{args.tag}`: {sorted(by)}")
+    by = load(args.rows, args.tag, args.sampler)
+    regime = f"sampler {args.sampler}" if args.sampler else "greedy"
+    if not by:
+        raise SystemExit(f"no rows at tag `{args.tag}` for {regime}")
+    print(f"arms at tag `{args.tag}`, {regime}: {sorted(by)}")
     for a in sorted(by):
         rs = list(by[a].values())
         cap = sum(1 for r in rs if not r.get("eos"))

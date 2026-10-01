@@ -1107,3 +1107,36 @@ def test_compression_curve_sorts_by_size_not_by_argument_order(capsys):
           "evict_uniform": {i: _t_row(i, 800, cache_mb=10.0) for i in range(12)}}
     rows = T.compression_curve(by, ["none", "real", "evict_uniform"])
     assert [r["kv_mb"] for r in rows] == sorted(r["kv_mb"] for r in rows)
+
+
+def test_greedy_and_sampled_rows_are_never_pooled(tmp_path):
+    # method_name labels a temperature-0.6 run `real_t06`. Pooling it with the
+    # greedy `real` would average two different distributions into one paired
+    # test and report it as n=2 on one item.
+    rows = [{"idx": 0, "method": "real__b16k", "tokens": 1000, "eos": True,
+             "correct": True, "cache_mb": 100.0},
+            {"idx": 0, "method": "real_t06__b16k", "tokens": 2000, "eos": True,
+             "correct": True, "cache_mb": 100.0}]
+    path = _pair_rows_file(tmp_path, rows)
+    greedy = T.load(path, "b16k")
+    assert list(greedy) == ["real"]
+    assert greedy["real"][0]["tokens"] == 1000
+    sampled = T.load(path, "b16k", "t06")
+    assert list(sampled) == ["real"]
+    assert sampled["real"][0]["tokens"] == 2000
+
+
+def test_sampler_suffix_is_stripped_so_arm_names_line_up(tmp_path):
+    rows = [{"idx": i, "method": f"{a}_t06__b16k", "tokens": 1000, "eos": True,
+             "correct": True, "cache_mb": 0.0 if a == "none" else 100.0}
+            for a in ("none", "real") for i in range(3)]
+    by = T.load(_pair_rows_file(tmp_path, rows), "b16k", "t06")
+    assert sorted(by) == ["none", "real"]
+
+
+def test_an_arm_whose_name_ends_in_a_number_is_not_mistaken_for_a_sampler(tmp_path):
+    # `evict64`-style names must survive; only a `_t<digits>` tail is a sampler.
+    rows = [{"idx": 0, "method": "evict_uniform__b16k", "tokens": 1, "eos": True,
+             "correct": True, "cache_mb": 10.0}]
+    by = T.load(_pair_rows_file(tmp_path, rows), "b16k")
+    assert list(by) == ["evict_uniform"]
