@@ -1,0 +1,136 @@
+% !TEX TS-program = pdflatex
+% Overleaf: blank project is fine. Menu -> Compiler = pdfLaTeX.
+% No extra files. Theme Madrid is in TeX Live.
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage{booktabs,array}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\title{The latent channel buys length, not answers}
+\subtitle{Qwen3-14B $\cdot$ AIME24 $\cdot$ $n{=}30$ paired $\cdot$ greedy}
+\author{Sagnik Biswas}
+\date{Week of 30 September 2026}
+
+\begin{document}
+
+%------------------------------------------------------------------
+\begin{frame}
+\titlepage
+\end{frame}
+
+%------------------------------------------------------------------
+\begin{frame}{Results}
+
+All five arms: same 30 items, same cap, same decode path.
+
+\begin{center}
+\begin{tabular}{llccc@{\hspace{1.5em}}c}
+\toprule
+arm & Judger input & KV & correct & capped & tokens \\
+\midrule
+\texttt{none}    & no cache                  & 0 MB     & 21/30 & 8 & --- \\
+\texttt{single}  & no cache, no-latent prompt & 0 MB     & 21/30 & 8 & $+6\%$\ \ ($p{=}0.54$) \\
+\texttt{shuf}    & \emph{wrong} problem's cache & 108 MB & 19/30 & 4 & $-21\%$\ \ ($p{=}0.0009$) \\
+\texttt{evict64} & 64 of 770 positions       & \textbf{10 MB} & 22/30 & 3 & $-20\%$\ \ ($p{=}0.0125$) \\
+\texttt{real}    & full cache (published)    & 108 MB   & 22/30 & 3 & $\mathbf{-33\%}$\ \ ($\mathbf{p{=}0.0003}$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+\begin{itemize}
+  \item \textbf{Accuracy: nothing.} Every paired interval contains zero.
+  \item \textbf{Tokens: large and significant.} $-33\%$ median, 23 of 30 shorter.
+  \item \textbf{Two thirds of that survives shuffling} the cache onto the wrong
+        problem.
+  \item \textbf{A 10$\times$ smaller cache scores the same} and keeps most of the
+        saving.
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------------------------
+\begin{frame}{The token effect is real, and mostly content-free}
+
+Exact sign test, paired, all 30 items.
+
+\begin{center}
+\begin{tabular}{lccr}
+\toprule
+step & isolates & shorter / longer & median \\
+\midrule
+\texttt{single} $\to$ \texttt{none} & the prompt alone & 10 / 14\ \ ($p{=}0.54$) & $+6\%$ \\
+\texttt{none} $\to$ \texttt{shuf}   & \emph{any} cache & 23 / 5\ \ ($p{=}0.0009$) & $-21\%$ \\
+\texttt{shuf} $\to$ \texttt{real}   & the \emph{right} cache & 19 / 9\ \ ($p{=}0.087$) & $-6\%$ \\
+\midrule
+\texttt{none} $\to$ \texttt{real}   & published config & \textbf{23 / 4}\ \ ($\mathbf{p{=}0.0003}$) & $\mathbf{-33\%}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.6em}
+\begin{itemize}
+  \item The \textbf{prompt contributes nothing}. The cache does all of it.
+  \item $-21$ of the $-33$ needs only \emph{a} cache, not the \emph{right} one.
+        Making it the right problem's cache adds $-6\%$, $p=0.087$.
+  \item Mechanism is \textbf{termination}: runaway generations $8/30 \to 3/30$.
+  \item Net win: upstream costs \textbf{0.9\,s} against a \textbf{124\,s} answer.
+        End-to-end $-37\%$ wall clock, $p=0.0001$.
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------------------------
+\begin{frame}{9\% of the bytes gets 59\% of the saving}
+
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+arm & KV & \% of full & correct & capped & tokens vs \texttt{none} \\
+\midrule
+\texttt{none}    & 0 MB    & 0\%   & 21/30 & 8 & --- \\
+\texttt{evict64} & 10 MB   & \textbf{9.2\%} & \textbf{22/30} & \textbf{3} & $\mathbf{-19.6\%}$ \\
+\texttt{real}    & 108 MB  & 100\% & 22/30 & 3 & $-33.0\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.7em}
+\begin{itemize}
+  \item Keeping \textbf{64 of 770 positions} by key-norm matches the full cache on
+        accuracy \emph{and} termination.
+  \item \textbf{6.4$\times$ more saving per byte.} The curve saturates early; it is
+        not graded in cache size.
+  \item The dropped 91\% still buys a further $-8\%$ ($p=0.0081$) --- real, but far
+        less efficient per byte.
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------------------------
+\begin{frame}{Where this lands}
+
+\textbf{The channel is a conciseness scaffold, not an information channel.}
+AIME is the third task to say so --- MedQA and GSM8K already did ($\S$9--$\S$10).
+
+\vspace{0.8em}
+\textbf{Caveats.}
+\begin{itemize}
+  \item 30 items cannot resolve a one-problem effect. LatentMAS's own reported
+        AIME24 gain \emph{is} one problem; 10\% needs 58 items, 5\% needs 244.
+  \item Greedy only, one model, one benchmark.
+  \item \texttt{shuf} costs $-3$ items --- and Frozen Mean-Replay independently
+        costs the same $-3$ on AIME while matching Real on GSM8K/MATH. So
+        content-independence holds for \textbf{length}, not for accuracy on the
+        hardest items.
+\end{itemize}
+
+\vspace{0.6em}
+\footnotesize Also closed this week: steering the latent channel is a powered null
+(median $-6\%$, $p=0.87$, accuracy $22/30 \to 22/30$, 80\% power for 16\%).
+
+\end{frame}
+
+\end{document}
