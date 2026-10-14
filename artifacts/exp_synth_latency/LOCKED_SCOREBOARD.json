@@ -1,0 +1,71 @@
+{
+  "updated": "2026-09-09",
+  "backbone": "Qwen/Qwen3-14B",
+  "protocol": "greedy, K=10, seed 42",
+  "presentation": "MedQA and GSM8K are the positive results. AIME is a trusted negative: Real recovers Gate-1, the type-level prefix does not.",
+  "main": {
+    "medqa": {
+      "task": "medqa",
+      "recipe": "iid Gaussian KV magnitudes from 8 train relays",
+      "n": 40,
+      "generate_bs": 20,
+      "T": 1024,
+      "real": 0.675,
+      "ours": 0.675,
+      "none": 0.325,
+      "source": "artifacts/exp_synth_latency/medqa_k10_bs20/report.json"
+    },
+    "gsm8k_mean_replay": {
+      "task": "gsm8k",
+      "recipe": "Mean-Replay: average donor latent steps, model writes KV",
+      "n": 40,
+      "generate_bs": 20,
+      "T": 1024,
+      "real": 0.9,
+      "ours": 0.9,
+      "none": 0.8,
+      "source": "artifacts/exp_synth_latency/gsm8k_replay_n40/report.json"
+    },
+    "gsm8k_gaussian_transfer_fail": {
+      "task": "gsm8k",
+      "recipe": "MedQA Gaussian object (does not transfer)",
+      "n": 40,
+      "generate_bs": 20,
+      "T": 1024,
+      "real": 0.9,
+      "ours": 0.825,
+      "none": 0.8,
+      "source": "artifacts/exp_synth_latency/gsm8k_k10_bs20/report.json"
+    }
+  },
+  "aime2024_bs1": {
+    "task": "aime2024",
+    "n": 30,
+    "generate_bs": 1,
+    "T": 8192,
+    "grader": "integer (int(pred)==int(gold); 025==25)",
+    "real": 0.6666666666666666,
+    "real_n": 20,
+    "ours_medoid": 0.5666666666666667,
+    "ours_n": 17,
+    "none": 0.5333333333333333,
+    "none_n": 16,
+    "gate1_k10_match": "30/30 pred and token counts",
+    "ours_recipe": "MATH L5 subject-conditional medoid replay, cosine subject assign",
+    "real_only_vs_ours": [4, 10, 18],
+    "ours_only_vs_real": [],
+    "do_not_put_in_main_table": true,
+    "sources": [
+      "artifacts/exp_synth_latency/aime2024_bs1_real_none/",
+      "artifacts/exp_synth_latency/aime2024_bs1_medoid/",
+      "artifacts/gate1/aime2024_tok8192/"
+    ]
+  },
+  "do_not_claim": [
+    "Qwen3-4B",
+    "AIME as a tie",
+    "batched B=8 AIME 33% as science",
+    "one universal recipe across tasks",
+    "averaging finished KV tables on GSM8K"
+  ]
+}

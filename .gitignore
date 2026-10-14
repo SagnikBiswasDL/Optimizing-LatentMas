@@ -18,3 +18,10 @@ env/
 
 # Cursor IDE local state (plans, indexes)
 .cursor/
+
+# Run-control sentinels and logs: per-pod state, not results
+DONE_*
+artifacts/**/*.log
+
+# iCloud duplicates ("MASTER_BRIEF 2.md")
+* 2.*

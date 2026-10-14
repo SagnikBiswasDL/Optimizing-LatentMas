@@ -1,0 +1,20 @@
+{
+  "n": 30,
+  "grader": "aime_int",
+  "real_int": 20,
+  "ours_int": 17,
+  "none_int": 16,
+  "real_string": 13,
+  "ours_string": 17,
+  "none_string": 10,
+  "real_acc_int": 0.6666666666666666,
+  "ours_acc_int": 0.5666666666666667,
+  "none_acc_int": 0.5333333333333333,
+  "real_only_vs_ours": [4, 10, 18],
+  "ours_only_vs_real": [],
+  "ours_only_vs_none": [15, 22],
+  "none_only_vs_ours": [18],
+  "gate1_k10_pred_match": 30,
+  "gate1_k10_tok_match": 30,
+  "note": "Real/None string scores undercount padded golds (025,073,023,045,033,080,055). Medoid run already used int grading."
+}

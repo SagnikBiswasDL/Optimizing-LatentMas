@@ -1,0 +1,25 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-4B",
+    "split": "train",
+    "max_samples": 120,
+    "skip_samples": 0,
+    "k_full": 10,
+    "k_low": 5,
+    "only_k": null,
+    "single_k": 10,
+    "max_new_tokens": 4096,
+    "generate_bs": 1,
+    "temperature": 0.0,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/ces/boost_4b/pairs_k10"
+  },
+  "mode": "single_k",
+  "single_k": 10,
+  "n": 120,
+  "acc": 0.675,
+  "n_wrong": 39,
+  "n_correct": 81,
+  "latent_forwards": 33
+}

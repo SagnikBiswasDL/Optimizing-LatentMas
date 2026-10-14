@@ -1,0 +1,330 @@
+{
+  "task": "aime2024",
+  "n": 26,
+  "per_arm": {
+    "none": {
+      "n": 6,
+      "correct": 2,
+      "wrote_gold": 2,
+      "no_boxed_at_all": 4,
+      "eos": 1
+    },
+    "real": {
+      "n": 6,
+      "correct": 4,
+      "wrote_gold": 4,
+      "no_boxed_at_all": 2,
+      "eos": 4
+    },
+    "real__bs16": {
+      "n": 6,
+      "correct": 2,
+      "wrote_gold": 2,
+      "no_boxed_at_all": 3,
+      "eos": 3
+    },
+    "real_seal40": {
+      "n": 6,
+      "correct": 3,
+      "wrote_gold": 3,
+      "no_boxed_at_all": 3,
+      "eos": 2
+    },
+    "real_seal60": {
+      "n": 2,
+      "correct": 2,
+      "wrote_gold": 2,
+      "no_boxed_at_all": 0,
+      "eos": 1
+    }
+  },
+  "wrote_gold_but_marked_wrong": [],
+  "items": [
+    {
+      "idx": 0,
+      "method": "none",
+      "correct": true,
+      "eos": true,
+      "tokens": 3129,
+      "n_boxed": 3,
+      "wrote_gold": true,
+      "first_gold_frac": 0.757157882435433,
+      "final_boxed": "204"
+    },
+    {
+      "idx": 1,
+      "method": "none",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 2,
+      "method": "none",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 4,
+      "method": "none",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 10,
+      "method": "none",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 18,
+      "method": "none",
+      "correct": true,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9790364583333333,
+      "final_boxed": "23"
+    },
+    {
+      "idx": 0,
+      "method": "real",
+      "correct": true,
+      "eos": true,
+      "tokens": 2600,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9979268473271139,
+      "final_boxed": "204"
+    },
+    {
+      "idx": 1,
+      "method": "real",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 2,
+      "method": "real",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 4,
+      "method": "real",
+      "correct": true,
+      "eos": true,
+      "tokens": 7653,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9991062879029684,
+      "final_boxed": "110"
+    },
+    {
+      "idx": 10,
+      "method": "real",
+      "correct": true,
+      "eos": true,
+      "tokens": 5848,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9990425386404048,
+      "final_boxed": "104"
+    },
+    {
+      "idx": 18,
+      "method": "real",
+      "correct": true,
+      "eos": true,
+      "tokens": 7062,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9993422384132766,
+      "final_boxed": "23"
+    },
+    {
+      "idx": 0,
+      "method": "real__bs16",
+      "correct": true,
+      "eos": true,
+      "tokens": 2598,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9978848768696178,
+      "final_boxed": "204"
+    },
+    {
+      "idx": 1,
+      "method": "real__bs16",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 2,
+      "method": "real__bs16",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 4,
+      "method": "real__bs16",
+      "correct": false,
+      "eos": true,
+      "tokens": 6901,
+      "n_boxed": 1,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": "134"
+    },
+    {
+      "idx": 10,
+      "method": "real__bs16",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 18,
+      "method": "real__bs16",
+      "correct": true,
+      "eos": true,
+      "tokens": 6823,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9993172268907563,
+      "final_boxed": "23"
+    },
+    {
+      "idx": 0,
+      "method": "real_seal40",
+      "correct": true,
+      "eos": true,
+      "tokens": 1807,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9971293828173057,
+      "final_boxed": "204"
+    },
+    {
+      "idx": 1,
+      "method": "real_seal40",
+      "correct": true,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.8396491987873538,
+      "final_boxed": "113"
+    },
+    {
+      "idx": 2,
+      "method": "real_seal40",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 4,
+      "method": "real_seal40",
+      "correct": true,
+      "eos": true,
+      "tokens": 5896,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9988088147706968,
+      "final_boxed": "110"
+    },
+    {
+      "idx": 10,
+      "method": "real_seal40",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 18,
+      "method": "real_seal40",
+      "correct": false,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 0,
+      "wrote_gold": false,
+      "first_gold_frac": null,
+      "final_boxed": null
+    },
+    {
+      "idx": 0,
+      "method": "real_seal60",
+      "correct": true,
+      "eos": true,
+      "tokens": 1599,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.9965778538254706,
+      "final_boxed": "204"
+    },
+    {
+      "idx": 1,
+      "method": "real_seal60",
+      "correct": true,
+      "eos": false,
+      "tokens": 8192,
+      "n_boxed": 1,
+      "wrote_gold": true,
+      "first_gold_frac": 0.8973216598456198,
+      "final_boxed": "113"
+    }
+  ]
+}

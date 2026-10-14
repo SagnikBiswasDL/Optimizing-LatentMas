@@ -1,0 +1,116 @@
+{
+  "load": {
+    "load_s": 37.522356398403645,
+    "cache_config": {
+      "enable_prefix_caching": false,
+      "block_size": 16,
+      "num_gpu_blocks": 12101,
+      "gpu_memory_utilization": 0.45,
+      "cache_dtype": "auto",
+      "enable_prompt_embeds": true,
+      "dtype": "torch.bfloat16",
+      "max_model_len": 40960,
+      "revision": null
+    },
+    "init_logs": [
+      "non-default args: {'enable_prompt_embeds': True, 'enable_prefix_caching': True, 'gpu_memory_utilization': 0.45, 'model': 'Qwen/Qwen3-14B'}",
+      "--enable-prompt-embeds and --enable-prefix-caching are not supported together in V1. Prefix caching has been disabled.",
+      "--enable-prompt-embeds and --enable-prefix-caching are not supported together in V1. Prefix caching has been disabled."
+    ],
+    "padding_side": "right",
+    "torch_dtype": "torch.bfloat16"
+  },
+  "tokens": 1024,
+  "n": 4,
+  "serial_wall_s": 41.52007023245096,
+  "pipeline_wall_s": 40.745941281318665,
+  "serial_rows": [
+    {
+      "arm": "serial",
+      "index": 0,
+      "question_id": "add",
+      "prep_s": 0.786521203815937,
+      "vllm_s": 9.522033914923668,
+      "e2e_s": 10.308867134153843,
+      "output_tokens": 1024,
+      "text_head": "<think>\nOkay, let's see. The user is asking for the sum of 17 and 25. Hmm, I nee"
+    },
+    {
+      "arm": "serial",
+      "index": 1,
+      "question_id": "packs",
+      "prep_s": 0.8277270644903183,
+      "vllm_s": 9.64031157642603,
+      "e2e_s": 10.468107216060162,
+      "output_tokens": 1024,
+      "text_head": "<think>\nOkay, let's see. The problem is about Maya buying pencils and then givin"
+    },
+    {
+      "arm": "serial",
+      "index": 2,
+      "question_id": "rows",
+      "prep_s": 0.8105104863643646,
+      "vllm_s": 9.613328747451305,
+      "e2e_s": 10.42388690263033,
+      "output_tokens": 1024,
+      "text_head": "<think>\nOkay, let's see. The problem is about a garden with 9 rows of plants, ea"
+    },
+    {
+      "arm": "serial",
+      "index": 3,
+      "question_id": "tickets",
+      "prep_s": 0.7822869718074799,
+      "vllm_s": 9.536775715649128,
+      "e2e_s": 10.319128759205341,
+      "output_tokens": 1024,
+      "text_head": "<think>\nOkay, let's see. The problem is about calculating the total cost for a c"
+    }
+  ],
+  "pipeline_rows": [
+    {
+      "arm": "pipeline",
+      "index": 0,
+      "question_id": "add",
+      "prep_s": 0.8014102205634117,
+      "prep_overlapped": true,
+      "vllm_s": 10.126469522714615,
+      "e2e_s": 10.126877814531326,
+      "output_tokens": 1024,
+      "text_head": "<think>\nOkay, let's see. The user is asking for the sum of 17 and 25. Hmm, I nee"
+    },
+    {
+      "arm": "pipeline",
+      "index": 1,
+      "question_id": "packs",
+      "prep_s": 0.9939173683524132,
+      "prep_overlapped": true,
+      "vllm_s": 10.163507401943207,
+      "e2e_s": 10.163770213723183,
+      "output_tokens": 1024,
+      "text_head": "<think>\nOkay, let's see. The problem is about Maya buying pencils and then givin"
+    },
+    {
+      "arm": "pipeline",
+      "index": 2,
+      "question_id": "rows",
+      "prep_s": 0.9824974685907364,
+      "prep_overlapped": true,
+      "vllm_s": 10.104965031147003,
+      "e2e_s": 10.105317026376724,
+      "output_tokens": 1024,
+      "text_head": "<think>\nOkay, let's see. The problem is about a garden with 9 rows of plants, ea"
+    },
+    {
+      "arm": "pipeline",
+      "index": 3,
+      "question_id": "tickets",
+      "prep_s": 0.0,
+      "prep_overlapped": false,
+      "vllm_s": 9.547959983348846,
+      "e2e_s": 9.548200353980064,
+      "output_tokens": 1024,
+      "text_head": "<think>\nOkay, let's see. The problem is about calculating the total cost for a c"
+    }
+  ],
+  "speedup": 1.018998921776958
+}

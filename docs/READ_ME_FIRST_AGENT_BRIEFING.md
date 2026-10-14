@@ -1,0 +1,521 @@
+# Briefing for an incoming agent
+
+You are being pointed at this repo to propose how to get better performance out of
+LatentMAS. This file exists because the repo contains several results that are easy
+to over-read, a few that are outright invalidated, and one bug that silently
+produces plausible-looking numbers. Read this before `MASTER_BRIEF.md`.
+
+Written 2026-09-23, after a session that produced three negative results and one
+methodological correction.
+
+---
+
+> ### START HERE (added 2026-09-30)
+>
+> **The live result is §6 of `RESULTS_2026_09_24_COEFFICIENT_RUN.md`.** Everything
+> below in §1-§5 of this briefing is closed, and the closures matter more than the
+> attempts: steering is a powered null (§3.7 of the results doc), and the
+> CUDA-graphs lever is arithmetic, not an experiment (§4, 1.01x).
+>
+> What is true now, on the authors' own benchmark and model:
+>
+> - Deleting the latent channel costs **one item of thirty**, CI [-9.9, +3.2] pp.
+>   Accuracy on AIME24 cannot resolve this method's effect and never could; the
+>   paper's own gain is +3.4 pp, also one problem.
+> - Deleting it costs **33% of the Judger's tokens**, 23 shorter / 4 longer,
+>   p=0.0003 — and by §0 below, tokens *are* latency, exactly.
+> - A cache from an **unrelated problem** reproduces most of that saving
+>   (-21%, p=0.0009). Upgrading the placebo to the real cache adds -6%, p=0.087.
+>
+> So §0's "the goal is a latency result" turns out to be satisfied, but not by
+> serving engineering. It is satisfied by measuring what the method does and
+> finding that its benefit is length, largely independent of what was transferred.
+> Do not restart the serving work; read §4 first.
+>
+> - A cache **10x smaller** (64 of 770 positions, 10.0 MB against 108.3) scores the
+>   *same* 22/30, caps the *same* 3/30, and keeps 59% of the token saving — 6.4x
+>   more saving per byte than the full cache. See §7.4.
+>
+> Five arms, all n=30 on the same items: `real`, `none`, `shuf`, `single`,
+> `evict64`. The prompt scaffolding contributes nothing (§7.1), and one explanation
+> of mine was falsified by its own pre-registered test (§7.3).
+>
+> Open question: **where the compression knee is.** 64 positions was a first guess,
+> not a measured knee. One arm per budget, ~2.5 GPU-hours each.
+
+---
+
+## 0. The goal is a LATENCY result. Here is the whole latency model.
+
+**The end deliverable is a latency win, not an accuracy win.** Accuracy matters only
+as a constraint: a latency win that loses correctness is not a win (that is exactly
+how token-capping died). Read this section as the specification.
+
+Three measurements, in increasing order of usefulness:
+
+**(i) The Judger is the only thing that costs anything.** On AIME with Qwen3-14B the
+Judger's decode is **99.4%** of a 156s item; all three silent agents together are
+**1.0s**. Replicated exactly across two runs under greedy decoding.
+
+**(ii) Decode throughput is a hard constant, invariant to the cache.** Across all 20
+unbatched rows in `artifacts/aime_localize/rows.jsonl`:
+
+```
+tok/s = 42.51 +/- 0.31   (min 41.82, max 42.85, spread 1.025x)
+```
+
+and that holds while `cache_pos` ranges **0 to 962** and cache size ranges **0 to
+150 MB**. The zero-cache `none` arm decodes at 42.76 tok/s; the 150 MB `real` arm at
+41.91. Attending over the upstream latent cache is free at these scales, because a
+few hundred cache positions are noise next to thousands of generated tokens.
+
+**(iii) Therefore latency is exactly token count:**
+
+```
+latency_seconds = tokens_generated / 42.5
+```
+
+This single equation should drive the whole plan, and it has three consequences:
+
+- **Cache surgery cannot produce a latency win.** Eviction, compression, role
+  dropping, `c1`/`c2`/`c3`, medoids, cheaper scaffolds — all of it targets either the
+  1.0s of agent time or a cache whose size provably does not affect tok/s. These are
+  defensible as **KV-memory** results. They are not latency results. If a plan
+  proposes them for latency, it has not read this section.
+- **There are exactly two real levers: emit fewer tokens, or raise the 42.5 tok/s
+  floor.** The second is serving-stack work (fix batching per §1a, vLLM, speculative
+  decoding, quantization) and is orthogonal to everything else in the repo. The first
+  is the research contribution.
+- **You can report tokens instead of seconds.** Because tok/s is constant to 2.5%,
+  token count is a faithful and hardware-independent latency proxy. This makes the
+  experiments cheaper and the result far more robust than wall-clock timing.
+
+### The 42.5 tok/s floor, measured against the hardware ceiling (H200, 2026-09-24)
+
+`scripts/diag_throughput.py` prices the floor against a roofline. Batch-1 decode of a
+14B bf16 model is memory-bound, so the ceiling is weights over bandwidth:
+29.6 GB / 4.8 TB/s = 6.17 ms/token = **162 tok/s**. Measured: **43.8 tok/s, 27% of
+roofline**. So there is a 3.7x headroom in serving, independent of token count.
+
+**Do not reach for `StaticCache` to close it.** It looks like a 1.72x win and is not:
+
+```
+generate + dynamic                     43.7 tok/s   1.00x
+generate + static, auto len 956        75.4 tok/s   1.72x   <- the trap
+generate + static, max_cache_len 9216  14.9 tok/s   0.34x
+generate + static, max_cache_len 16384 12.3 tok/s   0.28x
+```
+
+StaticCache attends over every *allocated* slot each step, masked, while the dynamic
+cache attends over the slots actually filled. Its cost therefore scales with the
+allocation, not the true length. A probe that generates 256 tokens from a 700-token
+prefix allocates ~956 slots and measures 1.72x; the Judger allocates
+`prefix + judger_budget` ~= 9000 because the budget is 8192, and there the same path
+is **3x slower**. This was confirmed end-to-end in the pipeline before it was caught:
+AIME item 0 ran at 23.7 tok/s and item 1 at 28.1 tok/s on `sdpa+static`, against 42.6
+and 42.5 on `sdpa+dynamic`.
+
+`scripts/diag_static_cache_len.py` sweeps the allocation and isolates the effect.
+An earlier commit message (`3c9f0cb`) claims 1.70x and cites it as a reason to run the
+cohort on that path. That claim is retracted; the cohort ran on `sdpa+dynamic`.
+
+**The opportunity this leaves.** The 1.72x at tight allocation is real, and it is not
+an attention effect — hand-rolled decode at `max_cache_len=1024` is *slower* than
+dynamic (40.1 vs 45.2), so the gain lives in `generate()`'s per-step overhead (no cache
+concat, no mask rebuild). Capturing it requires allocating close to the true length and
+growing on demand, rather than allocating the whole budget up front. That is the
+unexplored serving lever; see §6.
+
+### ⚠️ SEAL is currently a net latency LOSS. Retracted claim, read this.
+
+An earlier version of this file reported "1.31x–1.63x lower latency at preserved
+correctness" from the items where both arms terminated and were correct. **That was
+a selected subset and the number is not a speedup.** Run `--mode latency`:
+
+| arm | anchor items | baseline tok | arm tok | ratio | kept | lost | speedup on kept |
+|---|---|---:|---|---|---|---|---|
+| `none` | 0,4,10,18 | 23163 | ≥27705 | **≥1.196** | — | 4,10,18 | 0.83x |
+| `real_seal40` | 0,4,10,18 | 23163 | ≥24087 | **≥1.040** | 0,4 | 10,18 | 1.33x |
+| `real_seal60` | 0 only | 2600 | 1599 | 0.615 | 0 | — | 1.63x |
+
+Paired over the four items the **baseline** completes and gets right, SEAL40 spends
+**at least 4% more tokens than baseline**, because it converts items 10 and 18 from
+solved-and-terminating into capped runs. A capped run books the full 8192 and would
+book more if uncapped, so **de-censoring can only make this worse.** The "1.33x" is
+real but is conditional on the two items SEAL kept, and quoting it without the two it
+lost is the same selection error that produced the retracted cache result.
+
+`real_seal60` looks best in the table on one item and has **n=1** completed-correct
+observation. It is not evidence.
+
+**So there is currently no latency result, in either direction.** What exists is a
+mechanism worth chasing: on problems it does not break, steering cuts tokens 23–31%.
+The open question is whether a coefficient exists that captures that without
+destroying termination. Nothing in the data says one does.
+
+### The blocker: 60% of the data is right-censored
+
+**12 of 20 unbatched runs hit the 8192-token budget exactly**, so their latency is a
+censored observation (">= 192s"), not a measurement. Consequences:
+
+- **No mean latency or mean token count is computable from the current data.** Any
+  such average is really an average of the cap.
+- The reported "SEAL made mean tokens go *up*" is a **censoring artifact**: SEAL
+  pushed two items from terminating into the cap, and a capped run books 8192.
+- **Fixing this is mostly free: raise the budget** until runs terminate, then measure.
+  A budget-extension probe is already written (§2) and never run.
+
+For terminating runs, time-to-first-correct-boxed-answer equals time-to-EOS (the
+answer lands at ~100% of the generation), so there is no hidden post-answer waste to
+reclaim and the token count is already the right metric. Post-answer rambling only
+occurs in capped runs. That check has been done; do not redo it.
+
+## 1. The three landmines
+
+**(a) Grouped decoding changes greedy outputs, and it is NOT a bug you can fix.**
+Batching the Judger fails a byte-level parity check: batch 6 gave 1.75x throughput
+and **halved the solves** (0.667 → 0.333), with 0 of 6 generations identical to
+their unbatched counterparts.
+
+An earlier version of this file blamed a shared `cache_position` opening a
+per-sequence RoPE gap. **That explanation is wrong and has been retracted.**
+`scripts/diag_batch_parity.py` settles it on CPU in about 5 seconds:
+
+- Through a direct `model()` call, a shared `cache_position` *does* corrupt
+  positions (item with a 6-short cache gets positions `[14,15,16]` instead of
+  `[5,6,7]`). But that is not the production path.
+- Through `generate()` — which is what `decode_batch` calls — positions are
+  **correct**, because `generate()` re-derives per-sequence `position_ids` from the
+  attention mask and ignores the shared `cache_position` for that purpose.
+- In **float32, 0 of 48** batched items diverged from their unbatched runs, with
+  cache shifts up to 15 positions.
+- In **bfloat16, 7 of 48** diverged — and at the same rate whether the cache shift
+  was nonzero (5/35) or exactly zero (2/13).
+
+Divergence tracks **dtype, not position**. The cause is that batch size changes
+reduction order in the attention and GEMM kernels, perturbing logits at the
+1e-3 level; greedy `argmax` occasionally flips on a near-tie, and the trajectories
+separate from there. In the real run, divergence starts 455–1571 characters in, not
+at character 0 — exactly the signature of "identical until the first close call."
+
+**Consequences, which matter more than the diagnosis:**
+- There is **no fix** that makes batch 6 bit-match batch 1 in bf16. Do not plan one.
+  Batch-invariant kernels or fp32 decode would do it, and both cost more than the
+  1.75x they buy.
+- Batching is still **scientifically usable under a fixed batch composition**: if
+  every arm decodes the same items in the same groups at the same batch size, all
+  arms get the same numerical treatment and the paired comparison is valid. What you
+  may never do is compare a batched arm to an unbatched one.
+- The safeguard is now enforced: `--mode compare` **exits non-zero** on divergence,
+  and the driver's `blitz`/`sweep`/`localize30`/`aime25_sweep` stages require a
+  parity certificate for the batch size they are about to use, falling back to
+  `DECODE_BS=1` rather than proceeding. `ALLOW_UNCERTIFIED_BATCH=1` overrides, loudly.
+
+**(a′) The same evidence says the n=6 measurement is dominated by noise.**
+`real__bs16` is not corrupt data. It is the same model, prompts, cache and greedy
+policy, differing only by a semantically-neutral change in arithmetic order — and
+accuracy moved **0.667 → 0.333**, with items 4 and 10 flipping correct→wrong. Two of
+the baseline's four solves are that fragile. **Any effect smaller than ±2 items on
+this set is unmeasurable**, which includes every SEAL effect reported so far. Greedy
+decoding gave false confidence here: it is reproducible run-to-run, but it is not
+stable against perturbations that ought to be irrelevant. Plan for multiple samples
+per item, or a much larger n, before believing any arm difference.
+
+**(a″) Audit of the other batched results.** Every experiment sharing this decoder
+sets `padding_side="left"` correctly; `exp_aime_localize.py` was the only one that
+did not, and that is fixed. Default batch sizes are `1` for AIME but **4**
+(`exp_one_role.py`) and **20** (`exp_math_ladder.py`) elsewhere, so the GSM8K/MATH
+numbers — including the **GSM8K SEAL result** — were collected batched, in bf16.
+
+The structural check they need, they pass: `exp_frozen_seal.py` loops
+`for batch: for arm in (frozen, frozen_seal)`, so both arms see the same items in the
+same group at the same batch size. That makes them paired and internally valid. Two
+caveats survive:
+
+- The resume filter (`need = [it for it in batch if method not in done]`) can leave
+  the two arms with **different** `B` on a resumed run, silently breaking the pairing.
+- Those scripts record `"judger_s": t_j / B` — batch wall clock divided by batch size.
+  That is amortized throughput, **not single-request latency**, and must never be
+  quoted as a latency result. `exp_aime_localize.py` deliberately records `None`
+  instead for grouped rows.
+
+**(b) `rows.jsonl` mixes trusted and deliberately-untrusted arms.**
+Naive aggregation over all rows gives 0.5, which is meaningless. Specifically:
+`real__bs16` is the **known-bad batched probe**, kept on purpose as evidence of
+the bug — exclude it from every analysis. `real_seal60` has **n=2**, and both
+items are ones `seal40` also solved, so it is *not* evidence that coef 60 is
+better. Six rows have `judger_s = null` by design (grouped rows forfeit per-item
+timing); code that treats null as 0 will silently corrupt latency means.
+
+**(c) The n=6 focus set is selected, not random — and one conclusion was circular.**
+Everything recent is n=6 on AIME-2024 items `{0,1,2,4,10,18}`, where one item is
+17 accuracy points. Worse, `{4,10,18}` were chosen *because* Real K=10 solves them
+and Frozen/Mean-Replay does not. So when `real` (0.667) beats `none` (0.333), the
+entire gap is items 4 and 10 — both from that selected set. **That result is
+circular and has been retracted in the docs.** Any claim of the form "the cache
+helps" needs the other 24 items. The same bias applies to anything else you
+measure on this set.
+
+## 1.5 The live experiment: `efficiency` (two GPU-hours, built, unrun)
+
+**Question.** Can steering make the Judger finish sooner without losing a correct
+answer?
+
+**Promotion rule.** A coefficient is promoted only if it keeps **every** baseline
+solve *and* spends **≥10% fewer tokens** in total across the six development items.
+Both halves are load-bearing: token cuts are trivially purchasable by failing to
+finish, which is exactly how coefficient 40 regressed.
+
+```bash
+bash scripts/run_aime_localize.sh efficiency   # ~2 GPU-h, hard deadline
+bash scripts/run_aime_localize.sh confirm24    # only if something was promoted
+```
+
+Four stages, all at `--decode_bs 1`, all at one shared cap (`PROMOTE_CAP=16384`):
+
+1. **De-censor the baseline.** Items 1 and 2 never finished at 8192, so the
+   baseline's own token total is currently a lower bound and the comparison is
+   against an unknown number. Then `--mode prefix` checks the longer run actually
+   retraces the shorter one; if it does not, extended and original token counts are
+   not comparable and nothing downstream holds.
+2. **Screen coefficients 20, 60, 80 on items 10 and 18** — the two the baseline
+   solves and coefficient 40 broke. A coefficient that cannot hold those cannot pass
+   the rule, so it dies for two items of GPU instead of six.
+3. **Complete the six-item cohort** for up to `MAX_SURVIVORS=2` survivors.
+4. **Decide** with `--mode promote`.
+
+**Three design points that are easy to get wrong:**
+
+- **Every arm must share one cap.** Giving the baseline 24k and a candidate 8k would
+  manufacture a token saving out of nothing.
+- **Only censored rows are re-run.** A greedy run that emitted EOS below the old cap
+  emits the same EOS at any larger cap, so those rows are cap-independent and free to
+  reuse. That economy is what makes this fit in two hours; `--mode promote` enforces
+  it, reusing a row only when `eos=True` and refusing to score otherwise.
+- **The rule double-counts correctness.** Losing one solve books `cap − baseline
+  tokens` extra — 10,536 tokens for item 10, about 19% of the baseline total — so the
+  token bar becomes unreachable the moment a solve is lost. `--mode promote`
+  therefore also reports the **counterfactual saving** with lost items credited at
+  baseline cost. A candidate at −8% headline and +10% counterfactual is a
+  *termination* failure, not a verbosity failure, and the fix is whatever restores
+  EOS (a stopping criterion, a coefficient that decays late in the decode, steering
+  only early tokens) rather than a smaller coefficient.
+
+**What will not fit.** Stage 4 on the other 24 items needs baseline *and* candidate,
+about 2.5 GPU-hours on its own, so `confirm24` is a separate run gated on a
+promotion. Also note the 10% threshold is not cap-invariant: items nobody solves add
+identical dead weight to both sides, so raising the cap makes the same real
+improvement look smaller. The cap-invariant column (saving over the baseline's solved
+items) is reported alongside for that reason.
+
+**Expected outcome, recorded before running.** On the evidence, the most likely
+result is no promotion, with one or more coefficients showing a large positive
+counterfactual saving — i.e. steering does cut tokens on problems it does not break,
+and termination is the binding constraint. A clean promotion would be a genuine
+surprise. Also remember that a single flipped solve is inside this set's noise floor
+(§1a′), so treat a one-item loss as a question, not an answer.
+
+## 2. The most important open question (and it is a latency question)
+
+`--mode answers` scans every saved generation for `\boxed{}` and asks whether the
+gold answer appears *anywhere*, however the run was graded. Across all 26
+generations, **"graded correct" and "ever wrote the gold answer" never disagree
+(0/26)**, and failing runs emit **zero** boxed expressions — the model is still
+mid-computation when the budget ends.
+
+That rules out a lot at once: nothing is produced and then discarded, extraction
+is not losing anything, and the failures are not wrong answers. It also means
+**accuracy on this set may be measuring convergence speed, not reasoning
+ability.** If so, "improve accuracy" and "reduce tokens" are the same axis, and
+several plausible-sounding interventions are incoherent.
+
+**This is unresolved and cheap to resolve. Run it first:**
+
+```bash
+bash scripts/run_aime_localize.sh insight   # ~45 min, unbatched
+```
+
+It gives items 1 and 2 three times the budget (do they converge? → speed-bound,
+not capability-bound), gives items 10 and 18 twice the budget under SEAL (did SEAL
+break the reasoning or merely slow it?), and runs the `shuf` control that
+separates the cache's *content* from its mere presence — the arm missing between
+`real` and `none`. The stage is written and dry-run tested but **has never been
+executed.** Do not plan accuracy work before you know this answer.
+
+## 3. What is already closed — do not re-propose these
+
+Three successive hypotheses about Judger waste were each measured and killed. The
+docs are layered chronologically, so a top-down read will surface dead ones as if
+live:
+
+| Idea | Verdict |
+|---|---|
+| Hard token cap / early exit | Dead. 1.20x for **−0.167 accuracy**; 1.71x for −0.500. |
+| Degenerate-loop detection | Dead. Detector fires on **nothing**; the long runs are doing real non-repetitive work. |
+| SEAL at the Judger (verbosity) | Negative at n=6. Accuracy 0.667 → 0.500 and mean tokens go **up**, because EOS rate halves. |
+| Cache surgery for latency | Dead as a *latency* story (§0). Still open on memory/accuracy. |
+
+SEAL's detail is more interesting than its verdict, and is the one live thread in
+the efficiency direction: on the items it keeps it is a **−31% / −23% token win**,
+and it uniquely solves item 1. It failed by pushing two items from
+solved-with-EOS to never-finishing. So token reduction on already-solvable
+problems is real; it is the accuracy side that breaks.
+
+## 4. Infrastructure that will waste your time or money
+
+- `/workspace` on the pod is **MooseFS**. `torch.save` corrupts there mid-file.
+  Big KV tapes must go to container-local disk via `TAPE_DIR`; that is what
+  `save_tape`'s buffer-then-atomic-rename and the `tape_dir` flag exist for.
+- `/root` is **wiped when the pod stops**. A finished sweep was lost this way
+  once. `PERSIST_DIR` mirrors small artifacts to the network volume after **every
+  batch**, and `restore` pulls them back at stage start so a new pod does not
+  repay for finished decodes.
+- **Export `HF_HOME=/workspace/.cache/huggingface`** or you will re-download 28GB
+  of Qwen3-14B.
+- The pod **cannot stop itself** (`runpodctl` is installed but has no API key).
+  An idle H200 burned ~6.5 hours of credit in this session. Stages write a
+  `DONE_<stage>` sentinel to `PERSIST_DIR` and `--time_budget_s` stops cleanly
+  between batches; use them, and tell the human to click Stop.
+- `list_tapes` loads **every** tape (3.2GB at n=30) before `--view_indices`
+  filters, so a 6-item run pays the full load. Easy, worthwhile fix.
+
+## 5. Code facts worth knowing before you edit
+
+- Arm naming is parsed, not free-form: `real_seal40` → base arm `real` with
+  steering coef 40 (`parse_arm`), so a coefficient sweep runs in **one model load**
+  by retuning the hook. `--method_tag X` appends `__X` to the row label **without**
+  changing the cache view, which is how the same arm gets re-decoded and compared.
+- `--indices` selects what to **collect** and defaults to the curated six.
+  `--view_indices` scopes a **decode**. They are deliberately separate: filtering
+  views on `--indices` would silently shrink every n=30 sweep to six items.
+- `shuf` picks its donor as `others[(idx+1) % len(others)]` — not a clean
+  permutation, and two items can draw the same donor. Fine for a presence-vs-content
+  control, not fine if you need a rigorous permutation test.
+- Greedy (`temperature=0`) throughout, so runs are deterministic and single-seed is
+  not a variance problem — but it also means **n=6 carries no variance estimate at
+  all**. If you want error bars without 30 items, sampling at temperature with
+  several draws per item is the cheaper route to a distribution.
+- CPU tests exist and are fast (69 total, ~4s): `tests/test_decode_group.py`
+  (batch/row alignment, timing attribution, pricing), `tests/test_segment_kv.py`
+  (KV slicing, role-aware eviction), and `tests/test_safeguards.py` (tape identity,
+  the parity gate, censoring-aware latency). `--mode budget`, `loops`, `answers`,
+  `compare`, `latency` are all CPU-only and run off saved generations, so iterate
+  there for free. `scripts/diag_batch_parity.py` reproduces the batching failure on
+  CPU with a random-weight model in seconds — no GPU, no checkpoint.
+- **Tape reuse is now validated.** `tape_root` appends a `task__model__k` subdir, and
+  a tape is rejected on load unless its task, k, model and question hash match the
+  current config. Previously `aime25_sweep` swapped `out_dir` but kept `TAPE_DIR`, so
+  AIME-2025 item 0 would have silently decoded against AIME-2024's cache. Tapes
+  written before this carry no `identity` block and are reported as unverifiable
+  rather than assumed good.
+
+## 6. Unexplored, ordered for a latency deliverable
+
+> **Items 1–4 below are DONE as of 2026-09-29, and the answer was no.** The
+> 30-item paired cohort at the best available coefficient (5) returned a **powered
+> null**: median −6.0%, mean −1.0% with 95% CI [−12.4%, +11.8%], 11/21 items
+> shorter, permutation p=0.87, accuracy 22/30 → 22/30. See §3.7 of
+> `RESULTS_2026_09_24_COEFFICIENT_RUN.md`. Do not re-run a coefficient screen on
+> this vector. Two facts to carry forward:
+>
+> * **Never screen on items selected by outcome.** Items 10 and 18 were picked as
+>   "the items coef 40 broke" and turn out to rank 21/21 and 2/21 in the cohort —
+>   the two extremes. Every two-item screen built on them produced dramatic
+>   results that vanished at n=30. Draw screen items at random or stratify by
+>   baseline token count.
+> * **AIME-2024 is at its resolution limit for this question.** n=21 usable pairs
+>   gives 80% power for a 16% saving; detecting 10% needs 58 items and 5% needs
+>   244, against a 30-item benchmark. Any future token-efficiency claim below ~15%
+>   requires a different, larger benchmark, not a better analysis.
+>
+> The remaining live levers are items 5 and 6.
+
+1. ~~**Establish the noise floor before measuring anything**~~ (§1a′). Done by
+   going to n=30 paired: per-item spread is a 1.33x factor (SD of the log token
+   ratio 0.286), range −41.7% to +109.2%. That spread is not sampling noise —
+   greedy decoding is deterministic and token counts reproduce exactly — it is
+   real per-item heterogeneity in how steering redirects a trajectory, and it is
+   why single-item and two-item comparisons were worthless.
+2. ~~**Raise the budget to de-censor**~~ (§0). Done at cap 16384: censoring is now
+   3/30 baseline and 4/30 steered, and `--mode prefix` verified extensions retrace.
+   Still true that artifacts store no token IDs, so extended runs **cannot be
+   resumed** — they re-decode from scratch.
+3. ~~**Screen coefficients on the regression items first.**~~ Superseded, and the
+   advice was actively harmful: see the selection-on-outcome warning above. The
+   full signed sweep (−60 … +80, §3.5/§3.6) plus the cohort (§3.7) closed this.
+4. ~~**Then n=30 with the frozen coefficient**~~ — done, null. AIME-2025 as a
+   holdout is now pointless for this vector: there is no positive result to hold
+   out. It becomes relevant again only if some future vector clears a 30-item
+   cohort.
+> **Item 5 below is CLOSED as of 2026-09-29, and the growing-ladder fix is not
+> worth building.** `scripts/diag_static_mechanism.py` separated allocation from
+> true length, which every prior measurement had confounded, and fitted the cost:
+>
+> ```
+> static(L) = 11.1 + 0.00198 * L   ms/step      (flat in true length: ramp 0.985-0.998)
+> dynamic   = 23.1                 ms/step      (flat in length:      ramp 0.978)
+> ```
+>
+> The fit predicts 75.1 tok/s at the historical `L=956` probe, which measured 75.4.
+> Consequences, all arithmetic from those two lines:
+>
+> * **Break-even is `L = 6092`.** Above that allocation static is *slower* than
+>   dynamic, so a Judger needing ~7900 slots cannot win no matter how it allocates.
+> * **A tight allocation does not stay tight.** True length grows into it, so a
+>   tightly-allocated static cache gets steadily more expensive while dynamic stays
+>   flat. Perfect tight allocation over a 900+7000 generation is 138.4s vs dynamic
+>   161.9s — a **1.17x ceiling that cannot actually be reached**.
+> * **The 2048/4096/8192/16384 ladder is 1.01x**, i.e. nothing, and graph capture
+>   costs **~33s per distinct cache shape**: a 4-rung ladder pays ~130s of compile
+>   to save at most 23s per item.
+> * **The real defect is a 58x per-slot overhead** — 0.00198 ms/slot measured
+>   against 0.0000341 ms/slot required by HBM bandwidth (KV is 160.0 KB/token).
+>   Removing that would give ~2.1x at *any* allocation, and it is an
+>   implementation issue inside the static-cache attention path, not something
+>   this repo can allocate its way around.
+>
+> So the retraction in §0 was right that static loses, but its stated mechanism
+> ("attends over every allocated slot") was wrong by ~190x: the extra KV reads cost
+> 0.28 ms/token, while the measured penalty is 53.9 ms/token. Do not re-propose the
+> ladder. Raw data: `artifacts/diag/static_mechanism.json`.
+
+5. **[CLOSED 2026-09-29 — see the box above; kept for the mechanism it documents]**
+   **CUDA graphs with a tightly-allocated static cache. This is the most concrete
+   serving lever and the mechanism is now known.** `generate()` compiles the forward
+   automatically when it is handed a compileable cache — `generation/utils.py:2759`
+   calls `_valid_auto_compile_criteria`, which requires
+   `past_key_values.is_compileable` (line 2149), and `StaticCache.is_compileable` is
+   `True`. That auto-compile, not attention or Python overhead, is where the 1.72x in
+   §0 comes from: a hand-rolled eager loop on the *same* static cache at the *same*
+   length runs at 40.1 tok/s, slower than dynamic's 45.2.
+
+   So CUDA graphs are worth ~1.7x, but they are gated on a static cache, whose masked
+   attention tax grows with the allocation and overwhelms the gain at
+   `max_cache_len ~= 9000` (0.34x). The fix is to allocate near the true length and
+   grow on demand — segment the decode, and on exhausting a segment copy into a larger
+   static cache and continue. Greedy decoding makes segmented and single-shot
+   generation equivalent, and `--mode prefix` already exists to verify that a longer
+   run retraces a shorter one. Use a small fixed ladder of sizes (2048, 4096, 8192) so
+   only a handful of shapes are ever compiled; every distinct `max_cache_len` costs a
+   recompilation. Two traps: do not also call `torch.compile(model.forward)` yourself
+   (it collides with generate's compiled call and takes the interpreter down with no
+   traceback), and re-verify the layer-28 SEAL hook still fires once compiled, since a
+   hook dropped from the captured graph would silently measure the unsteered model.
+6. **Other serving-stack throughput** (vLLM, speculative decoding, batch-invariant
+   kernels), entirely untouched. Raises the 42.5 tok/s floor, composes with any token
+   reduction, and unlike steering cannot cost accuracy. Caveat: batching improves
+   throughput, not single-request latency — do not multiply the two (§1a″).
+7. **Per-role localization** (`c1`/`c2`/`c3`/`c23`), never run: harness, segment-aware
+   KV slicing, and eviction are written and unit-tested. Frame as **KV memory**, not
+   latency (§0), and note that a memory win only becomes a throughput win if you show
+   the freed memory buys useful concurrency. Same for K-sweeps.
+
+## 7. One meta-warning
+
+This program's dominant failure mode has been believing an appealing mechanism
+before measuring it. Non-termination, then looping, then verbosity, then "the
+cache helps" — each was plausible, each was written up, each turned out to be
+wrong or confounded. The fastest way to be useful here is to propose the cheapest
+experiment that could **falsify** your hypothesis, and to prefer the CPU-only
+analyses over anything that needs a GPU. Be suspicious of any number in these docs
+that does not state its `n`.

@@ -1,0 +1,63 @@
+
+[localize] PY=/workspace/venv/bin/python
+[localize] ROOT_DIR=/workspace/latentmas-baseline/artifacts/aime_localize TAPE_DIR=/root/aime_localize_tapes PERSIST_DIR=none
+[localize] deadline set: 7200s from now
+[localize] efficiency: cap=16384 tag=b16k coefs=2,5,10,-2,-5,-10 screen=10,18 budget=7200s per_item<=385s
+[localize] --mode collect --task aime2024 --n 6 --indices 0,1,2,4,10,18 --judger_budget 16384 --decode_path sdpa+dynamic Tue Sep 29 16:42:47 UTC 2026
+[localize] OK Tue Sep 29 16:43:57 UTC 2026
+[localize] stage1 de-censor baseline (0,1,2,4,10,18): ~2310s needed, 7130s left
+[localize] --mode views --task aime2024 --view_arms real --view_indices 0,1,2,4,10,18 --judger_budget 16384 --method_tag b16k --decode_bs 1 --time_budget_s 7130 --decode_path sdpa+dynamic Tue Sep 29 16:43:57 UTC 2026
+[views] scoped to 6 tapes: [0, 1, 2, 4, 10, 18]
+[views] skip (0, 'real__b16k')
+[views] skip (1, 'real__b16k')
+[views] skip (2, 'real__b16k')
+[views] skip (4, 'real__b16k')
+[views] skip (10, 'real__b16k')
+[views] skip (18, 'real__b16k')
+[localize] OK Tue Sep 29 16:44:37 UTC 2026
+[localize] --mode prefix --compare_arms real,real__b16k --allow_diverge --decode_path sdpa+dynamic Tue Sep 29 16:44:37 UTC 2026
+[localize] OK Tue Sep 29 16:44:43 UTC 2026
+[localize] stage2 screen coef 2: ~770s needed, 7084s left
+[localize] --mode views --task aime2024 --view_arms real_seal2 --view_indices 10,18 --judger_budget 16384 --method_tag b16k --decode_bs 1 --seal_vector /workspace/latentmas-baseline/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt --seal_layer 28 --time_budget_s 7084 --decode_path sdpa+dynamic Tue Sep 29 16:44:43 UTC 2026
+[views] scoped to 2 tapes: [10, 18]
+[views] SEAL armed coef=2.0 layer=28
+[localize] OK Tue Sep 29 16:50:12 UTC 2026
+[screen] real_seal2__b16k on [10, 18]: eliminated (idx10: 6989 >= baseline 5848; idx18: 5392 < 7062)
+[localize] stage2 screen coef 5: ~770s needed, 6755s left
+[localize] --mode views --task aime2024 --view_arms real_seal5 --view_indices 10,18 --judger_budget 16384 --method_tag b16k --decode_bs 1 --seal_vector /workspace/latentmas-baseline/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt --seal_layer 28 --time_budget_s 6755 --decode_path sdpa+dynamic Tue Sep 29 16:50:12 UTC 2026
+[views] scoped to 2 tapes: [10, 18]
+[views] SEAL armed coef=5.0 layer=28
+[localize] OK Tue Sep 29 16:58:07 UTC 2026
+[screen] real_seal5__b16k on [10, 18]: eliminated (idx10: 12234 >= baseline 5848; idx18: 4684 < 7062)
+[localize] stage2 screen coef 10: ~770s needed, 6280s left
+[localize] --mode views --task aime2024 --view_arms real_seal10 --view_indices 10,18 --judger_budget 16384 --method_tag b16k --decode_bs 1 --seal_vector /workspace/latentmas-baseline/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt --seal_layer 28 --time_budget_s 6280 --decode_path sdpa+dynamic Tue Sep 29 16:58:07 UTC 2026
+[views] scoped to 2 tapes: [10, 18]
+[views] SEAL armed coef=10.0 layer=28
+[localize] OK Tue Sep 29 17:08:46 UTC 2026
+[screen] real_seal10__b16k on [10, 18]: eliminated (idx10: never terminated; idx18: 6194 < 7062)
+[localize] stage2 screen coef -2: ~770s needed, 5641s left
+[localize] --mode views --task aime2024 --view_arms real_seal-2 --view_indices 10,18 --judger_budget 16384 --method_tag b16k --decode_bs 1 --seal_vector /workspace/latentmas-baseline/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt --seal_layer 28 --time_budget_s 5641 --decode_path sdpa+dynamic Tue Sep 29 17:08:46 UTC 2026
+[views] scoped to 2 tapes: [10, 18]
+[views] SEAL armed coef=-2.0 layer=28
+[localize] OK Tue Sep 29 17:17:40 UTC 2026
+[screen] real_seal-2__b16k on [10, 18]: eliminated (idx10: 6562 >= baseline 5848; idx18: 13451 >= baseline 7062)
+[localize] stage2 screen coef -5: ~770s needed, 5107s left
+[localize] --mode views --task aime2024 --view_arms real_seal-5 --view_indices 10,18 --judger_budget 16384 --method_tag b16k --decode_bs 1 --seal_vector /workspace/latentmas-baseline/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt --seal_layer 28 --time_budget_s 5107 --decode_path sdpa+dynamic Tue Sep 29 17:17:40 UTC 2026
+[views] scoped to 2 tapes: [10, 18]
+[views] SEAL armed coef=-5.0 layer=28
+[localize] OK Tue Sep 29 17:28:06 UTC 2026
+[screen] real_seal-5__b16k on [10, 18]: eliminated (idx10: never terminated; idx18: 7017 < 7062)
+[localize] stage2 screen coef -10: ~770s needed, 4481s left
+[localize] --mode views --task aime2024 --view_arms real_seal-10 --view_indices 10,18 --judger_budget 16384 --method_tag b16k --decode_bs 1 --seal_vector /workspace/latentmas-baseline/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt --seal_layer 28 --time_budget_s 4481 --decode_path sdpa+dynamic Tue Sep 29 17:28:06 UTC 2026
+[views] scoped to 2 tapes: [10, 18]
+[views] SEAL armed coef=-10.0 layer=28
+[localize] OK Tue Sep 29 17:36:57 UTC 2026
+[screen] real_seal-10__b16k on [10, 18]: eliminated (idx10: 11084 >= baseline 5848; idx18: 7298 >= baseline 7062)
+[localize] survivors: none
+[localize] --mode report --decode_path sdpa+dynamic Tue Sep 29 17:36:57 UTC 2026
+[localize] OK Tue Sep 29 17:37:05 UTC 2026
+[localize] --mode latency --exclude_arms real__bs16 --decode_path sdpa+dynamic Tue Sep 29 17:37:05 UTC 2026
+[localize] OK Tue Sep 29 17:37:10 UTC 2026
+[localize] no candidate completed the cohort; nothing to score
+[localize] efficiency used 3263s of 7200s
+[localize] DONE smallsweep Tue Sep 29 17:37:10 UTC 2026

@@ -1,0 +1,179 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-4B",
+    "task": "medqa",
+    "donor_task": null,
+    "k": 10,
+    "split": "test",
+    "n": 40,
+    "budgets": "1024",
+    "variants": "real,none,pca16,pca32,pca64,trunc32,trunc64,trunc256",
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/diag/4b/scaffold_thresh",
+    "budgets_list": [
+      1024
+    ]
+  },
+  "n": 40,
+  "by_budget": {
+    "1024": {
+      "real": {
+        "acc": 0.45,
+        "ci": [
+          0.3,
+          0.6
+        ],
+        "n": 40,
+        "mean_tokens": 822.0
+      },
+      "none": {
+        "acc": 0.15,
+        "ci": [
+          0.05,
+          0.275
+        ],
+        "n": 40,
+        "mean_tokens": 983.35
+      },
+      "pca16": {
+        "acc": 0.025,
+        "ci": [
+          0.0,
+          0.075
+        ],
+        "n": 40,
+        "mean_tokens": 12.8,
+        "minus_real": {
+          "mean_diff": -0.425,
+          "ci_lo": -0.575,
+          "ci_hi": -0.275,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.125,
+          "ci_lo": -0.25,
+          "ci_hi": 0.0,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "pca32": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 40,
+        "mean_tokens": 1.175,
+        "minus_real": {
+          "mean_diff": -0.45,
+          "ci_lo": -0.6,
+          "ci_hi": -0.3,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.15,
+          "ci_lo": -0.275,
+          "ci_hi": -0.05,
+          "credible_positive": false,
+          "credible_negative": true
+        }
+      },
+      "pca64": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 40,
+        "mean_tokens": 675.225,
+        "minus_real": {
+          "mean_diff": -0.45,
+          "ci_lo": -0.6,
+          "ci_hi": -0.3,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.15,
+          "ci_lo": -0.275,
+          "ci_hi": -0.05,
+          "credible_positive": false,
+          "credible_negative": true
+        }
+      },
+      "trunc32": {
+        "acc": 0.175,
+        "ci": [
+          0.075,
+          0.3
+        ],
+        "n": 40,
+        "mean_tokens": 712.475,
+        "minus_real": {
+          "mean_diff": -0.275,
+          "ci_lo": -0.45,
+          "ci_hi": -0.1,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": 0.025,
+          "ci_lo": -0.125,
+          "ci_hi": 0.175,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "trunc64": {
+        "acc": 0.175,
+        "ci": [
+          0.075,
+          0.3
+        ],
+        "n": 40,
+        "mean_tokens": 422.45,
+        "minus_real": {
+          "mean_diff": -0.275,
+          "ci_lo": -0.45,
+          "ci_hi": -0.1,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": 0.025,
+          "ci_lo": -0.125,
+          "ci_hi": 0.175,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "trunc256": {
+        "acc": 0.075,
+        "ci": [
+          0.0,
+          0.175
+        ],
+        "n": 40,
+        "mean_tokens": 446.25,
+        "minus_real": {
+          "mean_diff": -0.375,
+          "ci_lo": -0.55,
+          "ci_hi": -0.2,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.075,
+          "ci_lo": -0.225,
+          "ci_hi": 0.075,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      }
+    }
+  }
+}

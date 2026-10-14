@@ -1,0 +1,93 @@
+[localize] PY=/workspace/venv/bin/python
+[localize] ROOT_DIR=/root/latentmas-baseline/artifacts/aime_localize TAPE_DIR=/root/aime_localize_tapes PERSIST_DIR=/workspace/aime_localize_results
+[localize] restored 6 prior rows from /workspace/aime_localize_results
+[localize] autotune: 143166MB GPU -> DECODE_BS=16
+[localize] blitz n=30 bs=16 arms=real,none,real_seal40,real_seal60 budget=55min
+[localize] --mode collect --task aime2024 --n 30 --indices 0-29 --judger_budget 8192 Tue Sep 22 21:40:24 UTC 2026
+[load] Qwen/Qwen3-14B device=cuda
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 178.68it/s]
+[collect] skip idx=0
+[collect] skip idx=1
+[collect] skip idx=2
+[collect] skip idx=3
+[collect] skip idx=4
+[collect] skip idx=5
+[collect] skip idx=6
+[collect] skip idx=7
+[collect] skip idx=8
+[collect] skip idx=9
+[collect] skip idx=10
+[collect] skip idx=11
+[collect] skip idx=12
+[collect] skip idx=13
+[collect] skip idx=14
+[collect] skip idx=15
+[collect] skip idx=16
+[collect] skip idx=17
+[collect] skip idx=18
+[collect] skip idx=19
+[collect] skip idx=20
+[collect] skip idx=21
+[collect] skip idx=22
+[collect] skip idx=23
+[collect] skip idx=24
+[collect] skip idx=25
+[collect] skip idx=26
+[collect] skip idx=27
+[collect] skip idx=28
+[collect] skip idx=29
+[localize] OK Tue Sep 22 21:41:08 UTC 2026
+[localize] --mode views --task aime2024 --judger_budget 8192 --view_arms real --decode_bs 16 --method_tag bs16 --view_indices 0,1,2,4,10,18 Tue Sep 22 21:41:08 UTC 2026
+[views] scoped to 6 tapes: [0, 1, 2, 4, 10, 18]
+[load] Qwen/Qwen3-14B device=cuda
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 183.83it/s]
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[decode] idx=0 real__bs16 acc=1 tok=2598 pos=770 532.6s/B6 pred='204'
+[decode] idx=1 real__bs16 acc=0 tok=8192 pos=692 532.6s/B6 pred='2'
+[decode] idx=2 real__bs16 acc=0 tok=8192 pos=599 532.6s/B6 pred='0'
+[decode] idx=4 real__bs16 acc=0 tok=6901 pos=566 532.6s/B6 pred='134'
+[decode] idx=10 real__bs16 acc=0 tok=8192 pos=602 532.6s/B6 pred='33'
+[decode] idx=18 real__bs16 acc=1 tok=6823 pos=962 532.6s/B6 pred='23'
+{
+  "recommend": "collect_views",
+  "reason": "need real / none / c3 before calling a hop wasteful",
+  "arms": [
+    "real",
+    "real__bs16"
+  ]
+}
+[localize] OK Tue Sep 22 21:50:45 UTC 2026
+[localize] --mode compare --compare_arms real,real__bs16 Tue Sep 22 21:50:45 UTC 2026
+# Parity: `real` vs `real__bs16`
+
+n=6 · identical text **0/6** · same tokens 2/6 · same correct 4/6
+acc 0.667 -> 0.333
+wall clock 933s -> 533s (**1.75x**)
+
+**verdict: diverged**
+
+| idx | identical | tokens A | tokens B | correct A | correct B | diverge @char |
+|---:|---|---:|---:|---|---|---:|
+| 0 | NO | 2600 | 2598 | 1 | 1 | 460 |
+| 1 | NO | 8192 | 8192 | 0 | 0 | 479 |
+| 2 | NO | 8192 | 8192 | 0 | 0 | 455 |
+| 4 | NO | 7653 | 6901 | 1 | 0 | 944 |
+| 10 | NO | 5848 | 8192 | 1 | 0 | 907 |
+| 18 | NO | 7062 | 6823 | 1 | 1 | 1571 |
+
+Not bit-identical, so batched rows are self-consistent but not drop-in comparable to unbatched ones. Keep each comparison within a single batch size, and say so when quoting the numbers.
+[localize] OK Tue Sep 22 21:50:53 UTC 2026
+[localize] --mode views --task aime2024 --judger_budget 8192 --view_arms real,none,real_seal40,real_seal60 --decode_bs 16 --seal_vector /root/latentmas-baseline/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt --seal_layer 28 --time_budget_s 3300 Tue Sep 22 21:50:53 UTC 2026
+[load] Qwen/Qwen3-14B device=cuda
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  2.93it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.85it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.78it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.72it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.71it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.76it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.85it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.43it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.01it/s]
+[SEAL] attached layer=28 coef=40.0 vector=/root/latentmas-baseline/artifacts/seal_vectors/qwen3-14b/gsm8k_layer28.pt
+[views] skip (0, 'real')
+[views] skip (1, 'real')
+[views] skip (2, 'real')
+[views] skip (4, 'real')
+[views] skip (10, 'real')
+[views] skip (18, 'real')
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.

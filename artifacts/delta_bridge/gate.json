@@ -1,0 +1,12 @@
+{
+  "recommend": "running",
+  "reason": "still collecting or waiting on a stage",
+  "collect_n": 0,
+  "fit": null,
+  "math": null,
+  "gsm8k": null,
+  "aime": null,
+  "aime_verdict": null,
+  "train_coef": null,
+  "next": "collect MATH-train residuals"
+}

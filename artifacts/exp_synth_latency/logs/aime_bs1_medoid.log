@@ -1,0 +1,127 @@
+===== START Tue Sep  8 02:03:31 UTC 2026 =====
+INFO 09-08 02:03:35 [__init__.py:216] Automatically detected platform cuda.
+[load] donor_level=5 kept 2302/7496
+[load] Qwen/Qwen3-14B task=aime2024 n=30 k=10 temp=0.0 top_p=1.0 train_pool=2302 donor_task=math scaffold=medoid_replay select=heldout generate_bs=1 arms=ours
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  2.90it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.84it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.84it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.87it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.87it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.76it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.84it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.46it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.05it/s]
+[medoid] subjects=7 want_per=8 min=3 k=10 algebra:436, intermediate_algebra:429, geometry:421, number_theory:311, counting_probability:276, prealgebra:252, precalculus:177
+[medoid] subject=algebra using 8/436
+[precompute] algebra donor 1/8 P=0.96s C=0.31s R=0.28s pos=683
+[precompute] algebra donor 2/8 P=0.28s C=0.29s R=0.28s pos=710
+[precompute] algebra donor 3/8 P=0.29s C=0.28s R=0.28s pos=563
+[precompute] algebra donor 4/8 P=0.28s C=0.28s R=0.28s pos=548
+[precompute] algebra donor 5/8 P=0.28s C=0.28s R=0.28s pos=680
+[precompute] algebra donor 6/8 P=0.28s C=0.29s R=0.28s pos=623
+[precompute] algebra donor 7/8 P=0.27s C=0.28s R=0.27s pos=623
+[precompute] algebra donor 8/8 P=0.28s C=0.28s R=0.29s pos=473
+[medoid] algebra pick=0 dist=2.624 prefill=Solve a contest mathematics problem in algebra. Reason carefully. Put ...
+[medoid] subject=intermediate_algebra using 8/429
+[precompute] intermediate_algebra donor 1/8 P=0.29s C=0.29s R=0.29s pos=944
+[precompute] intermediate_algebra donor 2/8 P=0.28s C=0.28s R=0.28s pos=515
+[precompute] intermediate_algebra donor 3/8 P=0.27s C=0.28s R=0.27s pos=683
+[precompute] intermediate_algebra donor 4/8 P=0.27s C=0.29s R=0.28s pos=635
+[precompute] intermediate_algebra donor 5/8 P=0.27s C=0.28s R=0.27s pos=557
+[precompute] intermediate_algebra donor 6/8 P=0.27s C=0.28s R=0.27s pos=710
+[precompute] intermediate_algebra donor 7/8 P=0.28s C=0.28s R=0.27s pos=653
+[precompute] intermediate_algebra donor 8/8 P=0.28s C=0.28s R=0.28s pos=506
+[medoid] intermediate_algebra pick=7 dist=2.628 prefill=Solve a contest mathematics problem in intermediate algebra. Reason ca...
+[medoid] subject=geometry using 8/421
+[precompute] geometry donor 1/8 P=0.28s C=0.28s R=0.28s pos=626
+[precompute] geometry donor 2/8 P=0.27s C=0.28s R=0.28s pos=461
+[precompute] geometry donor 3/8 P=0.29s C=0.29s R=0.28s pos=1088
+[precompute] geometry donor 4/8 P=0.28s C=0.28s R=0.28s pos=491
+[precompute] geometry donor 5/8 P=0.28s C=0.28s R=0.28s pos=608
+[precompute] geometry donor 6/8 P=0.27s C=0.28s R=0.28s pos=515
+[precompute] geometry donor 7/8 P=0.29s C=0.30s R=0.30s pos=1658
+[precompute] geometry donor 8/8 P=0.28s C=0.28s R=0.28s pos=1118
+[medoid] geometry pick=3 dist=2.628 prefill=Solve a contest mathematics problem in geometry. Reason carefully. Put...
+[medoid] subject=number_theory using 8/311
+[precompute] number_theory donor 1/8 P=0.27s C=0.28s R=0.27s pos=548
+[precompute] number_theory donor 2/8 P=0.27s C=0.28s R=0.28s pos=482
+[precompute] number_theory donor 3/8 P=0.27s C=0.28s R=0.28s pos=437
+[precompute] number_theory donor 4/8 P=0.28s C=0.28s R=0.28s pos=569
+[precompute] number_theory donor 5/8 P=0.27s C=0.28s R=0.28s pos=506
+[precompute] number_theory donor 6/8 P=0.28s C=0.29s R=0.27s pos=524
+[precompute] number_theory donor 7/8 P=0.27s C=0.28s R=0.28s pos=692
+[precompute] number_theory donor 8/8 P=0.28s C=0.28s R=0.27s pos=545
+[medoid] number_theory pick=5 dist=2.722 prefill=Solve a contest mathematics problem in number theory. Reason carefully...
+[medoid] subject=counting_probability using 8/276
+[precompute] counting_probability donor 1/8 P=0.27s C=0.28s R=0.48s pos=470
+[precompute] counting_probability donor 2/8 P=0.28s C=0.29s R=0.28s pos=578
+[precompute] counting_probability donor 3/8 P=0.28s C=0.28s R=0.28s pos=503
+[precompute] counting_probability donor 4/8 P=0.27s C=0.28s R=0.28s pos=584
+[precompute] counting_probability donor 5/8 P=0.28s C=0.28s R=0.28s pos=1022
+[precompute] counting_probability donor 6/8 P=0.27s C=0.28s R=0.28s pos=803
+[precompute] counting_probability donor 7/8 P=0.28s C=0.28s R=0.28s pos=581
+[precompute] counting_probability donor 8/8 P=0.27s C=0.28s R=0.27s pos=668
+[medoid] counting_probability pick=2 dist=2.667 prefill=Solve a contest mathematics problem in counting probability. Reason ca...
+[medoid] subject=prealgebra using 8/252
+[precompute] prealgebra donor 1/8 P=0.27s C=0.28s R=0.28s pos=512
+[precompute] prealgebra donor 2/8 P=0.27s C=0.28s R=0.27s pos=497
+[precompute] prealgebra donor 3/8 P=0.30s C=0.32s R=0.33s pos=2726
+[precompute] prealgebra donor 4/8 P=0.27s C=0.28s R=0.28s pos=671
+[precompute] prealgebra donor 5/8 P=0.27s C=0.27s R=0.28s pos=455
+[precompute] prealgebra donor 6/8 P=0.27s C=0.27s R=0.27s pos=425
+[precompute] prealgebra donor 7/8 P=0.27s C=0.27s R=0.28s pos=413
+[precompute] prealgebra donor 8/8 P=0.27s C=0.28s R=0.27s pos=524
+[medoid] prealgebra pick=5 dist=2.723 prefill=Solve a contest mathematics problem in prealgebra. Reason carefully. P...
+[medoid] subject=precalculus using 8/177
+[precompute] precalculus donor 1/8 P=0.27s C=0.28s R=0.28s pos=794
+[precompute] precalculus donor 2/8 P=0.27s C=0.28s R=0.28s pos=749
+[precompute] precalculus donor 3/8 P=0.27s C=0.28s R=0.28s pos=494
+[precompute] precalculus donor 4/8 P=0.28s C=0.29s R=0.28s pos=632
+[precompute] precalculus donor 5/8 P=0.27s C=0.28s R=0.27s pos=608
+[precompute] precalculus donor 6/8 P=0.28s C=0.28s R=0.28s pos=728
+[precompute] precalculus donor 7/8 P=0.28s C=0.28s R=0.28s pos=827
+[precompute] precalculus donor 8/8 P=0.27s C=0.29s R=0.28s pos=773
+[medoid] precalculus pick=1 dist=2.797 prefill=Solve a contest mathematics problem in precalculus. Reason carefully. ...
+[precompute] medoid bank done in 55.6s  subjects=['algebra', 'intermediate_algebra', 'geometry', 'number_theory', 'counting_probability', 'prealgebra', 'precalculus'] default=algebra
+[assign] algebra:1, intermediate_algebra:14, geometry:5, number_theory:2, counting_probability:2, prealgebra:0, precalculus:6  unlabeled_nn=30
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[latency] items 1-1/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=61.62s e2e/item 0.00/61.66 acc L=na O=1.000(n=1) N=na elapsed=62s
+[latency] items 2-2/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=191.74s e2e/item 0.00/191.81 acc L=na O=0.500(n=2) N=na elapsed=254s
+[latency] items 3-3/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=188.05s e2e/item 0.00/188.17 acc L=na O=0.333(n=3) N=na elapsed=442s
+[latency] items 4-4/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=190.92s e2e/item 0.00/191.03 acc L=na O=0.250(n=4) N=na elapsed=633s
+[latency] items 5-5/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=146.68s e2e/item 0.00/146.73 acc L=na O=0.200(n=5) N=na elapsed=780s
+[latency] items 6-6/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=142.93s e2e/item 0.00/143.01 acc L=na O=0.333(n=6) N=na elapsed=923s
+[latency] items 7-7/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=110.61s e2e/item 0.00/110.66 acc L=na O=0.429(n=7) N=na elapsed=1033s
+[latency] items 8-8/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=190.39s e2e/item 0.00/190.46 acc L=na O=0.500(n=8) N=na elapsed=1224s
+[latency] items 9-9/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=115.12s e2e/item 0.00/115.20 acc L=na O=0.556(n=9) N=na elapsed=1339s
+[latency] items 10-10/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=71.32s e2e/item 0.00/71.38 acc L=na O=0.600(n=10) N=na elapsed=1410s
+[latency] items 11-11/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=187.74s e2e/item 0.00/187.80 acc L=na O=0.545(n=11) N=na elapsed=1598s
+[latency] items 12-12/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=78.79s e2e/item 0.00/78.91 acc L=na O=0.583(n=12) N=na elapsed=1677s
+[latency] items 13-13/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=62.78s e2e/item 0.00/62.87 acc L=na O=0.615(n=13) N=na elapsed=1740s
+[latency] items 14-14/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=188.11s e2e/item 0.00/188.18 acc L=na O=0.571(n=14) N=na elapsed=1928s
+[latency] items 15-15/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=134.11s e2e/item 0.00/134.16 acc L=na O=0.600(n=15) N=na elapsed=2062s
+[latency] items 16-16/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=107.95s e2e/item 0.00/108.00 acc L=na O=0.625(n=16) N=na elapsed=2171s
+[latency] items 17-17/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=139.95s e2e/item 0.00/140.08 acc L=na O=0.647(n=17) N=na elapsed=2311s
+[latency] items 18-18/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=186.99s e2e/item 0.00/187.12 acc L=na O=0.611(n=18) N=na elapsed=2498s
+[latency] items 19-19/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=186.37s e2e/item 0.00/186.44 acc L=na O=0.579(n=19) N=na elapsed=2684s
+[latency] items 20-20/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=81.95s e2e/item 0.00/82.05 acc L=na O=0.600(n=20) N=na elapsed=2766s
+[latency] items 21-21/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=187.32s e2e/item 0.00/187.45 acc L=na O=0.571(n=21) N=na elapsed=2954s
+[latency] items 22-22/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=188.04s e2e/item 0.00/188.17 acc L=na O=0.545(n=22) N=na elapsed=3142s
+[latency] items 23-23/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=139.66s e2e/item 0.00/139.79 acc L=na O=0.565(n=23) N=na elapsed=3282s
+[latency] items 24-24/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=118.64s e2e/item 0.00/118.75 acc L=na O=0.583(n=24) N=na elapsed=3401s
+[latency] items 25-25/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=79.95s e2e/item 0.00/80.09 acc L=na O=0.600(n=25) N=na elapsed=3481s
+[latency] items 26-26/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=177.92s e2e/item 0.00/178.05 acc L=na O=0.615(n=26) N=na elapsed=3659s
+[latency] items 27-27/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=72.75s e2e/item 0.00/72.81 acc L=na O=0.630(n=27) N=na elapsed=3732s
+[latency] items 28-28/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=187.14s e2e/item 0.00/187.26 acc L=na O=0.607(n=28) N=na elapsed=3919s
+[latency] items 29-29/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=186.77s e2e/item 0.00/186.89 acc L=na O=0.586(n=29) N=na elapsed=4106s
+[latency] items 30-30/30 B=1 P_batch=0.00s C_batch=0.00s R_batch=0.00s J_lat=0.00s J_ours=187.65s e2e/item 0.00/187.74 acc L=na O=0.567(n=30) N=na elapsed=4294s
+
+=== PER-AGENT LATENCY (mean sec/item at generate_bs=1) ===
+method             P       C       R      up    load  Judger     e2e     tok     acc
+ours            0.00    0.00    0.00    0.00   0.092  143.00  143.09  6224.6   0.567
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s            +0.000 [+0.000,+0.000] n=0
+  ours_minus_latentmas_e2e_s               +0.000 [+0.000,+0.000] n=0
+  ours_minus_latentmas_tokens              +0.000 [+0.000,+0.000] n=0
+  ours_minus_latentmas_correct             +0.000 [+0.000,+0.000] n=0
+  ours_minus_latentmas_upstream_s          +0.000 [+0.000,+0.000] n=0
+
+[precompute] 55.6s total  amortized 1.853s / test item  ours e2e+amort 144.94s
+
+[done] /workspace/latentmas-baseline/artifacts/exp_synth_latency/aime2024_bs1_medoid/report.json
+EXP_SYNTH_LATENCY_DONE
+===== END Tue Sep  8 03:17:05 UTC 2026 rc=0 =====

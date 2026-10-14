@@ -46,8 +46,18 @@ class ModelWrapper:
             gpu_util = float(getattr(args, "gpu_memory_utilization", 0.9))
             
             print(f"[vLLM] Using vLLM backend for model {model_name}")
-            if args.enable_prefix_caching and args.method == "latent_mas": 
-                self.vllm_engine = LLM(model=model_name, tensor_parallel_size=tp_size, gpu_memory_utilization=gpu_util, enable_prefix_caching=True, enable_prompt_embeds=True)
+            # Prompt embeddings are how the hybrid Judger receives latent thoughts.
+            # Prefix caching is a separate switch. vLLM 0.11 turns prefix caching
+            # back off when prompt embeddings are enabled; that is recorded, not hidden.
+            if getattr(args, "method", None) == "latent_mas":
+                self.vllm_engine = LLM(
+                    model=model_name,
+                    tensor_parallel_size=tp_size,
+                    gpu_memory_utilization=gpu_util,
+                    enable_prefix_caching=bool(getattr(args, "enable_prefix_caching", False)),
+                    enable_prompt_embeds=True,
+                    disable_log_stats=False,
+                )
             else:
                 self.vllm_engine = LLM(model=model_name, tensor_parallel_size=tp_size, gpu_memory_utilization=gpu_util)
             self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
@@ -70,10 +80,16 @@ class ModelWrapper:
         # fallback: normal transformers path
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
         _ensure_pad_token(self.tokenizer)
+        # Attention kernel is a load-time choice and materially changes decode speed
+        # at the 8k-16k contexts this pipeline runs at. Default stays whatever
+        # transformers picks, so existing results are unaffected unless asked.
+        _attn = getattr(args, "attn_implementation", None) or os.environ.get("SEAL_ATTN_IMPL") or ""
+        _extra = {"attn_implementation": _attn} if _attn else {}
         with torch.no_grad():
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_name,
                 torch_dtype=(torch.bfloat16 if torch.cuda.is_available() else torch.float32),
+                **_extra,
             )
         if len(self.tokenizer) != self.model.get_input_embeddings().weight.shape[0]:
             self.model.resize_token_embeddings(len(self.tokenizer))
@@ -637,12 +653,19 @@ class ModelWrapper:
         past_key_values: Optional[Tuple] = None,
         role: Optional[str] = None,
         detach_debug: bool = True,
+        collect_latents: bool = False,
+        forced_latents: Optional[torch.Tensor] = None,
     ) -> Tuple:
         """Shared latent rollout. Caller controls torch.no_grad / enable_grad.
 
         CES: by default steerer is active only during recurrent latent steps
         (phase='latent'), not during textual prefill. Prefill+latent is selected
         via ces.steer_phase == 'prefill_and_latent'.
+
+        ``collect_latents`` stores the realigned embeddings actually fed at each
+        latent step on ``self.last_latent_embeds`` with shape ``[K, B, D]``.
+        ``forced_latents`` teacher-forces those embeddings (``[K, D]`` or
+        ``[K, B, D]``) instead of recycling ``last_hidden``.
         """
         if input_ids.dim() != 2:
             raise ValueError("input_ids must be 2D with shape [batch, seq_len]")
@@ -665,6 +688,7 @@ class ModelWrapper:
         _seal_on = self._seal_activate_for(role)
         _ces_on = self._ces_prepare(role)
         ces = getattr(self, "ces", None)
+        collected: List[torch.Tensor] = []
         try:
             if ces is not None and _ces_on:
                 ces.set_phase("prefill")
@@ -683,9 +707,23 @@ class ModelWrapper:
             if ces is not None and _ces_on:
                 ces.set_phase("latent")
 
+            forced = None
+            if forced_latents is not None:
+                forced = forced_latents
+                if forced.dim() == 2:
+                    forced = forced.unsqueeze(1)
+                if int(forced.shape[0]) != int(latent_steps):
+                    raise ValueError(
+                        f"forced_latents first dim {forced.shape[0]} != latent_steps {latent_steps}"
+                    )
+
             for step in range(latent_steps):
                 source_model = self.HF_model if hasattr(self, "HF_model") else self.model
                 latent_vec = self._apply_latent_realignment(last_hidden, source_model)
+                if forced is not None:
+                    latent_vec = forced[step].to(device=latent_vec.device, dtype=latent_vec.dtype)
+                if collect_latents:
+                    collected.append(latent_vec.detach().float().cpu())
                 if detach_debug:
                     # Side-channel only; do not break the live latent chain.
                     _ = latent_vec.detach()
@@ -711,6 +749,9 @@ class ModelWrapper:
             if _seal_on:
                 self.seal.disable()
             self._ces_finish(_ces_on)
+        self.last_latent_embeds = (
+            torch.stack(collected, 0) if collect_latents and collected else None
+        )
         return past
 
     @torch.no_grad()
@@ -722,6 +763,8 @@ class ModelWrapper:
         latent_steps: int,
         past_key_values: Optional[Tuple] = None,
         role: Optional[str] = None,
+        collect_latents: bool = False,
+        forced_latents: Optional[torch.Tensor] = None,
     ) -> Tuple:
         return self._generate_latent_batch_impl(
             input_ids,
@@ -730,6 +773,8 @@ class ModelWrapper:
             past_key_values=past_key_values,
             role=role,
             detach_debug=True,
+            collect_latents=collect_latents,
+            forced_latents=forced_latents,
         )
 
     def generate_latent_batch_grad(

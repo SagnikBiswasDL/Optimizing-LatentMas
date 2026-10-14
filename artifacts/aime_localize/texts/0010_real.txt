@@ -1,0 +1,258 @@
+<think>
+Okay, let's try to solve this problem step by step. First, I need to visualize the problem. There are two rectangles, ABCD and EFGH. The points D, E, C, F are collinear, meaning they lie on a straight line. Also, points A, D, H, G lie on a circle. The given lengths are BC = 16, AB = 107, FG = 17, and EF = 184. We need to find the length of CE.
+
+Let me start by recalling that in a rectangle, opposite sides are equal and all angles are right angles. So for rectangle ABCD, AB = CD = 107, and BC = AD = 16. Similarly, for rectangle EFGH, EF = GH = 184, and FG = EH = 17.
+
+Since D, E, C, F are collinear, let me imagine a line that passes through these four points. Let me denote the line as line DF, with points D, E, C, F in that order. Wait, but the order isn't specified. However, since ABCD is a rectangle, point C is adjacent to D and B. So if D is connected to C, and E is between D and C or beyond? Hmm, maybe I need to assign coordinates to these points to make it clearer.
+
+Let me assign coordinates. Let's place point D at the origin (0, 0) for simplicity. Since ABCD is a rectangle, and AB = 107, BC = 16. Let me think about the orientation. If AB is horizontal, then BC would be vertical. But since D is a corner of the rectangle, let me define the coordinates properly.
+
+Assuming rectangle ABCD with AB = 107 and BC = 16. Let me take AB as horizontal. So if point A is at (0, 0), then B would be at (107, 0), C at (107, 16), and D at (0, 16). Wait, but the problem says that D, E, C, F are collinear. If D is at (0, 16) and C is at (107, 16), then the line DC is horizontal at y=16. But then E and F are also on this line. However, the problem states that D, E, C, F are collinear. So maybe the line is DC extended? Or maybe the line is different?
+
+Wait, maybe I should adjust the coordinate system. Let me try again. Let me place point D at (0, 0). Since ABCD is a rectangle, if AB is vertical, then BC would be horizontal. Wait, but BC is given as 16. Let me think. Let me define the rectangle ABCD such that AB is vertical. So if AB = 107, then AB is vertical. Let me assign coordinates:
+
+Let me take D at (0, 0). Since ABCD is a rectangle, moving from D to C would be along the horizontal direction. Wait, maybe I need to clarify the order of the rectangle's vertices. In rectangle ABCD, the order is such that AB is adjacent to BC, which is adjacent to CD, etc. So if AB is one side, BC is the next. So if AB is vertical, then BC would be horizontal. Let me try:
+
+Let me place point D at (0, 0). Then, since ABCD is a rectangle, if AB is vertical, then moving from D to A would be vertical. Wait, maybe I need to think of the rectangle as having sides AB and AD. Let me consider standard notation: ABCD is a rectangle with AB, BC, CD, DA as consecutive sides. So AB is adjacent to BC, which is adjacent to CD, etc. So if AB is horizontal, then BC would be vertical. Let me try that.
+
+Let me place point A at (0, 0). Then, since AB = 107, point B would be at (107, 0). Then BC = 16, so moving up from B, point C would be at (107, 16). Then D would be at (0, 16), completing the rectangle. Now, points D (0,16), E, C (107,16), F are collinear. So the line DC is horizontal from (0,16) to (107,16). So E and F are somewhere on this line. But the order is D, E, C, F? Or D, E, F, C? Or some other order? The problem says D, E, C, F are collinear. So they lie on a straight line, but the order isn't specified. However, since EFGH is another rectangle, and F is a corner of that rectangle, perhaps F is beyond C on the line?
+
+Alternatively, maybe E is between D and C, and F is beyond C. Let me assume that the order is D, E, C, F along the line. So from D (0,16) to E to C (107,16) to F. Then CE would be the distance from C to E, which would be (position of E - position of C) if E is between D and C. Wait, but if E is between D and C, then CE would be positive. But if E is beyond C, then CE would be negative. But since lengths are positive, maybe the order is D, E, C, F with E between D and C, and F beyond C. Wait, but the problem says D, E, C, F are collinear. So they can be in any order, but the key is that they lie on a straight line.
+
+But perhaps I need to assign coordinates to E and F. Let me denote the line DC as the x-axis at y=16. Let me assign coordinates to D as (0, 16), C as (107, 16). Then E and F are points on this line. Let me denote E as (x, 16) and F as (y, 16). The problem is to find CE, which would be |x - 107| if E is at (x, 16). Wait, no. If C is at (107,16), then CE is the distance between C and E. If E is at (e, 16), then CE = |e - 107|. But depending on where E is located relative to C.
+
+Now, the other condition is that points A, D, H, G lie on a circle. Let me think about rectangle EFGH. Since EFGH is a rectangle, FG = 17 and EF = 184. So EF is one side, FG is the adjacent side. Let me assign coordinates to EFGH. Let me assume that EFGH is positioned such that EF is horizontal or vertical. Since EF = 184 and FG = 17, which are the lengths of the sides.
+
+Assuming that EF is horizontal. Let me take E at (e, 16) as before. Then, since EF = 184, if EF is horizontal, then F would be at (e + 184, 16) or (e - 184, 16). But since F is on the line DC (which is y=16), and D is at (0,16), C at (107,16), then if F is beyond C, then e + 184 would be the x-coordinate of F. But need to check.
+
+Alternatively, if EF is vertical, then FG would be horizontal. But given that EF is 184 and FG is 17, which are quite different lengths, but the orientation isn't specified. However, since E and F are on the line y=16, if EF is horizontal, then the rectangle EFGH would have sides EF (horizontal) and FG (vertical). But since F is on y=16, then G would be either above or below F. However, since A, D, H, G are on a circle, and A is at (0,0), D is at (0,16), then H and G must be positioned such that all four points lie on a circle.
+
+This seems complex. Let me try to assign coordinates step by step.
+
+First, assign coordinates to rectangle ABCD:
+
+Let me take A at (0, 0), B at (107, 0), C at (107, 16), D at (0, 16). Then DC is from (0,16) to (107,16), which is the line y=16.
+
+Points D (0,16), E, C (107,16), F are collinear on this line. Let me denote E as (e, 16) and F as (f, 16). The order could be D (0,16), E (e,16), C (107,16), F (f,16). So e is between 0 and 107, and f is beyond 107. Or maybe E is beyond D, but that might complicate things. Let's assume E is between D and C, so 0 < e < 107, and F is beyond C, so f > 107.
+
+Now, rectangle EFGH. Let me consider EF as horizontal. Since EF = 184, and E is at (e,16), then F is at (e + 184, 16) if EF is to the right. But since F is on the line y=16, and we assumed F is beyond C (which is at 107,16), then e + 184 = f. Also, FG = 17. Since FG is the next side of the rectangle, which would be vertical. If EF is horizontal, then FG is vertical. So from F (f,16), moving up or down 17 units. Let's assume it's upwards, so G is at (f, 16 + 17) = (f, 33). Then H would be at (e, 33), completing the rectangle EFGH. Alternatively, if FG is downward, G would be at (f, 16 - 17) = (f, -1). But since A, D, H, G are on a circle, and A is at (0,0), D is at (0,16), which are on the circle. If G is at (f, -1), then H would be at (e, -1). But then the circle passing through A (0,0), D (0,16), H (e,-1), G (f,-1). This might be possible, but let's check both possibilities.
+
+Alternatively, maybe EF is vertical. If EF is vertical, then since E is at (e,16), F would be at (e, 16 + 184) or (e, 16 - 184). But since F is on the line y=16 (as per D,E,C,F collinear), this would require that F is at (e,16), which is the same as E, which can't be. Therefore, EF cannot be vertical. Therefore, EF must be horizontal. Hence, F is at (e + 184, 16). Therefore, since F is on the line y=16, and we assumed F is beyond C (107,16), then e + 184 must be greater than 107. Therefore, e > 107 - 184 = -77. But since E is between D (0,16) and C (107,16), e is between 0 and 107. Therefore, e + 184 would be between 184 and 284, which is definitely beyond 107. So that works.
+
+So, coordinates:
+
+E: (e, 16)
+
+F: (e + 184, 16)
+
+Then, rectangle EFGH has FG = 17. Assuming FG is vertical upwards, G is at (e + 184, 16 + 17) = (e + 184, 33). Then H would be at (e, 33), completing the rectangle. Alternatively, if FG is downward, G is at (e + 184, 16 - 17) = (e + 184, -1), and H would be at (e, -1). Let's consider both cases.
+
+Now, the points A (0,0), D (0,16), H, G lie on a circle. Let's find the coordinates of H and G.
+
+Case 1: FG is upwards. Then G is (e + 184, 33), H is (e, 33).
+
+Case 2: FG is downwards. Then G is (e + 184, -1), H is (e, -1).
+
+We need to see which case allows A, D, H, G to lie on a circle.
+
+Let me check both cases.
+
+First, Case 1: H is (e, 33), G is (e + 184, 33). So points A (0,0), D (0,16), H (e,33), G (e + 184, 33) lie on a circle.
+
+Let me find the equation of the circle passing through A, D, H, G.
+
+Since three points determine a circle, let's use A, D, H to find the circle equation, then check if G lies on it.
+
+The general equation of a circle is x² + y² + Dx + Ey + F = 0.
+
+Plugging in A (0,0):
+
+0 + 0 + 0 + 0 + F = 0 ⇒ F = 0.
+
+So equation becomes x² + y² + Dx + Ey = 0.
+
+Plugging in D (0,16):
+
+0 + 256 + 0 + 16E = 0 ⇒ 256 + 16E = 0 ⇒ E = -16.
+
+Now equation is x² + y² + Dx -16y = 0.
+
+Now plug in H (e, 33):
+
+e² + 33² + D*e -16*33 = 0 ⇒ e² + 1089 + D*e - 528 = 0 ⇒ e² + D*e + 561 = 0.
+
+Now, plug in G (e + 184, 33):
+
+(e + 184)² + 33² + D*(e + 184) -16*33 = 0.
+
+Expanding:
+
+(e² + 368e + 184²) + 1089 + D*e + 184D - 528 = 0.
+
+Simplify:
+
+e² + 368e + 33856 + 1089 + D*e + 184D - 528 = 0.
+
+Combine constants: 33856 + 1089 - 528 = 33856 + 561 = 34417.
+
+So equation becomes:
+
+e² + 368e + 34417 + D*e + 184D = 0.
+
+But from earlier, we have e² + D*e + 561 = 0 ⇒ e² + D*e = -561.
+
+Substitute into the equation for G:
+
+(-561) + 368e + 34417 + 184D = 0 ⇒ 368e + 184D + (34417 - 561) = 0 ⇒ 368e + 184D + 33856 = 0.
+
+Divide the entire equation by 184:
+
+2e + D + 184 = 0 ⇒ D = -2e - 184.
+
+Now, from the equation e² + D*e + 561 = 0, substitute D:
+
+e² + (-2e - 184)*e + 561 = 0 ⇒ e² - 2e² - 184e + 561 = 0 ⇒ -e² - 184e + 561 = 0 ⇒ e² + 184e - 561 = 0.
+
+Solving this quadratic equation for e:
+
+e = [-184 ± sqrt(184² + 4*1*561)] / 2.
+
+Calculate discriminant:
+
+184² = 33856
+
+4*1*561 = 2244
+
+Total discriminant: 33856 + 2244 = 36100
+
+sqrt(36100) = 190
+
+Thus, e = [-184 ± 190]/2.
+
+So two solutions:
+
+e = (-184 + 190)/2 = 6/2 = 3
+
+e = (-184 - 190)/2 = -374/2 = -187
+
+But earlier, we assumed that E is between D (0,16) and C (107,16), so e should be between 0 and 107. So e = 3 is valid, e = -187 is not. Therefore, e = 3.
+
+Therefore, CE is the distance from C (107,16) to E (3,16), which is |107 - 3| = 104. So CE = 104.
+
+But let me check if this is correct. Let me verify with the other points.
+
+If e = 3, then D = -2*3 - 184 = -6 - 184 = -190.
+
+So the circle equation is x² + y² -190x -16y = 0.
+
+Check if G (e + 184, 33) = (3 + 184, 33) = (187, 33) lies on this circle.
+
+Plug in x=187, y=33:
+
+187² + 33² -190*187 -16*33.
+
+Calculate:
+
+187² = (200 - 13)² = 40000 - 5200 + 169 = 34969
+
+Wait, 187*187: Let me compute 180² + 2*180*7 + 7² = 32400 + 2520 + 49 = 34969.
+
+33² = 1089.
+
+-190*187: Let's compute 190*187 = (200 - 10)*187 = 200*187 - 10*187 = 37400 - 1870 = 35530. So -35530.
+
+-16*33 = -528.
+
+Total: 34969 + 1089 - 35530 - 528 = (34969 + 1089) - (35530 + 528) = 36058 - 36058 = 0. Correct.
+
+So yes, G lies on the circle. Therefore, this case works. So CE = 107 - 3 = 104.
+
+But let me check the other case where FG is downward, just to be thorough.
+
+Case 2: FG is downward. Then G is (e + 184, -1), H is (e, -1).
+
+Points A (0,0), D (0,16), H (e, -1), G (e + 184, -1) lie on a circle.
+
+Again, using the general circle equation. Let's plug in A (0,0): F = 0. Then D (0,16):
+
+0 + 256 + 0 + 16E = 0 ⇒ E = -16. So equation is x² + y² + Dx -16y = 0.
+
+Now plug in H (e, -1):
+
+e² + (-1)^2 + D*e -16*(-1) = 0 ⇒ e² + 1 + D*e + 16 = 0 ⇒ e² + D*e + 17 = 0.
+
+Plug in G (e + 184, -1):
+
+(e + 184)^2 + (-1)^2 + D*(e + 184) -16*(-1) = 0.
+
+Expanding:
+
+(e² + 368e + 184²) + 1 + D*e + 184D + 16 = 0.
+
+Simplify:
+
+e² + 368e + 33856 + 1 + D*e + 184D + 16 = 0 ⇒ e² + 368e + 33873 + D*e + 184D = 0.
+
+From earlier, e² + D*e = -17 (from e² + D*e + 17 = 0).
+
+Substitute into the equation:
+
+-17 + 368e + 33873 + 184D = 0 ⇒ 368e + 184D + 33856 = 0.
+
+Divide by 184:
+
+2e + D + 184 = 0 ⇒ D = -2e - 184.
+
+Now substitute D into e² + D*e + 17 = 0:
+
+e² + (-2e - 184)*e + 17 = 0 ⇒ e² - 2e² - 184e + 17 = 0 ⇒ -e² - 184e + 17 = 0 ⇒ e² + 184e - 17 = 0.
+
+Solving this quadratic equation:
+
+e = [-184 ± sqrt(184² + 4*1*17)] / 2.
+
+Calculate discriminant:
+
+184² = 33856
+
+4*1*17 = 68
+
+Total discriminant: 33856 + 68 = 33924
+
+sqrt(33924) ≈ 184.18... Wait, but 184² is 33856, 185² is 34225. So sqrt(33924) is between 184 and 185. Let me check 184.2² = (184 + 0.2)^2 = 184² + 2*184*0.2 + 0.2² = 33856 + 73.6 + 0.04 = 33929.64, which is larger than 33924. So sqrt(33924) is approximately 184.18, but not an integer. Therefore, e would be irrational. However, since the problem gives integer lengths, it's more likely that the correct case is Case 1 where e is an integer (3). Therefore, Case 2 is probably not the correct configuration, as it leads to non-integer e, which might not be intended here.
+
+Thus, the correct value is e = 3, so CE = 107 - 3 = 104.
+
+Therefore, the length of CE is 104.
+</think>
+
+To solve the problem, we analyze the geometric configuration of the two rectangles and the collinearity and cyclic conditions.
+
+---
+
+### Step-by-Step Plan:
+
+1. **Assign Coordinates to Rectangle $ABCD$:**
+   - Place $A$ at $(0, 0)$, $B$ at $(107, 0)$, $C$ at $(107, 16)$, and $D$ at $(0, 16)$, using the given side lengths $AB = 107$ and $BC = 16$.
+
+2. **Define Coordinates for Points $E$, $F$, and Rectangle $EFGH$:**
+   - Since $D, E, C, F$ are collinear and lie on the horizontal line $y = 16$, assign $E = (e, 16)$ and $F = (e + 184, 16)$, using $EF = 184$.
+   - Assume $FG = 17$ is vertical, so $G = (e + 184, 33)$ and $H = (e, 33)$.
+
+3. **Use the Cyclic Condition $A, D, H, G$ on a Circle:**
+   - Use the general circle equation $x^2 + y^2 + Dx + Ey + F = 0$.
+   - Plug in points $A = (0, 0)$, $D = (0, 16)$, $H = (e, 33)$, and $G = (e + 184, 33)$ to derive equations and solve for $e$.
+
+4. **Solve the System of Equations:**
+   - From the circle condition, derive a quadratic equation in $e$ and solve it.
+   - The valid solution is $e = 3$, as it lies between $D$ and $C$ on the line $y = 16$.
+
+5. **Compute the Length $CE$:**
+   - Since $C = (107, 16)$ and $E = (3, 16)$, the distance $CE = |107 - 3| = 104$.
+
+---
+
+### Final Answer:
+$$
+\boxed{104}
+$$

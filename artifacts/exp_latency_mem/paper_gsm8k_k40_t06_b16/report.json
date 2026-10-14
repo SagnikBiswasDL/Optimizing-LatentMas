@@ -1,0 +1,199 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "gsm8k",
+    "split": "test",
+    "k": 40,
+    "n": 50,
+    "judger_budget": 2048,
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "relay_budget": 16,
+    "sink": 4,
+    "rank": 8,
+    "importance": "key_norm",
+    "compress_mode": "evict",
+    "mode": "latency",
+    "batch_grid": "1,2,4,8,16,24,32,48,64",
+    "memory_decode_tokens": 16,
+    "asc_vector": null,
+    "asc_coef": 40.0,
+    "asc_layer": -1,
+    "smoke": false,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/exp_latency_mem/paper_gsm8k_k40_t06_b16"
+  },
+  "n": 50,
+  "compressor": "evict budget=16 sink=4 importance=key_norm",
+  "fork_note": "LatentMAS sequential HF path, K latent steps/agent. Judger uses temperature/top_p from CLI (0/1 = greedy). ours = same upstream + RelayCompressor before Judger.",
+  "latency": {
+    "latentmas": {
+      "n": 50,
+      "acc": 0.98,
+      "planner_s": {
+        "mean": 1.0553241844894365,
+        "ci_lo": 1.0356726376004517,
+        "ci_hi": 1.0849383782519144,
+        "n": 50
+      },
+      "critic_s": {
+        "mean": 1.048854469875805,
+        "ci_lo": 1.0383067614801693,
+        "ci_hi": 1.058664244052663,
+        "n": 50
+      },
+      "refiner_s": {
+        "mean": 1.0443447057437152,
+        "ci_lo": 1.0337107717163163,
+        "ci_hi": 1.0534642909987597,
+        "n": 50
+      },
+      "upstream_s": {
+        "mean": 3.148523360108957,
+        "ci_lo": 3.115025952370488,
+        "ci_hi": 3.1807020362133627,
+        "n": 50
+      },
+      "compress_s": {
+        "mean": 0.008488181766588242,
+        "ci_lo": 0.006893811213318259,
+        "ci_hi": 0.011626194698095787,
+        "n": 50
+      },
+      "judger_s": {
+        "mean": 15.202538990837056,
+        "ci_lo": 13.3672519651514,
+        "ci_hi": 17.19014443107741,
+        "n": 50
+      },
+      "e2e_s": {
+        "mean": 18.351062350946012,
+        "ci_lo": 16.50413487814425,
+        "ci_hi": 20.346065360724864,
+        "n": 50
+      },
+      "tokens": {
+        "mean": 603.6,
+        "ci_lo": 529.0790000000001,
+        "ci_hi": 683.581,
+        "n": 50
+      },
+      "full_mb": {
+        "mean": 99.8375,
+        "ci_lo": 97.231015625,
+        "ci_hi": 102.612734375,
+        "n": 50
+      },
+      "ours_mb": {
+        "mean": 2.5,
+        "ci_lo": 2.5,
+        "ci_hi": 2.5,
+        "n": 50
+      },
+      "tok_per_s": {
+        "mean": 39.73069916885637,
+        "ci_lo": 39.33980084618509,
+        "ci_hi": 40.17601132636702,
+        "n": 50
+      }
+    },
+    "ours": {
+      "n": 50,
+      "acc": 0.98,
+      "planner_s": {
+        "mean": 1.0553241844894365,
+        "ci_lo": 1.0356726376004517,
+        "ci_hi": 1.0849383782519144,
+        "n": 50
+      },
+      "critic_s": {
+        "mean": 1.048854469875805,
+        "ci_lo": 1.0383067614801693,
+        "ci_hi": 1.058664244052663,
+        "n": 50
+      },
+      "refiner_s": {
+        "mean": 1.0443447057437152,
+        "ci_lo": 1.0337107717163163,
+        "ci_hi": 1.0534642909987597,
+        "n": 50
+      },
+      "upstream_s": {
+        "mean": 3.148523360108957,
+        "ci_lo": 3.115025952370488,
+        "ci_hi": 3.1807020362133627,
+        "n": 50
+      },
+      "compress_s": {
+        "mean": 0.008488181766588242,
+        "ci_lo": 0.006893811213318259,
+        "ci_hi": 0.011626194698095787,
+        "n": 50
+      },
+      "judger_s": {
+        "mean": 18.229638734927867,
+        "ci_lo": 15.31377614528389,
+        "ci_hi": 21.496635628325166,
+        "n": 50
+      },
+      "e2e_s": {
+        "mean": 21.38665027680341,
+        "ci_lo": 18.481415580692293,
+        "ci_hi": 24.63881753918115,
+        "n": 50
+      },
+      "tokens": {
+        "mean": 723.84,
+        "ci_lo": 607.2975,
+        "ci_hi": 854.328,
+        "n": 50
+      },
+      "full_mb": {
+        "mean": 99.8375,
+        "ci_lo": 97.231015625,
+        "ci_hi": 102.612734375,
+        "n": 50
+      },
+      "ours_mb": {
+        "mean": 2.5,
+        "ci_lo": 2.5,
+        "ci_hi": 2.5,
+        "n": 50
+      },
+      "tok_per_s": {
+        "mean": 39.65464772433398,
+        "ci_lo": 39.26761083188192,
+        "ci_hi": 40.08912654903281,
+        "n": 50
+      }
+    },
+    "paired": {
+      "ours_minus_latentmas_judger_s": {
+        "mean": 3.0270997440908105,
+        "ci_lo": 1.4783310992973855,
+        "ci_hi": 4.760425237499932,
+        "n": 50
+      },
+      "ours_minus_latentmas_e2e_s": {
+        "mean": 3.035587925857399,
+        "ci_lo": 1.4883472624329734,
+        "ci_hi": 4.767366737099304,
+        "n": 50
+      },
+      "ours_minus_latentmas_tokens": {
+        "mean": 120.24,
+        "ci_lo": 58.338,
+        "ci_hi": 191.38299999999998,
+        "n": 50
+      },
+      "ours_minus_latentmas_correct": {
+        "mean": 0.0,
+        "ci_lo": -0.06,
+        "ci_hi": 0.06,
+        "n": 50
+      }
+    },
+    "n_paired": 50
+  }
+}

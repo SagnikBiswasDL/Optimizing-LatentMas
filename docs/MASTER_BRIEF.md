@@ -1,12 +1,12 @@
 # LatentMAS Steering — Master Research Brief (single self-contained doc)
 
-Updated: 2026-07-22. This is the one document to hand a research agent. It consolidates
+Updated: 2026-09-16. This is the one document to hand a research agent. It consolidates
 everything: the system, the full experiment log with exact numbers, the mechanism, the
 one positive method result, reusable infra, environment/repro, and prioritized open
 directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
 `DIAG_READOUT_FINDINGS.md`, `SCAFFOLD_RESULTS.md`, `RESULTS.md`, `KV_STEERING_FINDINGS.md`,
 `GATE1_STATUS.md`, `CES_LATENT_STEERING_FINDINGS.md`, `LATENT_STEERING_RESEARCH_HANDOFF.md`,
-`PAPER_OUTLINE.md`.
+`PAPER_OUTLINE.md`, `DELTABRIDGE_HANDOFF.md`.
 
 ---
 
@@ -27,8 +27,68 @@ directions. Source docs it subsumes: `EXPERIMENTS_UNIFIED_RESULTS.md`,
   forwards) can be replaced by **one fixed, question-independent synthetic KV cache**
   (Gaussian matched to averaged real-cache per-channel statistics, full length) that
   reproduces full-LatentMAS accuracy and conciseness with **zero upstream compute**.
+- **Latency reality check (2026-09-21, measured):** on AIME with Qwen3-14B, the 3 silent
+  agents cost **0.95s of a 152.7s item (0.6%)**; the Judger decode is **99.4%**. So the whole
+  cache-surgery family (eviction, dropping roles, alternate wirings, synthetic scaffolds)
+  **cannot be sold as a latency win on AIME** — justify it by accuracy or KV memory instead.
+  The real latency target is Judger tokens: the items we get **wrong** are exactly the ones
+  that never emit EOS and burn the full 8192 budget (188s vs 60s for a solved item).
+  Full numbers + next steps: `AIME_LATENCY_LOCALIZATION.md`.
+- **Every AIME failure we have is a failure to *reach* an answer (2026-09-23):** across
+  all 26 generations, "graded correct" and "ever wrote the gold answer anywhere" **never
+  disagree (0/26)**, and failing runs emit **zero** boxed expressions — still
+  mid-computation at the budget. So accuracy here may be measuring convergence *speed*,
+  not reasoning ability, and SEAL's damage was making items **not finish** rather than
+  answer wrong. Next run (`insight`) extends the budget to settle it.
+- **Latency reduces exactly to token count (2026-09-23, measured, 20 rows):** decode
+  throughput is **42.51 ± 0.31 tok/s**, invariant while the cache ranges 0→962 positions
+  and 0→150 MB. So `latency = tokens / 42.5`, cache surgery cannot be a latency win
+  (only a KV-memory win), and **token count is a hardware-independent latency proxy.**
+- **⚠️ SEAL is a net latency LOSS, and the earlier "1.31–1.63x" is retracted.** Paired
+  over the four items the baseline completes and solves, SEAL40 spends **≥4% more**
+  tokens (≥24087 vs 23163), because it turns items 10 and 18 into capped runs;
+  de-censoring can only worsen that. The 1.33x holds only on the two items it kept.
+  Run `--mode latency` for the censoring-aware table. 12 of 20 runs are censored.
+- **⚠️ The n=6 result is inside the noise floor.** `real__bs16` differs from `real`
+  only by bf16 arithmetic order, and accuracy moved **0.667 → 0.333** (items 4 and 10
+  flipped). Greedy determinism is not stability. No effect smaller than ±2 items on
+  this set is measurable, which is every SEAL effect measured so far.
+- **Batched-decode divergence is bf16 batch-variance, not the documented RoPE gap
+  (retracted).** `scripts/diag_batch_parity.py`: fp32 diverges 0/48, bf16 7/48, at
+  equal rates for zero and nonzero cache shift; `generate()` derives correct
+  per-sequence positions. There is no fix; batching is valid only under fixed batch
+  composition, and `--mode compare` now exits non-zero to enforce it.
+- **If you are a fresh agent, read `READ_ME_FIRST_AGENT_BRIEFING.md` before this file.**
+  It lists the invalidated claims, the silent batching bug, and which of these bullets
+  are superseded. This brief is layered chronologically, so later entries correct
+  earlier ones.
+- **⚠️ The "cache helps on AIME" result is CONFOUNDED — do not quote it.** Deleting the
+  cache gives 0.667 → 0.333, but the n=6 focus set contains `{4,10,18}`, which were
+  *selected* because Real K=10 solves them and Frozen does not. The entire arm gap is
+  items 4 and 10, both from that set. It is circular. What survives is the *mechanism*:
+  without a cache, 4 of 6 runs never box an answer at all, so the failure is refusal to
+  terminate rather than wrong answers. **An unbiased estimate needs the other 24 items.**
+- **SEAL at the Judger is a net loss on AIME (same run):** acc **0.667 → 0.500** and
+  mean tokens go *up* (6591 → 6745) because EOS rate halves. It is a −31%/−23% token
+  win on the items it keeps, and it uniquely solves item 1, but it breaks termination
+  on two items the baseline solved. The third latency lever is closed at n=6; needs
+  n=30 before it is quotable either way.
+- **Grouped (batched) Judger decoding fails parity — do not use it for accuracy:**
+  batch 6 gave 1.75x throughput for **half the solves** (0.667 → 0.333), 0/6 texts
+  identical. Root cause is padding/position handling with a prefix cache. This also
+  puts a question mark on earlier batched numbers from `exp_frozen_seal.py` /
+  `exp_one_role.py`; check them with `--mode compare` before publishing.
+- **Two of the three Judger levers are now dead (2026-09-22, measured):** a hard token cap
+  buys 1.20x for **−0.167 accuracy** (and 1.71x for −0.500), and the degenerate-tail
+  detector **fires on nothing** — the non-terminating AIME items are doing real
+  non-repetitive arithmetic on a wrong intermediate count, not looping. The waste is
+  **verbosity** (reflection/transition moves), which is precisely what the Judger SEAL
+  vector targets. `run_aime_localize.sh seal` is the go/no-go.
 - **What didn't work:** shrinking the scaffold to a few slots (learned m=64 → 0.50 vs fixed
-  full-length 0.54–0.60), so we save compute but not KV memory yet.
+  full-length 0.54–0.60), so we save compute but not KV memory yet. Mean-Replay of MATH-1k
+  matches Real on GSM8K/MATH but **not AIME**. DeltaBridge (one-token Real−Frozen residual
+  at L32) **beats Real on MATH** (85 vs 74) and **destroys AIME** (even uncompressed
+  `oracle_full`). Full write-up: `DELTABRIDGE_HANDOFF.md`.
 
 ---
 
@@ -133,6 +193,34 @@ Shrinking (14B MedQA b1024 n=40; real 0.675, none 0.350):
 - **learned m=64 slots** (distilled to full-LatentMAS behavior): **0.500** — trains (loss 0.08,
   grad flows) but below the fixed full-length synth. m=32/16 not run.
 
+### 2.12 Mean-Replay + DeltaBridge (14B greedy, 2026-09)
+
+Frozen 422-pos MATH-1k Mean-Replay (`artifacts/math_ladder/math1k/cache.pt`) vs Real K=10:
+
+| Task | Real K=10 | Frozen Mean-Replay | None |
+|---|---|---|---|
+| GSM8K n=100 | 92% | **92%** | 84% |
+| MATH n=100 | 74% | **76%** | 73% |
+| AIME24 n=30 | **66.7% (20/30)** | **56.7% (17/30)** | 53.3% |
+
+`frozen_k2`/`k5` on AIME stayed 56.7%. AIME’s extra 3 solves need instance-specific recurrent
+compute, not a shorter frozen prefix.
+
+**DeltaBridge oracle** (newline bridge token; residual at **L32 r=16**, first generate step
+only). Bank from MATH-train only. Full report: `docs/DELTABRIDGE_HANDOFF.md`.
+
+| Arm | MATH n=100 | GSM8K n=100 | AIME24 n=30 |
+|---|---|---|---|
+| zero (Frozen + dummy bridge) | 76% | 86% (dummy tax vs 92%) | **19/30 (63%)** |
+| shuffled projected | 80% | 90% | 10/30 |
+| oracle full \(d\) | 82% | 91% | **8/30** |
+| oracle rank-16 | **85%** (+11 vs Real) | **92%** | **6/30** (recovered 0, lost 13) |
+
+MATH: **go** — compressed residual beats Real and halves Judger tokens. AIME: **hard no**.
+`oracle_full` also collapsed, so this is not “rank too small.” Do **not** train `g_φ` for
+AIME. GPU stopped. Next bets in `DELTABRIDGE_HANDOFF.md` §3: scale/layer sweep of existing
+`eval_states.pt`, or MATH-only predicted residual as a separate claim.
+
 ---
 
 ## 3. Mechanism synthesis (what's true)
@@ -199,6 +287,15 @@ Shrinking (14B MedQA b1024 n=40; real 0.675, none 0.350):
 
 ## 6. Open questions & prioritized next directions
 
+**Lock-in (this week): Frozen + Judger SEAL (`scripts/run_frozen_seal.sh`).**
+Zero upstream + GSM8K SEAL coef 40 on the MATH-1k prefix. GSM8K n=40 → MATH n=40 →
+AIME n=6. Kill if accuracy drops. This is a latency result, not an AIME accuracy hunt.
+AIME one-role and DeltaBridge residual for AIME accuracy are **stopped**.
+
+**DeltaBridge (read `DELTABRIDGE_HANDOFF.md`).** Oracle residual at L32 destroyed AIME.
+Do not train the predictor. ε-scale / L28 of existing `eval_states.pt` is optional
+background, not the next GPU.
+
 **A. Harden the positive for a paper (low risk).** More seeds + n on the synthglobal≈real
 claim; a hard task (AIME) for the strongest budget-crossover; **measure the actual
 compute/latency/latent-forward savings**; accuracy–token Pareto (real vs synthglobal vs none).
@@ -228,6 +325,9 @@ with B (memory savings) + A (hardening) + D (generality).
 ## 7. Honest status line
 
 One paper-worthy positive (synthetic scaffold replaces upstream agents on 14B) + a clean,
-well-controlled mechanistic story. Not a hero SOTA; the "tiny learned scaffold matches real"
-outcome did not materialize. All numbers above are single-seed at n=40–150 unless stated —
-hardening (seeds/n/tasks + compute measurements) is the main gap before write-up.
+well-controlled mechanistic story. Mean-Replay extends that to a *type-level* math cache
+(Frozen=Real on GSM8K/MATH; Frozen misses Real on AIME). DeltaBridge’s MATH oracle beating
+Real is a second method-shaped result; the AIME one-token residual is an honest negative.
+Not a hero SOTA; the "tiny learned scaffold matches real" outcome did not materialize. All
+numbers above are single-seed at n=40–150 unless stated — hardening (seeds/n/tasks + compute
+measurements) is the main gap before write-up.

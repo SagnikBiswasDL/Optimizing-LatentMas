@@ -1,0 +1,10 @@
+group,roles,coef,n,accuracy,correct,mean_output_tokens,sec,sec_per_sample
+control,,0.0,200,0.945,189,511.495,1054.0,5.27
+judger,judger,40.0,200,0.955,191,522.475,1119.4,5.597
+judger,judger,80.0,200,0.95,190,568.655,1150.5,5.753
+upstream3,planner|critic|refiner,40.0,200,0.955,191,521.255,1053.7,5.268
+upstream3,planner|critic|refiner,80.0,200,0.95,190,500.535,839.7,4.199
+all,planner|critic|refiner|judger,40.0,200,0.935,187,533.575,1247.2,6.236
+all,planner|critic|refiner|judger,80.0,200,0.945,189,561.85,1012.9,5.065
+judger_generic,judger,40.0,200,0.935,187,399.915,810.8,4.054
+judger_generic,judger,80.0,200,0.925,185,323.765,575.6,2.878

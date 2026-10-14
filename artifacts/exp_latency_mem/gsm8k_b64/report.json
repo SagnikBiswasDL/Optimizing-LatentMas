@@ -1,0 +1,464 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "gsm8k",
+    "split": "test",
+    "k": 40,
+    "n": 50,
+    "judger_budget": 768,
+    "relay_budget": 64,
+    "sink": 4,
+    "rank": 8,
+    "importance": "key_norm",
+    "compress_mode": "evict",
+    "mode": "both",
+    "batch_grid": "1,2,4,8,16,24,32,48,64",
+    "memory_decode_tokens": 16,
+    "asc_vector": null,
+    "asc_coef": 40.0,
+    "asc_layer": -1,
+    "smoke": false,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/exp_latency_mem/gsm8k_b64"
+  },
+  "n": 50,
+  "compressor": "evict budget=64 sink=4 importance=key_norm",
+  "fork_note": "LatentMAS sequential HF path, K latent steps/agent, greedy Judger. ours = same upstream + RelayCompressor before Judger.",
+  "memory": {
+    "upstream_s_donor": {
+      "planner": 1.7167044610250741,
+      "critic": 0.9914920069277287,
+      "refiner": 0.969697191962041,
+      "upstream": 3.6778936599148437
+    },
+    "compressor": "evict budget=64 sink=4 importance=key_norm",
+    "kind": "evict",
+    "weights_mb": 28296.85400390625,
+    "full_mb": 102.03125,
+    "ours_mb": 10.0,
+    "rows": [
+      {
+        "method": "latentmas",
+        "batch_size": 1,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 28616.8623046875,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 102.03125,
+        "decode_s": 0.4174520979868248,
+        "decode_tokens": 16,
+        "items_per_s": 2.395484427608652
+      },
+      {
+        "method": "latentmas",
+        "batch_size": 2,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 28918.6181640625,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 204.0625,
+        "decode_s": 0.45979614392854273,
+        "decode_tokens": 16,
+        "items_per_s": 4.349753747197196
+      },
+      {
+        "method": "latentmas",
+        "batch_size": 4,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 29539.5126953125,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 408.125,
+        "decode_s": 0.4213806699262932,
+        "decode_tokens": 16,
+        "items_per_s": 9.492604396636585
+      },
+      {
+        "method": "latentmas",
+        "batch_size": 8,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 30783.03955078125,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 816.25,
+        "decode_s": 0.48120202601421624,
+        "decode_tokens": 16,
+        "items_per_s": 16.62503390990223
+      },
+      {
+        "method": "latentmas",
+        "batch_size": 16,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 33268.35498046875,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 1632.5,
+        "decode_s": 0.5798590260092169,
+        "decode_tokens": 16,
+        "items_per_s": 27.59291359163163
+      },
+      {
+        "method": "latentmas",
+        "batch_size": 24,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 35751.931640625,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 2448.75,
+        "decode_s": 0.6638687390368432,
+        "decode_tokens": 16,
+        "items_per_s": 36.151724864797494
+      },
+      {
+        "method": "latentmas",
+        "batch_size": 32,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 38238.1162109375,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 3265.0,
+        "decode_s": 0.7552807370666414,
+        "decode_tokens": 16,
+        "items_per_s": 42.368351832037405
+      },
+      {
+        "method": "latentmas",
+        "batch_size": 48,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 43334.61669921875,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 4897.5,
+        "decode_s": 0.9892043030122295,
+        "decode_tokens": 16,
+        "items_per_s": 48.52384876797951
+      },
+      {
+        "method": "latentmas",
+        "batch_size": 64,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 48241.1162109375,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 102.03125,
+        "relay_pos": 653,
+        "relay_mb_batch": 6530.0,
+        "decode_s": 1.2260389999719337,
+        "decode_tokens": 16,
+        "items_per_s": 52.20062330926266
+      },
+      {
+        "method": "ours",
+        "batch_size": 1,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 28369.490234375,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 10.0,
+        "decode_s": 0.38162147300317883,
+        "decode_tokens": 16,
+        "items_per_s": 2.620397621052289
+      },
+      {
+        "method": "ours",
+        "batch_size": 2,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 28442.48193359375,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 20.0,
+        "decode_s": 0.389553971006535,
+        "decode_tokens": 16,
+        "items_per_s": 5.134076787440703
+      },
+      {
+        "method": "ours",
+        "batch_size": 4,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 28595.30908203125,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 40.0,
+        "decode_s": 0.41484174702782184,
+        "decode_tokens": 16,
+        "items_per_s": 9.642231112607226
+      },
+      {
+        "method": "ours",
+        "batch_size": 8,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 28881.13330078125,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 80.0,
+        "decode_s": 0.46546386496629566,
+        "decode_tokens": 16,
+        "items_per_s": 17.187155872087477
+      },
+      {
+        "method": "ours",
+        "batch_size": 16,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 29466.15625,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 160.0,
+        "decode_s": 0.5382348330458626,
+        "decode_tokens": 16,
+        "items_per_s": 29.726801421335455
+      },
+      {
+        "method": "ours",
+        "batch_size": 24,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 30051.21826171875,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 240.0,
+        "decode_s": 0.6144061420345679,
+        "decode_tokens": 16,
+        "items_per_s": 39.06210950386252
+      },
+      {
+        "method": "ours",
+        "batch_size": 32,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 30635.4521484375,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 320.0,
+        "decode_s": 0.6928176620276645,
+        "decode_tokens": 16,
+        "items_per_s": 46.18819893584386
+      },
+      {
+        "method": "ours",
+        "batch_size": 48,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 31784.7158203125,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 480.0,
+        "decode_s": 0.8314249579561874,
+        "decode_tokens": 16,
+        "items_per_s": 57.73220967288956
+      },
+      {
+        "method": "ours",
+        "batch_size": 64,
+        "ok": true,
+        "oom": false,
+        "peak_mb": 32946.57763671875,
+        "weights_mb": 28296.85400390625,
+        "relay_mb_each": 10.0,
+        "relay_pos": 64,
+        "relay_mb_batch": 640.0,
+        "decode_s": 0.987350229988806,
+        "decode_tokens": 16,
+        "items_per_s": 64.81995755520875
+      }
+    ]
+  },
+  "latency": {
+    "latentmas": {
+      "n": 50,
+      "acc": 0.74,
+      "planner_s": {
+        "mean": 0.976953902686946,
+        "ci_lo": 0.9753131893709069,
+        "ci_hi": 0.9785752578735701,
+        "n": 50
+      },
+      "critic_s": {
+        "mean": 0.9830213352385908,
+        "ci_lo": 0.9813280150201754,
+        "ci_hi": 0.984806010992208,
+        "n": 50
+      },
+      "refiner_s": {
+        "mean": 0.9778687608498149,
+        "ci_lo": 0.9760969171412871,
+        "ci_hi": 0.97964536201593,
+        "n": 50
+      },
+      "upstream_s": {
+        "mean": 2.9378439987753517,
+        "ci_lo": 2.933459852836735,
+        "ci_hi": 2.9420191147068984,
+        "n": 50
+      },
+      "compress_s": {
+        "mean": 0.007315327818505466,
+        "ci_lo": 0.007298902973241638,
+        "ci_hi": 0.0073314033662318255,
+        "n": 50
+      },
+      "judger_s": {
+        "mean": 12.477889467433561,
+        "ci_lo": 11.35308201473893,
+        "ci_hi": 13.598484745307534,
+        "n": 50
+      },
+      "e2e_s": {
+        "mean": 15.415733466208913,
+        "ci_lo": 14.290501645710085,
+        "ci_hi": 16.536795895796036,
+        "n": 50
+      },
+      "tokens": {
+        "mean": 537.24,
+        "ci_lo": 488.8945,
+        "ci_hi": 585.2445,
+        "n": 50
+      },
+      "full_mb": {
+        "mean": 99.8375,
+        "ci_lo": 97.231015625,
+        "ci_hi": 102.612734375,
+        "n": 50
+      },
+      "ours_mb": {
+        "mean": 10.0,
+        "ci_lo": 10.0,
+        "ci_hi": 10.0,
+        "n": 50
+      },
+      "tok_per_s": {
+        "mean": 43.050368763292745,
+        "ci_lo": 43.001504876724624,
+        "ci_hi": 43.098662418015174,
+        "n": 50
+      }
+    },
+    "ours": {
+      "n": 50,
+      "acc": 0.82,
+      "planner_s": {
+        "mean": 0.976953902686946,
+        "ci_lo": 0.9753131893709069,
+        "ci_hi": 0.9785752578735701,
+        "n": 50
+      },
+      "critic_s": {
+        "mean": 0.9830213352385908,
+        "ci_lo": 0.9813280150201754,
+        "ci_hi": 0.984806010992208,
+        "n": 50
+      },
+      "refiner_s": {
+        "mean": 0.9778687608498149,
+        "ci_lo": 0.9760969171412871,
+        "ci_hi": 0.97964536201593,
+        "n": 50
+      },
+      "upstream_s": {
+        "mean": 2.9378439987753517,
+        "ci_lo": 2.933459852836735,
+        "ci_hi": 2.9420191147068984,
+        "n": 50
+      },
+      "compress_s": {
+        "mean": 0.007315327818505466,
+        "ci_lo": 0.007298902973241638,
+        "ci_hi": 0.0073314033662318255,
+        "n": 50
+      },
+      "judger_s": {
+        "mean": 12.088409282073844,
+        "ci_lo": 10.88653724801872,
+        "ci_hi": 13.3017384382665,
+        "n": 50
+      },
+      "e2e_s": {
+        "mean": 15.033568608667702,
+        "ci_lo": 13.830284035165969,
+        "ci_hi": 16.24924458544259,
+        "n": 50
+      },
+      "tokens": {
+        "mean": 519.68,
+        "ci_lo": 468.0195,
+        "ci_hi": 572.3014999999999,
+        "n": 50
+      },
+      "full_mb": {
+        "mean": 99.8375,
+        "ci_lo": 97.231015625,
+        "ci_hi": 102.612734375,
+        "n": 50
+      },
+      "ours_mb": {
+        "mean": 10.0,
+        "ci_lo": 10.0,
+        "ci_hi": 10.0,
+        "n": 50
+      },
+      "tok_per_s": {
+        "mean": 42.97486016947288,
+        "ci_lo": 42.92474528221371,
+        "ci_hi": 43.027898305564854,
+        "n": 50
+      }
+    },
+    "paired": {
+      "ours_minus_latentmas_judger_s": {
+        "mean": -0.3894801853597164,
+        "ci_lo": -1.190060299748555,
+        "ci_hi": 0.4458148617918472,
+        "n": 50
+      },
+      "ours_minus_latentmas_e2e_s": {
+        "mean": -0.38216485754121093,
+        "ci_lo": -1.1827590490358417,
+        "ci_hi": 0.45313355407933553,
+        "n": 50
+      },
+      "ours_minus_latentmas_tokens": {
+        "mean": -17.56,
+        "ci_lo": -52.120999999999995,
+        "ci_hi": 18.780999999999995,
+        "n": 50
+      },
+      "ours_minus_latentmas_correct": {
+        "mean": 0.08,
+        "ci_lo": -0.02,
+        "ci_hi": 0.2,
+        "n": 50
+      }
+    },
+    "n_paired": 50
+  }
+}

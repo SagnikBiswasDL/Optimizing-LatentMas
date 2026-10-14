@@ -1,0 +1,156 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "medqa",
+    "donor_task": null,
+    "k": 10,
+    "split": "test",
+    "n": 40,
+    "budgets": "1024",
+    "variants": "real,none,shuffled,matched,repeat_last,trunc64,pca32",
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/diag/14b/scaffold_sweep",
+    "budgets_list": [
+      1024
+    ]
+  },
+  "n": 40,
+  "by_budget": {
+    "1024": {
+      "real": {
+        "acc": 0.675,
+        "ci": [
+          0.525,
+          0.825
+        ],
+        "n": 40,
+        "mean_tokens": 722.4
+      },
+      "none": {
+        "acc": 0.35,
+        "ci": [
+          0.2,
+          0.5
+        ],
+        "n": 40,
+        "mean_tokens": 916.825
+      },
+      "shuffled": {
+        "acc": 0.625,
+        "ci": [
+          0.475,
+          0.775
+        ],
+        "n": 40,
+        "mean_tokens": 712.275,
+        "minus_real": {
+          "mean_diff": -0.05,
+          "ci_lo": -0.15,
+          "ci_hi": 0.05,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "minus_none": {
+          "mean_diff": 0.275,
+          "ci_lo": 0.125,
+          "ci_hi": 0.425,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      },
+      "matched": {
+        "acc": 0.6,
+        "ci": [
+          0.45,
+          0.75
+        ],
+        "n": 40,
+        "mean_tokens": 712.025,
+        "minus_real": {
+          "mean_diff": -0.075,
+          "ci_lo": -0.175,
+          "ci_hi": 0.025,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "minus_none": {
+          "mean_diff": 0.25,
+          "ci_lo": 0.125,
+          "ci_hi": 0.4,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      },
+      "repeat_last": {
+        "acc": 0.225,
+        "ci": [
+          0.1,
+          0.35
+        ],
+        "n": 40,
+        "mean_tokens": 957.35,
+        "minus_real": {
+          "mean_diff": -0.45,
+          "ci_lo": -0.6,
+          "ci_hi": -0.3,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.125,
+          "ci_lo": -0.275,
+          "ci_hi": 0.0,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "trunc64": {
+        "acc": 0.4,
+        "ci": [
+          0.25,
+          0.55
+        ],
+        "n": 40,
+        "mean_tokens": 489.575,
+        "minus_real": {
+          "mean_diff": -0.275,
+          "ci_lo": -0.45,
+          "ci_hi": -0.1,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": 0.05,
+          "ci_lo": -0.125,
+          "ci_hi": 0.225,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "pca32": {
+        "acc": 0.65,
+        "ci": [
+          0.5,
+          0.8
+        ],
+        "n": 40,
+        "mean_tokens": 711.475,
+        "minus_real": {
+          "mean_diff": -0.025,
+          "ci_lo": -0.125,
+          "ci_hi": 0.05,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "minus_none": {
+          "mean_diff": 0.3,
+          "ci_lo": 0.15,
+          "ci_hi": 0.45,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      }
+    }
+  }
+}

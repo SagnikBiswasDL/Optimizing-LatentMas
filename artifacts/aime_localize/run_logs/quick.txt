@@ -1,0 +1,147 @@
+[localize] PY=/workspace/venv/bin/python
+[localize] ROOT_DIR=/root/latentmas-baseline/artifacts/aime_localize TAPE_DIR=/root/aime_tapes PERSIST_DIR=/workspace/aime_localize_results
+[localize] --mode collect --task aime2024 --n 6 --indices 0,1,2,4,10,18 --judger_budget 8192 Tue Sep 22 19:17:05 UTC 2026
+[load] Qwen/Qwen3-14B device=cuda
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:00, 17.17it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:00<00:00, 14.12it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:00<00:00, 13.86it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 15.90it/s]
+[collect] idx=0 pos=770 mb=120.3 up=1.64s spans=[{'role': 'planner', 'start': 0, 'end': 234}, {'role': 'critic', 'start': 234, 'end': 509}, {'role': 'refiner', 'start': 509, 'end': 770}]
+[collect] idx=1 pos=692 mb=108.1 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 208}, {'role': 'critic', 'start': 208, 'end': 457}, {'role': 'refiner', 'start': 457, 'end': 692}]
+[collect] idx=2 pos=599 mb=93.6 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 177}, {'role': 'critic', 'start': 177, 'end': 395}, {'role': 'refiner', 'start': 395, 'end': 599}]
+[collect] idx=4 pos=566 mb=88.4 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 166}, {'role': 'critic', 'start': 166, 'end': 373}, {'role': 'refiner', 'start': 373, 'end': 566}]
+[collect] idx=10 pos=602 mb=94.1 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 178}, {'role': 'critic', 'start': 178, 'end': 397}, {'role': 'refiner', 'start': 397, 'end': 602}]
+[collect] idx=18 pos=962 mb=150.3 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 298}, {'role': 'critic', 'start': 298, 'end': 637}, {'role': 'refiner', 'start': 637, 'end': 962}]
+[localize] OK Tue Sep 22 19:18:21 UTC 2026
+[localize] --mode views --task aime2024 --judger_budget 8192 --view_arms real Tue Sep 22 19:18:21 UTC 2026
+[load] Qwen/Qwen3-14B device=cuda
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 202.38it/s]
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[decode] idx=0 real acc=1 tok=2600 pos=770 61.1s pred='204'
+[decode] idx=1 real acc=0 tok=8192 pos=692 192.9s pred='30.25'
+[decode] idx=2 real acc=0 tok=8192 pos=599 192.7s pred='108'
+[decode] idx=4 real acc=1 tok=7653 pos=566 180.1s pred='110'
+[decode] idx=10 real acc=1 tok=5848 pos=602 137.2s pred='104'
+[decode] idx=18 real acc=1 tok=7062 pos=962 168.5s pred='23'
+{
+  "recommend": "collect_views",
+  "reason": "need real / none / c3 before calling a hop wasteful",
+  "arms": [
+    "real"
+  ]
+}
+[localize] OK Tue Sep 22 19:34:33 UTC 2026
+[localize] --mode report Tue Sep 22 19:34:33 UTC 2026
+{
+  "recommend": "collect_views",
+  "reason": "need real / none / c3 before calling a hop wasteful",
+  "arms": [
+    "real"
+  ]
+}
+[localize] OK Tue Sep 22 19:34:41 UTC 2026
+[localize] --mode budget --task aime2024 --budget_arms real Tue Sep 22 19:34:41 UTC 2026
+# Judger token-budget curve
+
+Hard cap replayed over saved generations; no answer inside the cap = wrong, so this is the conservative bound on an early-exit policy (a real policy could force an answer at the cap and do better).
+
+Caveat: lengths come from re-tokenizing the saved text, which can differ by a few tokens from the generation-time count. `est_judger_s` prices each budget at the measured tok/s for that arm.
+
+## `real` (n=6, 42.4 tok/s measured)
+
+| budget | acc | Δacc | mean tokens | est judger_s | speedup |
+|---:|---:|---:|---:|---:|---:|
+| 512 | 0.000 | -0.667 | 512 | 12.1 | 12.87x |
+| 1024 | 0.000 | -0.667 | 1024 | 24.1 | 6.44x |
+| 1536 | 0.000 | -0.667 | 1536 | 36.2 | 4.29x |
+| 2048 | 0.000 | -0.667 | 2048 | 48.3 | 3.22x |
+| 3072 | 0.167 | -0.500 | 2993 | 70.6 | 2.20x |
+| 4096 | 0.167 | -0.500 | 3846 | 90.7 | 1.71x |
+| 6144 | 0.500 | -0.167 | 5504 | 129.8 | 1.20x |
+| 8192 | 0.667 | +0.000 | 6590 | 155.4 | 1.00x |
+
+[localize] OK Tue Sep 22 19:34:53 UTC 2026
+[localize] --mode loops --task aime2024 --budget_arms real Tue Sep 22 19:34:54 UTC 2026
+# Degenerate-tail (loop) detection
+
+Detector: 8-gram repetition over a 256-token window, threshold 0.8, two consecutive windows required.
+
+Aborting at the onset costs accuracy only for rows marked `would_lose_solve` — those were correct, so the abort would have cut a healthy generation and the detector is too aggressive for them.
+
+## `real`
+
+Abort-at-onset saves **0 of 39542 tokens (0.0%)**, about 0s at 42.4 tok/s. Solves lost: none.
+
+| item | tokens | EOS | correct | loop onset | tokens saved | would lose solve |
+|---:|---:|---|---|---:|---:|---|
+| 0 | 2599 | yes | yes | — | 0 | no |
+| 1 | 8191 | no | no | — | 0 | no |
+| 2 | 8192 | no | no | — | 0 | no |
+| 4 | 7652 | yes | yes | — | 0 | no |
+| 10 | 5847 | yes | yes | — | 0 | no |
+| 18 | 7061 | yes | yes | — | 0 | no |
+
+[localize] OK Tue Sep 22 19:35:04 UTC 2026
+[localize] DONE quick Tue Sep 22 19:35:04 UTC 2026
+# AIME localization check-in
+
+**recommend:** `collect_views`
+
+need real / none / c3 before calling a hop wasteful
+
+## Where the latency is (per agent)
+
+| Agent | n | seconds | % of e2e | KV positions written | peak MB |
+|---|---:|---:|---:|---:|---:|
+| planner | 6 | 0.409 | 0.26% | 210 (KV positions) | 29624 |
+| critic | 6 | 0.300 | 0.19% | 251 (KV positions) | 28657 |
+| refiner | 6 | 0.289 | 0.18% | 237 (KV positions) | 28756 |
+| judger | 6 | 155.420 | 99.36% | 6591 (tokens emitted) | - |
+
+Silent agents together cost 0.998s of the 156.4s item. Anything that only removes silent-agent work is capped at that number — the Judger decode is the budget that matters.
+
+## Latency per arm
+
+Real end-to-end **156.4s/item**: Judger decode 155.4s (99.4%), silent agents 1.00s (0.6%).
+Real Judger emits 6591 tokens at 42.4 tok/s; 67% of items stop on EOS (the rest burn the full budget).
+
+| Arm | acc | judger_s | upstream_s | e2e_s | vs Real | tokens | eos |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| real | 0.667 | 155.4 | 1.00 | 156.4 | +0.0s (+0.0%) | 6591 | 67% |
+
+Upstream is charged honestly: in the growing tape `c3` still needs Planner and Critic to have run, so only `none`/`c1`/`c2`/`isolated` can bank silent-agent time.
+
+## Accuracy per arm
+
+Critical items (Real-only vs Frozen in the locked ladder): [4, 10, 18]
+
+| Arm | n | acc | correct items | critical kept | lost vs Real | recovered vs none |
+|---|---:|---:|---|---|---|---|
+| real | 6 | 0.667 | [0, 4, 10, 18] | [4, 10, 18] | [] | [0, 4, 10, 18] |
+
+Jiayi map: `real` = judger(c1+c2+c3). `c1`/`c2`/`c3` = private writes. `isolated` = a1(c1')→… with empty/frozen c', judger still gets concat writes. `evict_seg` = SnapKV budget per role span.
+
+# Judger token-budget curve
+
+Hard cap replayed over saved generations; no answer inside the cap = wrong, so this is the conservative bound on an early-exit policy (a real policy could force an answer at the cap and do better).
+
+Caveat: lengths come from re-tokenizing the saved text, which can differ by a few tokens from the generation-time count. `est_judger_s` prices each budget at the measured tok/s for that arm.
+
+## `real` (n=6, 42.4 tok/s measured)
+
+| budget | acc | Δacc | mean tokens | est judger_s | speedup |
+|---:|---:|---:|---:|---:|---:|
+| 512 | 0.000 | -0.667 | 512 | 12.1 | 12.87x |
+| 1024 | 0.000 | -0.667 | 1024 | 24.1 | 6.44x |
+| 1536 | 0.000 | -0.667 | 1536 | 36.2 | 4.29x |
+| 2048 | 0.000 | -0.667 | 2048 | 48.3 | 3.22x |
+| 3072 | 0.167 | -0.500 | 2993 | 70.6 | 2.20x |
+| 4096 | 0.167 | -0.500 | 3846 | 90.7 | 1.71x |
+| 6144 | 0.500 | -0.167 | 5504 | 129.8 | 1.20x |
+| 8192 | 0.667 | +0.000 | 6590 | 155.4 | 1.00x |
+
+
+==================================================================
+  RUN COMPLETE: quick   (elapsed 1081s)
+  >>> STOP THE POD NOW — nothing further will run. <<<
+  sentinel: /workspace/aime_localize_results/DONE_quick
+==================================================================

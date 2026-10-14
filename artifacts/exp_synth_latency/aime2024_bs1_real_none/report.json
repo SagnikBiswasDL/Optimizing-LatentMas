@@ -1,0 +1,236 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "aime2024",
+    "split": "test",
+    "stat_split": "train",
+    "donor_task": "aime2024",
+    "stat_n": 8,
+    "stat_pool": 40,
+    "scaffold": "donor",
+    "donor_level": 0,
+    "min_subject_donors": 3,
+    "donor_select": "heldout",
+    "select_n": 32,
+    "filter_correct": false,
+    "k": 10,
+    "n": 30,
+    "generate_bs": 1,
+    "judger_budget": 8192,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "include_none": true,
+    "no_none": false,
+    "arms": "latentmas,none",
+    "mode": "latency",
+    "batch_grid": "1,2,4,8,16,32,64",
+    "memory_decode_tokens": 16,
+    "smoke": false,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "/workspace/latentmas-baseline/artifacts/exp_synth_latency/aime2024_bs1_real_none",
+    "arms_list": [
+      "latentmas",
+      "none"
+    ]
+  },
+  "n": 30,
+  "fork_note": "Same generate_bs as LatentMAS run.py (default 20). LatentMAS = batched Planner/Critic/Refiner + Judger. ours = frozen type-level cache + Judger; silent agents not run on test. gaussian = MedQA operating point. replay = GSM8K Mean-Replay (average latent embeds, replay to write KV). medoid_replay = AIME subject-conditional medoid tape, model writes KV. Precompute is not in per-query e2e_s.",
+  "precompute": {
+    "n_donors": 0,
+    "n_tried": 0,
+    "k": 10,
+    "scaffold": "skipped",
+    "donor_select": "",
+    "chosen_idx": null,
+    "filter_correct": false,
+    "synth_len": 0,
+    "synth_mb": 0.0,
+    "prototype_idx": null,
+    "prototype_l2": null,
+    "select_scores": [],
+    "replay_type_question": null,
+    "replay_norms": null,
+    "t_stats_s": 0.0,
+    "t_sample_s": 0.0,
+    "t_precompute_s": 0.0
+  },
+  "precompute_donors": [],
+  "latency": {
+    "latentmas": {
+      "n": 30,
+      "acc": 0.43333333333333335,
+      "planner_s": {
+        "mean": 0.2950744284782559,
+        "ci_lo": 0.2709300722538804,
+        "ci_hi": 0.34104743532370774,
+        "n": 30
+      },
+      "critic_s": {
+        "mean": 0.27825287661204734,
+        "ci_lo": 0.27598715549567715,
+        "ci_hi": 0.2812114642839879,
+        "n": 30
+      },
+      "refiner_s": {
+        "mean": 0.27094807494431733,
+        "ci_lo": 0.26911499047380255,
+        "ci_hi": 0.2731082820290855,
+        "n": 30
+      },
+      "upstream_s": {
+        "mean": 0.8442753800346205,
+        "ci_lo": 0.8173582638062847,
+        "ci_hi": 0.8939584634860511,
+        "n": 30
+      },
+      "cache_load_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "judger_s": {
+        "mean": 134.05396264675073,
+        "ci_lo": 117.33728556150803,
+        "ci_hi": 150.12541693455657,
+        "n": 30
+      },
+      "e2e_s": {
+        "mean": 134.89823802678535,
+        "ci_lo": 118.18447086728139,
+        "ci_hi": 150.9523204436739,
+        "n": 30
+      },
+      "tokens": {
+        "mean": 5926.8,
+        "ci_lo": 5184.594166666667,
+        "ci_hi": 6639.348333333333,
+        "n": 30
+      },
+      "cache_mb": {
+        "mean": 108.296875,
+        "ci_lo": 98.3734375,
+        "ci_hi": 120.55117187499998,
+        "n": 30
+      },
+      "tok_per_s": {
+        "mean": 44.19107003786862,
+        "ci_lo": 44.12185823782339,
+        "ci_hi": 44.269708643877344,
+        "n": 30
+      },
+      "peak_mb_judger": {
+        "mean": 29624.982535807292,
+        "ci_lo": 29489.341114095052,
+        "ci_hi": 29754.232818603516,
+        "n": 30
+      }
+    },
+    "none": {
+      "n": 30,
+      "acc": 0.3333333333333333,
+      "planner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "critic_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "refiner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "upstream_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "cache_load_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "judger_s": {
+        "mean": 164.3049016889495,
+        "ci_lo": 151.37411261589537,
+        "ci_hi": 176.68650493655662,
+        "n": 30
+      },
+      "e2e_s": {
+        "mean": 164.3049016889495,
+        "ci_lo": 151.37411261589537,
+        "ci_hi": 176.68650493655662,
+        "n": 30
+      },
+      "tokens": {
+        "mean": 7236.666666666667,
+        "ci_lo": 6664.3425,
+        "ci_hi": 7779.665,
+        "n": 30
+      },
+      "cache_mb": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 30
+      },
+      "tok_per_s": {
+        "mean": 44.054925016064246,
+        "ci_lo": 43.957039894271574,
+        "ci_hi": 44.13941798772888,
+        "n": 30
+      },
+      "peak_mb_judger": {
+        "mean": 29478.923795572915,
+        "ci_lo": 29389.127103678384,
+        "ci_hi": 29564.95731201172,
+        "n": 30
+      }
+    },
+    "paired": {
+      "ours_minus_latentmas_judger_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 0
+      },
+      "ours_minus_latentmas_e2e_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 0
+      },
+      "ours_minus_latentmas_tokens": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 0
+      },
+      "ours_minus_latentmas_correct": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 0
+      },
+      "ours_minus_latentmas_upstream_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 0
+      }
+    },
+    "n_paired": 0,
+    "precompute_s": 0.0,
+    "precompute_amortized_per_query_s": 0.0
+  }
+}

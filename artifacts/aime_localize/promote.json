@@ -1,0 +1,165 @@
+{
+  "baseline": "real",
+  "cap": 16384,
+  "tag": "b16k",
+  "items": [
+    0,
+    1,
+    2,
+    4,
+    10,
+    18
+  ],
+  "min_saving": 0.1,
+  "baseline_total": 45291,
+  "baseline_solves": [
+    0,
+    1,
+    4,
+    10,
+    18
+  ],
+  "baseline_censored": [],
+  "candidates": {
+    "real_seal-40": {
+      "scorable": true,
+      "keeps_all_solves": false,
+      "solves_kept": [
+        0,
+        10,
+        18
+      ],
+      "solves_lost": [
+        1,
+        4
+      ],
+      "total_tokens": 59979,
+      "baseline_total": 45291,
+      "saving": -0.3243028416241638,
+      "needed": 0.1,
+      "meets_token_rule": false,
+      "promote": false,
+      "censored_items": [
+        1,
+        2
+      ],
+      "total_is_upper_bound_on_saving": true,
+      "saving_on_baseline_solves": -0.27474487558115723,
+      "tokens_burned_on_lost_solves": 5139,
+      "cost_per_lost_solve": {
+        "1": 5348,
+        "4": -209
+      },
+      "counterfactual_saving": -0.21083659005100341,
+      "efficiency_gain_absent_termination_failure": false,
+      "per_item": {
+        "0": {
+          "tokens": 2703,
+          "eos": true,
+          "correct": true,
+          "source": "measured"
+        },
+        "1": {
+          "tokens": 16384,
+          "eos": false,
+          "correct": false,
+          "source": "measured"
+        },
+        "2": {
+          "tokens": 16384,
+          "eos": false,
+          "correct": false,
+          "source": "measured"
+        },
+        "4": {
+          "tokens": 7444,
+          "eos": true,
+          "correct": false,
+          "source": "measured"
+        },
+        "10": {
+          "tokens": 9850,
+          "eos": true,
+          "correct": true,
+          "source": "measured"
+        },
+        "18": {
+          "tokens": 7214,
+          "eos": true,
+          "correct": true,
+          "source": "measured"
+        }
+      }
+    },
+    "real_seal-60": {
+      "scorable": true,
+      "keeps_all_solves": false,
+      "solves_kept": [
+        0,
+        1,
+        10,
+        18
+      ],
+      "solves_lost": [
+        4
+      ],
+      "total_tokens": 70112,
+      "baseline_total": 45291,
+      "saving": -0.5480338257048862,
+      "needed": 0.1,
+      "meets_token_rule": false,
+      "promote": false,
+      "censored_items": [
+        2,
+        4
+      ],
+      "total_is_upper_bound_on_saving": true,
+      "saving_on_baseline_solves": -0.5710400888914882,
+      "tokens_burned_on_lost_solves": 8731,
+      "cost_per_lost_solve": {
+        "4": 8731
+      },
+      "counterfactual_saving": -0.35525821907222177,
+      "efficiency_gain_absent_termination_failure": false,
+      "per_item": {
+        "0": {
+          "tokens": 3310,
+          "eos": true,
+          "correct": true,
+          "source": "measured"
+        },
+        "1": {
+          "tokens": 11017,
+          "eos": true,
+          "correct": true,
+          "source": "measured"
+        },
+        "2": {
+          "tokens": 16384,
+          "eos": false,
+          "correct": false,
+          "source": "measured"
+        },
+        "4": {
+          "tokens": 16384,
+          "eos": false,
+          "correct": true,
+          "source": "measured"
+        },
+        "10": {
+          "tokens": 15021,
+          "eos": true,
+          "correct": true,
+          "source": "measured"
+        },
+        "18": {
+          "tokens": 7996,
+          "eos": true,
+          "correct": true,
+          "source": "measured"
+        }
+      }
+    }
+  },
+  "promoted": []
+}

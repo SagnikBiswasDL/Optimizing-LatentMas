@@ -1,0 +1,202 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-4B",
+    "task": "medqa",
+    "donor_task": null,
+    "k": 10,
+    "split": "test",
+    "n": 40,
+    "budgets": "1024",
+    "variants": "real,none,shuffled,gauss,matched,repeat_last,trunc16,trunc4,pca8",
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/diag/4b/scaffold_sweep",
+    "budgets_list": [
+      1024
+    ]
+  },
+  "n": 40,
+  "by_budget": {
+    "1024": {
+      "real": {
+        "acc": 0.45,
+        "ci": [
+          0.3,
+          0.6
+        ],
+        "n": 40,
+        "mean_tokens": 822.0
+      },
+      "none": {
+        "acc": 0.15,
+        "ci": [
+          0.05,
+          0.275
+        ],
+        "n": 40,
+        "mean_tokens": 983.35
+      },
+      "shuffled": {
+        "acc": 0.45,
+        "ci": [
+          0.3,
+          0.6
+        ],
+        "n": 40,
+        "mean_tokens": 797.275,
+        "minus_real": {
+          "mean_diff": 0.0,
+          "ci_lo": -0.15,
+          "ci_hi": 0.15,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "minus_none": {
+          "mean_diff": 0.3,
+          "ci_lo": 0.175,
+          "ci_hi": 0.45,
+          "credible_positive": true,
+          "credible_negative": false
+        }
+      },
+      "gauss": {
+        "acc": 0.125,
+        "ci": [
+          0.025,
+          0.225
+        ],
+        "n": 40,
+        "mean_tokens": 789.675,
+        "minus_real": {
+          "mean_diff": -0.325,
+          "ci_lo": -0.5,
+          "ci_hi": -0.125,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.025,
+          "ci_lo": -0.175,
+          "ci_hi": 0.125,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "matched": {
+        "acc": 0.05,
+        "ci": [
+          0.0,
+          0.125
+        ],
+        "n": 40,
+        "mean_tokens": 480.3,
+        "minus_real": {
+          "mean_diff": -0.4,
+          "ci_lo": -0.55,
+          "ci_hi": -0.25,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.1,
+          "ci_lo": -0.225,
+          "ci_hi": 0.0,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "repeat_last": {
+        "acc": 0.075,
+        "ci": [
+          0.0,
+          0.175
+        ],
+        "n": 40,
+        "mean_tokens": 710.025,
+        "minus_real": {
+          "mean_diff": -0.375,
+          "ci_lo": -0.55,
+          "ci_hi": -0.2,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.075,
+          "ci_lo": -0.2,
+          "ci_hi": 0.05,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "trunc16": {
+        "acc": 0.075,
+        "ci": [
+          0.0,
+          0.175
+        ],
+        "n": 40,
+        "mean_tokens": 797.75,
+        "minus_real": {
+          "mean_diff": -0.375,
+          "ci_lo": -0.55,
+          "ci_hi": -0.2,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.075,
+          "ci_lo": -0.175,
+          "ci_hi": 0.025,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "trunc4": {
+        "acc": 0.125,
+        "ci": [
+          0.025,
+          0.225
+        ],
+        "n": 40,
+        "mean_tokens": 844.125,
+        "minus_real": {
+          "mean_diff": -0.325,
+          "ci_lo": -0.5,
+          "ci_hi": -0.15,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.025,
+          "ci_lo": -0.15062499999999995,
+          "ci_hi": 0.1,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      },
+      "pca8": {
+        "acc": 0.05,
+        "ci": [
+          0.0,
+          0.125
+        ],
+        "n": 40,
+        "mean_tokens": 16.9,
+        "minus_real": {
+          "mean_diff": -0.4,
+          "ci_lo": -0.55,
+          "ci_hi": -0.225,
+          "credible_positive": false,
+          "credible_negative": true
+        },
+        "minus_none": {
+          "mean_diff": -0.1,
+          "ci_lo": -0.225,
+          "ci_hi": 0.025,
+          "credible_positive": false,
+          "credible_negative": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "task": "gsm8k",
+    "k": 10,
+    "split": "test",
+    "n": 60,
+    "budgets": "256,512,1024",
+    "conditions": "real,shuffled,none",
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/diag/14b/cache_usage_gsm8k",
+    "budgets_list": [
+      256,
+      512,
+      1024
+    ]
+  },
+  "n": 60,
+  "budgets": [
+    256,
+    512,
+    1024
+  ],
+  "conditions": [
+    "real",
+    "shuffled",
+    "none"
+  ],
+  "by_budget": {
+    "256": {
+      "real": {
+        "acc": 0.23333333333333334,
+        "ci": [
+          0.13333333333333333,
+          0.3333333333333333
+        ],
+        "n": 60,
+        "mean_tokens": 254.45
+      },
+      "shuffled": {
+        "acc": 0.2,
+        "ci": [
+          0.11666666666666667,
+          0.3
+        ],
+        "n": 60,
+        "mean_tokens": 255.2
+      },
+      "none": {
+        "acc": 0.25,
+        "ci": [
+          0.15,
+          0.36666666666666664
+        ],
+        "n": 60,
+        "mean_tokens": 256.0
+      },
+      "real_minus_shuffled": {
+        "mean_diff": 0.03333333333333333,
+        "ci_lo": -0.11666666666666667,
+        "ci_hi": 0.16666666666666666,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": -0.016666666666666666,
+        "ci_lo": -0.11666666666666667,
+        "ci_hi": 0.1,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    },
+    "512": {
+      "real": {
+        "acc": 0.5666666666666667,
+        "ci": [
+          0.45,
+          0.6833333333333333
+        ],
+        "n": 60,
+        "mean_tokens": 444.78333333333336
+      },
+      "shuffled": {
+        "acc": 0.55,
+        "ci": [
+          0.4166666666666667,
+          0.6666666666666666
+        ],
+        "n": 60,
+        "mean_tokens": 451.68333333333334
+      },
+      "none": {
+        "acc": 0.4666666666666667,
+        "ci": [
+          0.3333333333333333,
+          0.6
+        ],
+        "n": 60,
+        "mean_tokens": 477.68333333333334
+      },
+      "real_minus_shuffled": {
+        "mean_diff": 0.016666666666666666,
+        "ci_lo": -0.08333333333333333,
+        "ci_hi": 0.13333333333333333,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.1,
+        "ci_lo": -0.03333333333333333,
+        "ci_hi": 0.23333333333333334,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    },
+    "1024": {
+      "real": {
+        "acc": 0.9333333333333333,
+        "ci": [
+          0.8666666666666667,
+          0.9833333333333333
+        ],
+        "n": 60,
+        "mean_tokens": 542.7333333333333
+      },
+      "shuffled": {
+        "acc": 0.9333333333333333,
+        "ci": [
+          0.85,
+          0.9833333333333333
+        ],
+        "n": 60,
+        "mean_tokens": 560.7833333333333
+      },
+      "none": {
+        "acc": 0.8,
+        "ci": [
+          0.7,
+          0.8833333333333333
+        ],
+        "n": 60,
+        "mean_tokens": 668.9333333333333
+      },
+      "real_minus_shuffled": {
+        "mean_diff": 0.0,
+        "ci_lo": -0.08333333333333333,
+        "ci_hi": 0.08333333333333333,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.13333333333333333,
+        "ci_lo": 0.016666666666666666,
+        "ci_hi": 0.23333333333333334,
+        "credible_positive": true,
+        "credible_negative": false
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+=== compress_confirm started Tue Aug  4 17:17:19 UTC 2026 ===
+GPU 0: NVIDIA H200 (UUID: GPU-3e2695f6-0e59-bb9a-6502-9b44dafc0247)
+[comp] START aime_k10_s42 Tue Aug  4 17:17:19 UTC 2026
+[comp] FAIL aime_k10_s42
+[comp] DONE aime_k10_s42 Tue Aug  4 17:17:21 UTC 2026
+[comp] START medqa_b16_s42 Tue Aug  4 17:17:21 UTC 2026
+[comp] FAIL medqa_b16_s42
+[comp] DONE medqa_b16_s42 Tue Aug  4 17:17:22 UTC 2026
+[comp] START math_b64_s42 Tue Aug  4 17:17:22 UTC 2026
+[comp] FAIL math_b64_s42
+[comp] DONE math_b64_s42 Tue Aug  4 17:17:23 UTC 2026
+[comp] START math_b32_s42 Tue Aug  4 17:17:23 UTC 2026
+[comp] FAIL math_b32_s42
+[comp] DONE math_b32_s42 Tue Aug  4 17:17:25 UTC 2026
+[comp] START gsm8k_b16_s123 Tue Aug  4 17:17:25 UTC 2026
+[comp] FAIL gsm8k_b16_s123
+[comp] DONE gsm8k_b16_s123 Tue Aug  4 17:17:26 UTC 2026
+=== COMPRESS_CONFIRM_DONE Tue Aug  4 17:17:26 UTC 2026 — STOP THE POD ===
+Runpod config file not found, please run `runpodctl config` to create it
+API key not found
+Error: API key not found
+[comp] runpodctl stop failed — STOP MANUALLY
+=== compress_confirm started Tue Aug  4 17:18:44 UTC 2026 ===
+GPU 0: NVIDIA H200 (UUID: GPU-3e2695f6-0e59-bb9a-6502-9b44dafc0247)
+[comp] START aime_k10_s42 Tue Aug  4 17:18:45 UTC 2026
+[comp] DONE aime_k10_s42 Wed Aug  5 02:51:56 UTC 2026
+[comp] START medqa_b16_s42 Wed Aug  5 02:51:56 UTC 2026
+[comp] DONE medqa_b16_s42 Wed Aug  5 03:37:22 UTC 2026
+[comp] START math_b64_s42 Wed Aug  5 03:37:22 UTC 2026
+[comp] DONE math_b64_s42 Wed Aug  5 05:01:48 UTC 2026
+[comp] START math_b32_s42 Wed Aug  5 05:01:48 UTC 2026
+[comp] DONE math_b32_s42 Wed Aug  5 06:17:30 UTC 2026
+[comp] START gsm8k_b16_s123 Wed Aug  5 06:17:30 UTC 2026
+[comp] DONE gsm8k_b16_s123 Wed Aug  5 06:37:18 UTC 2026
+=== COMPRESS_CONFIRM_DONE Wed Aug  5 06:37:18 UTC 2026 — STOP THE POD ===
+API key not found
+Error: API key not found
+[comp] runpodctl stop failed — STOP MANUALLY

@@ -1,0 +1,315 @@
+{
+  "config": {
+    "task": "gsm8k",
+    "n": 100,
+    "k": 10,
+    "k_ttc": "0",
+    "evict_budget": "0",
+    "generate_bs": 20,
+    "judger_budget": 1024,
+    "cache": "/workspace/latentmas-baseline/artifacts/math_ladder/math1k/cache.pt",
+    "seed": 42
+  },
+  "precompute": {
+    "n_donors": 1000,
+    "k": 10,
+    "scaffold": "replay",
+    "donor_task": "math",
+    "t_precompute_s": 988.3447715970688,
+    "n_pos": 422,
+    "mb": 65.9375,
+    "type_question": "Solve a mathematics problem. Reason carefully. Put the final answer in \\boxed{}.",
+    "model_name": "Qwen/Qwen3-14B"
+  },
+  "arms": {
+    "real": {
+      "n": 100,
+      "acc": 0.92,
+      "k_ttc": 10,
+      "evict": 0,
+      "planner_s": {
+        "mean": 0.03393290204927325,
+        "ci_lo": 0.031238269479112936,
+        "ci_hi": 0.036637362561514605,
+        "n": 100
+      },
+      "critic_s": {
+        "mean": 0.030368223055265844,
+        "ci_lo": 0.030070035600813564,
+        "ci_hi": 0.03067576966322376,
+        "n": 100
+      },
+      "refiner_s": {
+        "mean": 0.030273435059934854,
+        "ci_lo": 0.02992926791774807,
+        "ci_hi": 0.030636864640179555,
+        "n": 100
+      },
+      "upstream_s": {
+        "mean": 0.09457456016447395,
+        "ci_lo": 0.09165776597658407,
+        "ci_hi": 0.0974731473701075,
+        "n": 100
+      },
+      "cache_load_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "judger_s": {
+        "mean": 3.108144859392196,
+        "ci_lo": 3.085728538393956,
+        "ci_hi": 3.1295605518941465,
+        "n": 100
+      },
+      "e2e_s": {
+        "mean": 3.20271941955667,
+        "ci_lo": 3.178417014321743,
+        "ci_hi": 3.225978430784371,
+        "n": 100
+      },
+      "tokens": {
+        "mean": 545.61,
+        "ci_lo": 503.329,
+        "ci_hi": 587.63175,
+        "n": 100
+      },
+      "cache_mb": {
+        "mean": 107.9375,
+        "ci_lo": 106.06707031250001,
+        "ci_hi": 109.8921875,
+        "n": 100
+      },
+      "cache_pos": {
+        "mean": 690.8,
+        "ci_lo": 678.82925,
+        "ci_hi": 703.31,
+        "n": 100
+      },
+      "upstream_forwards": {
+        "mean": 33.0,
+        "ci_lo": 33.0,
+        "ci_hi": 33.0,
+        "n": 100
+      }
+    },
+    "frozen": {
+      "n": 100,
+      "acc": 0.92,
+      "k_ttc": 0,
+      "evict": 0,
+      "planner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "critic_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "refiner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "upstream_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "cache_load_s": {
+        "mean": 0.066256412002258,
+        "ci_lo": 0.06094619538197294,
+        "ci_hi": 0.07166708748591481,
+        "n": 100
+      },
+      "judger_s": {
+        "mean": 2.8287085763551296,
+        "ci_lo": 2.822696106547327,
+        "ci_hi": 2.8350326801236947,
+        "n": 100
+      },
+      "e2e_s": {
+        "mean": 2.8949649883573874,
+        "ci_lo": 2.886254282604094,
+        "ci_hi": 2.902740538388217,
+        "n": 100
+      },
+      "tokens": {
+        "mean": 611.31,
+        "ci_lo": 564.4480000000001,
+        "ci_hi": 654.9440000000001,
+        "n": 100
+      },
+      "cache_mb": {
+        "mean": 65.9375,
+        "ci_lo": 65.9375,
+        "ci_hi": 65.9375,
+        "n": 100
+      },
+      "cache_pos": {
+        "mean": 422.0,
+        "ci_lo": 422.0,
+        "ci_hi": 422.0,
+        "n": 100
+      },
+      "upstream_forwards": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      }
+    },
+    "none": {
+      "n": 100,
+      "acc": 0.84,
+      "k_ttc": 0,
+      "evict": 0,
+      "planner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "critic_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "refiner_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "upstream_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "cache_load_s": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "judger_s": {
+        "mean": 2.1636543264426287,
+        "ci_lo": 2.15881722159973,
+        "ci_hi": 2.1688453854165384,
+        "n": 100
+      },
+      "e2e_s": {
+        "mean": 2.1636543264426287,
+        "ci_lo": 2.15881722159973,
+        "ci_hi": 2.1688453854165384,
+        "n": 100
+      },
+      "tokens": {
+        "mean": 684.8,
+        "ci_lo": 631.4335000000001,
+        "ci_hi": 734.7655,
+        "n": 100
+      },
+      "cache_mb": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "cache_pos": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      },
+      "upstream_forwards": {
+        "mean": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n": 100
+      }
+    }
+  },
+  "paired": {
+    "frozen_minus_real_e2e_s": {
+      "mean": -0.30775443119928236,
+      "ci_lo": -0.3250883123373438,
+      "ci_hi": -0.29059359918587147,
+      "n": 100
+    },
+    "frozen_minus_real_tokens": {
+      "mean": 65.7,
+      "ci_lo": 39.119749999999996,
+      "ci_hi": 92.31025,
+      "n": 100
+    },
+    "frozen_minus_real_correct": {
+      "mean": 0.0,
+      "ci_lo": -0.05,
+      "ci_hi": 0.06,
+      "n": 100
+    },
+    "frozen_minus_real_upstream_s": {
+      "mean": -0.09457456016447395,
+      "ci_lo": -0.09747314737010751,
+      "ci_hi": -0.09165776597658407,
+      "n": 100
+    },
+    "frozen_minus_real_cache_mb": {
+      "mean": -42.0,
+      "ci_lo": -43.9546875,
+      "ci_hi": -40.1295703125,
+      "n": 100
+    },
+    "none_minus_real_e2e_s": {
+      "mean": -1.0390650931140408,
+      "ci_lo": -1.0592615474700577,
+      "ci_hi": -1.0176555420195623,
+      "n": 100
+    },
+    "none_minus_real_tokens": {
+      "mean": 139.19,
+      "ci_lo": 107.23899999999999,
+      "ci_hi": 171.52774999999997,
+      "n": 100
+    },
+    "none_minus_real_correct": {
+      "mean": -0.08,
+      "ci_lo": -0.15,
+      "ci_hi": -0.02,
+      "n": 100
+    },
+    "none_minus_real_upstream_s": {
+      "mean": -0.09457456016447395,
+      "ci_lo": -0.09747314737010751,
+      "ci_hi": -0.09165776597658407,
+      "n": 100
+    },
+    "none_minus_real_cache_mb": {
+      "mean": -107.9375,
+      "ci_lo": -109.8921875,
+      "ci_hi": -106.06707031250001,
+      "n": 100
+    }
+  },
+  "precompute_amortized_per_query_s": 9.883447715970687,
+  "gate": {
+    "frozen_acc": 0.92,
+    "real_acc": 0.92,
+    "none_acc": 0.84,
+    "frozen_minus_real_acc": 0.0,
+    "ci_lo": -0.05,
+    "ci_hi": 0.06,
+    "recommend": "run_small_k",
+    "reason": "frozen misses Real; run Planner/Critic/Refiner at K in {2,5} on top of the cache"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "n": 120,
+  "full_acc": 0.8583333333333333,
+  "low_acc": 0.8416666666666667,
+  "n_pairs": 5,
+  "full_paths": [
+    "artifacts/ces/pairs_k10_vs_k5/rows_K10.json",
+    "artifacts/ces/pairs_k10_vs_k5/rows_K10_skip50.json"
+  ],
+  "low_paths": [
+    "artifacts/ces/pairs_k10_vs_k5/rows_K5.json",
+    "artifacts/ces/pairs_k10_vs_k5/rows_K5_skip50.json"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-14B",
+    "split": "train",
+    "max_samples": 50,
+    "k_full": 10,
+    "k_low": 5,
+    "only_k": 10,
+    "max_new_tokens": 4096,
+    "generate_bs": 1,
+    "temperature": 0.0,
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/ces/pairs_k10_vs_k5"
+  },
+  "only_k": 10,
+  "n": 50,
+  "acc": 0.86
+}

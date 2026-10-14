@@ -1,0 +1,242 @@
+{
+  "config": {
+    "model_name": "Qwen/Qwen3-4B",
+    "k": 10,
+    "split": "test",
+    "n": 60,
+    "budgets": "128,256,512,1024",
+    "conditions": "real,shuffled,zero,none",
+    "seed": 42,
+    "device": "cuda",
+    "out_dir": "artifacts/diag/4b/cache_usage",
+    "budgets_list": [
+      128,
+      256,
+      512,
+      1024
+    ]
+  },
+  "n": 60,
+  "budgets": [
+    128,
+    256,
+    512,
+    1024
+  ],
+  "conditions": [
+    "real",
+    "shuffled",
+    "zero",
+    "none"
+  ],
+  "by_budget": {
+    "128": {
+      "real": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 128.0
+      },
+      "shuffled": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 128.0
+      },
+      "zero": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 128.0
+      },
+      "none": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 128.0
+      },
+      "real_minus_shuffled": {
+        "mean_diff": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    },
+    "256": {
+      "real": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 256.0
+      },
+      "shuffled": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 256.0
+      },
+      "zero": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 256.0
+      },
+      "none": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 256.0
+      },
+      "real_minus_shuffled": {
+        "mean_diff": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    },
+    "512": {
+      "real": {
+        "acc": 0.05,
+        "ci": [
+          0.0,
+          0.11666666666666667
+        ],
+        "n": 60,
+        "mean_tokens": 508.8333333333333
+      },
+      "shuffled": {
+        "acc": 0.1,
+        "ci": [
+          0.03333333333333333,
+          0.16666666666666666
+        ],
+        "n": 60,
+        "mean_tokens": 505.55
+      },
+      "zero": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 512.0
+      },
+      "none": {
+        "acc": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "n": 60,
+        "mean_tokens": 512.0
+      },
+      "real_minus_shuffled": {
+        "mean_diff": -0.05,
+        "ci_lo": -0.13333333333333333,
+        "ci_hi": 0.016666666666666666,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.05,
+        "ci_lo": 0.0,
+        "ci_hi": 0.11666666666666667,
+        "credible_positive": false,
+        "credible_negative": false
+      }
+    },
+    "1024": {
+      "real": {
+        "acc": 0.4166666666666667,
+        "ci": [
+          0.29958333333333337,
+          0.5333333333333333
+        ],
+        "n": 60,
+        "mean_tokens": 846.1833333333333
+      },
+      "shuffled": {
+        "acc": 0.4666666666666667,
+        "ci": [
+          0.3333333333333333,
+          0.5833333333333334
+        ],
+        "n": 60,
+        "mean_tokens": 821.05
+      },
+      "zero": {
+        "acc": 0.21666666666666667,
+        "ci": [
+          0.11666666666666667,
+          0.31666666666666665
+        ],
+        "n": 60,
+        "mean_tokens": 961.1666666666666
+      },
+      "none": {
+        "acc": 0.16666666666666666,
+        "ci": [
+          0.08333333333333333,
+          0.26666666666666666
+        ],
+        "n": 60,
+        "mean_tokens": 985.8833333333333
+      },
+      "real_minus_shuffled": {
+        "mean_diff": -0.05,
+        "ci_lo": -0.16666666666666666,
+        "ci_hi": 0.06666666666666667,
+        "credible_positive": false,
+        "credible_negative": false
+      },
+      "real_minus_none": {
+        "mean_diff": 0.25,
+        "ci_lo": 0.13333333333333333,
+        "ci_hi": 0.38333333333333336,
+        "credible_positive": true,
+        "credible_negative": false
+      }
+    }
+  }
+}

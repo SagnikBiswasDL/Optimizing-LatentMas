@@ -1,8 +1,32 @@
-from typing import Dict, Iterable, Optional
+import re
+from typing import Any, Dict, Iterable, Optional
 
 from datasets import load_dataset
 
 from utils import extract_gold, normalize_answer, extract_boxed_answer, normalize_math_answer
+
+
+HENDRYCKS_MATH_CONFIGS = (
+    "algebra",
+    "counting_and_probability",
+    "geometry",
+    "intermediate_algebra",
+    "number_theory",
+    "prealgebra",
+    "precalculus",
+)
+
+
+def math_level_int(item: Dict[str, Any]) -> int:
+    lv = item.get("level")
+    if lv is None:
+        return 0
+    if isinstance(lv, bool):
+        return 0
+    if isinstance(lv, (int, float)):
+        return int(lv)
+    m = re.search(r"(\d+)", str(lv))
+    return int(m.group(1)) if m else 0
 
 
 def load_math(split: str = "test", cache_dir: Optional[str] = None) -> Iterable[Dict]:
@@ -22,15 +46,29 @@ def load_math(split: str = "test", cache_dir: Optional[str] = None) -> Iterable[
             except Exception:
                 continue
     else:
-        for did, cfg in (("nlile/hendrycks-MATH-benchmark", None),
-                         ("lighteval/MATH", "all"),
-                         ("EleutherAI/hendrycks_math", "algebra")):
+        rows = []
+        for cfg in HENDRYCKS_MATH_CONFIGS:
             try:
-                ds = (load_dataset(did, cfg, split="train", cache_dir=cache_dir)
-                      if cfg else load_dataset(did, split="train", cache_dir=cache_dir))
-                break
+                part = load_dataset(
+                    "EleutherAI/hendrycks_math", cfg, split="train", cache_dir=cache_dir)
             except Exception:
                 continue
+            for item in part:
+                rec = dict(item)
+                if not rec.get("type") and not rec.get("subject"):
+                    rec["type"] = cfg.replace("_", " ")
+                rows.append(rec)
+        if rows:
+            ds = rows
+        else:
+            for did, cfg in (("nlile/hendrycks-MATH-benchmark", None),
+                             ("lighteval/MATH", "all")):
+                try:
+                    ds = (load_dataset(did, cfg, split="train", cache_dir=cache_dir)
+                          if cfg else load_dataset(did, split="train", cache_dir=cache_dir))
+                    break
+                except Exception:
+                    continue
     if ds is None:
         raise RuntimeError("Could not load a MATH dataset; check HF dataset ids in data.load_math")
     for item in ds:
@@ -42,7 +80,16 @@ def load_math(split: str = "test", cache_dir: Optional[str] = None) -> Iterable[
         gold = normalize_math_answer(str(ans) if ans is not None else None)
         if not question or not gold:
             continue
-        yield {"question": question, "solution": solution, "gold": gold, "source": "math"}
+        subject = (item.get("subject") or item.get("type") or "").strip()
+        yield {
+            "question": question,
+            "solution": solution,
+            "gold": gold,
+            "source": "math",
+            "subject": subject,
+            "level": item.get("level"),
+            "level_int": math_level_int(item),
+        }
 
 
 def load_gsm8k(split: str = "test", cache_dir: Optional[str] = None) -> Iterable[Dict]:
@@ -102,10 +149,17 @@ def load_gpqa_diamond(split: str = "test", cache_dir: Optional[str] = None) -> I
         question = item["question"].strip()
         answer = item["answer"].strip()
         gold = normalize_answer(answer)
+        subject = (
+            item.get("high_level_domain")
+            or item.get("subdomain")
+            or item.get("domain")
+            or ""
+        )
         yield {
             "question": question,
             "solution": answer,
             "gold": gold,
+            "subject": str(subject).strip() if subject else "",
         }
 
 

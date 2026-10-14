@@ -1,0 +1,33 @@
+{
+  "scaffold": "replay",
+  "donor_task": "math",
+  "n_donors": 1000,
+  "n_tried": 1000,
+  "k": 10,
+  "model_name": "Qwen/Qwen3-14B",
+  "type_question": "Solve a mathematics problem. Reason carefully. Put the final answer in \\boxed{}.",
+  "t_precompute_s": 988.3447715970688,
+  "replay_norms": {
+    "planner": {
+      "k": 10,
+      "d": 5120,
+      "mean_l2": 1.3079299926757812,
+      "n_donors": 1000
+    },
+    "critic": {
+      "k": 10,
+      "d": 5120,
+      "mean_l2": 1.3079415559768677,
+      "n_donors": 1000
+    },
+    "refiner": {
+      "k": 10,
+      "d": 5120,
+      "mean_l2": 1.3079311847686768,
+      "n_donors": 1000
+    }
+  },
+  "cache": "/workspace/latentmas-baseline/artifacts/math_ladder/math1k/cache.pt",
+  "n_pos": 422,
+  "mb": 65.9375
+}

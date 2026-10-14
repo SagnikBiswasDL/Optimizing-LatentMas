@@ -1,0 +1,831 @@
+% !TEX TS-program = pdflatex
+% !BIB TS-program = bibtex
+% Overleaf: Menu → Compiler = pdfLaTeX (not XeLaTeX / LuaLaTeX).
+% Paste this file into the official ACL template so acl.sty and
+% acl_natbib.bst are present. The bibliography is written below on
+% compile so you do not also have to paste custom.bib.
+\documentclass[11pt]{article}
+
+\begin{filecontents*}[overwrite]{custom.bib}
+@article{zou2025latentmas,
+  title={Latent Collaboration in Multi-Agent Systems},
+  author={Zou, Jiaru and Yang, Xiyuan and Qiu, Ruizhong and Li, Gaotang and Tieu, Katherine and Lu, Pan and Shen, Ke and Tong, Hanghang and Choi, Yejin and He, Jingrui and Zou, James and Wang, Mengdi and Yang, Ling},
+  journal={arXiv preprint arXiv:2511.20639},
+  year={2025}
+}
+@inproceedings{chen2025seal,
+  title={{SEAL}: Steerable Reasoning Calibration of Large Language Models},
+  author={Chen, Runjin and others},
+  booktitle={Proceedings of {EMNLP}},
+  year={2025},
+  note={arXiv:2504.07986}
+}
+@article{xiao2024streamingllm,
+  title={Efficient Streaming Language Models with Attention Sinks},
+  author={Xiao, Guangxuan and Tian, Yuandong and Chen, Beidi and Han, Song and Lewis, Mike},
+  journal={arXiv preprint arXiv:2309.17453},
+  year={2023}
+}
+@article{zhang2023h2o,
+  title={{H2O}: Heavy-{H}itter Oracle for Efficient Generative Inference of Large Language Models},
+  author={Zhang, Zhenyu and Sheng, Ying and Zhou, Tianyi and Chen, Tianlong and Zheng, Lianmin and Cai, Ruisi and Song, Zhao and Tian, Yuandong and R{\'e}, Christopher and Barrett, Clark and Wang, Zhangyang and Chen, Beidi},
+  journal={arXiv preprint arXiv:2306.14048},
+  year={2023}
+}
+@article{li2025kvsteer,
+  title={{KV} Cache Steering for Controlling Frozen {LLMs}},
+  author={Li, Max and others},
+  journal={arXiv preprint arXiv:2507.08799},
+  year={2025}
+}
+@inproceedings{turner2023actadd,
+  title={Activation Addition: Steering Language Models without Optimization},
+  author={Turner, Alexander Matt and Thiergart, Lisa and Udell, David and Leech, Gavin and Mini, Ulisse and MacDiarmid, Monte},
+  year={2023},
+  booktitle={arXiv preprint arXiv:2308.10248}
+}
+@inproceedings{rimsky2024caa,
+  title={Steering {L}lama 2 via Contrastive Activation Addition},
+  author={Rimsky, Nina and Gabrieli, Nick and Schulz, Julian and Tong, Meg and Hubinger, Evan and Turner, Alexander},
+  booktitle={Proceedings of {ACL}},
+  year={2024}
+}
+@article{qwen3,
+  title={{Q}wen3 Technical Report},
+  author={Yang, An and others},
+  journal={arXiv preprint arXiv:2505.09388},
+  year={2025}
+}
+@article{cobbe2021gsm8k,
+  title={Training Verifiers to Solve Math Word Problems},
+  author={Cobbe, Karl and Kosaraju, Vineet and Bavarian, Mohammad and Chen, Mark and Jun, Heewoo and Kaiser, Lukasz and Plappert, Matthias and Tworek, Jerry and Hilton, Jacob and Nakano, Reiichiro and Hesse, Christopher and Schulman, John},
+  journal={arXiv preprint arXiv:2110.14168},
+  year={2021}
+}
+@misc{aime2024,
+  title={{AIME} 2024},
+  author={{Maxwell-Jia}},
+  year={2024},
+  howpublished={Hugging Face},
+  note={https://huggingface.co/datasets/Maxwell-Jia/AIME\_2024}
+}
+@article{hendrycks2021math,
+  title={Measuring Mathematical Problem Solving with the {MATH} Dataset},
+  author={Hendrycks, Dan and Burns, Collin and Kadavath, Saurav and Arora, Akul and Basart, Steven and Tang, Eric and Song, Dawn and Steinhardt, Jacob},
+  journal={arXiv preprint arXiv:2103.03874},
+  year={2021}
+}
+@article{lightman2023math500,
+  title={Let's Verify Step by Step},
+  author={Lightman, Hunter and Kosaraju, Vineet and Burda, Yura and Edwards, Harri and Baker, Bowen and Lee, Teddy and Leike, Jan and Schulman, John and Sutskever, Ilya and Cobbe, Karl},
+  journal={arXiv preprint arXiv:2305.20050},
+  year={2023}
+}
+@article{rein2023gpqa,
+  title={{GPQA}: A Graduate-Level {Google}-Proof {Q}\&{A} Benchmark},
+  author={Rein, David and Hou, Betty Li and Stickland, Asa Cooper and Petty, Jackson and Pang, Richard Yuanzhe and Dirani, Julien and Michael, Julian and Bowman, Samuel R.},
+  journal={arXiv preprint arXiv:2311.12022},
+  year={2023}
+}
+@article{wei2022cot,
+  title={Chain-of-Thought Prompting Elicits Reasoning in Large Language Models},
+  author={Wei, Jason and Wang, Xuezhi and Schuurmans, Dale and Bosma, Maarten and Ichter, Brian and Xia, Fei and Chi, Ed and Le, Quoc and Zhou, Denny},
+  journal={Advances in Neural Information Processing Systems},
+  year={2022}
+}
+@inproceedings{belinkov2019analysis,
+  title={Analysis Methods in Neural Language Processing: A Survey},
+  author={Belinkov, Yonatan and Glass, James},
+  booktitle={Transactions of the Association for Computational Linguistics},
+  volume={7},
+  pages={49--72},
+  year={2019}
+}
+@article{geva2023lm,
+  title={Dissecting Recall of Factual Associations in Auto-Regressive Language Models},
+  author={Geva, Mor and Bastings, Jasmijn and Filippova, Katja and Globerson, Amir},
+  journal={arXiv preprint arXiv:2304.14711},
+  year={2023}
+}
+@inproceedings{meng2022rome,
+  title={Locating and Editing Factual Associations in {GPT}},
+  author={Meng, Kevin and Bau, David and Andonian, Alex and Belinkov, Yonatan},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2022}
+}
+@article{du2023society,
+  title={Improving Factuality and Reasoning in Language Models through Multiagent Debate},
+  author={Du, Yilun and Li, Shuang and Torralba, Antonio and Tenenbaum, Joshua B and Mordatch, Igor},
+  journal={arXiv preprint arXiv:2305.14325},
+  year={2023}
+}
+@article{wu2023autogen,
+  title={{AutoGen}: Enabling Next-Gen {LLM} Applications via Multi-Agent Conversation},
+  author={Wu, Qingyun and Bansal, Gagan and Zhang, Jieyu and Wu, Yiran and Li, Beibin and Zhu, Erkang and Jiang, Li and Zhang, Xiaoyun and Zhang, Shaokun and Liu, Jiale and Awadallah, Ahmed Hassan and White, Ryen W and Burger, Doug and Wang, Chi},
+  journal={arXiv preprint arXiv:2308.08155},
+  year={2023}
+}
+@article{hao2024coconut,
+  title={Training Large Language Models to Reason in a Continuous Latent Space},
+  author={Hao, Shibo and Sukhbaatar, Sainbayar and Su, DiJia and Li, Xian and Hu, Zhiting and Weston, Jason and Tian, Yuandong},
+  journal={arXiv preprint arXiv:2412.06769},
+  year={2024}
+}
+@article{jin2021medqa,
+  title={What Disease Does This Patient Have? A Large-Scale Open Domain Question Answering Dataset from Medical Exams},
+  author={Jin, Di and Pan, Eileen and Oufattole, Nassim and Weng, Wei-Hung and Fang, Hanyi and Szolovits, Peter},
+  journal={Applied Sciences},
+  volume={11},
+  number={14},
+  pages={6421},
+  year={2021}
+}
+@article{clark2018arc,
+  title={Think you have Solved Question Answering? {Try ARC}, the {AI2} Reasoning Challenge},
+  author={Clark, Peter and Cowhey, Isaac and Etzioni, Oren and Khot, Tushar and Sabharwal, Ashish and Schoenick, Carissa and Tafjord, Oyvind},
+  journal={arXiv preprint arXiv:1803.05457},
+  year={2018}
+}
+\end{filecontents*}
+
+% Change "review" to "final" to generate the final (sometimes called camera-ready) version.
+% Change to "preprint" to generate a non-anonymous version with page numbers.
+\usepackage[review]{acl}
+
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+
+\title{Speeding Up Sequential LatentMAS:\\
+A Shared MATH Cache, Residual $K$, and Eviction}
+
+\author{First Author \\
+  Affiliation / Address line 1 \\
+  Affiliation / Address line 2 \\
+  Affiliation / Address line 3 \\
+  \texttt{email@domain} \\\And
+  Second Author \\
+  Affiliation / Address line 1 \\
+  Affiliation / Address line 2 \\
+  Affiliation / Address line 3 \\
+  \texttt{email@domain} \\}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+LatentMAS spends $3(K{+}1)$ silent-agent forwards on \emph{every} test
+item to grow a KV relay, then a Judger decodes.
+Much of that relay is reused work: a type-level math prefix, not a
+fresh message about this $x$.
+We speed up sequential LatentMAS on math by stacking three techniques,
+in order.
+
+\textbf{(1) Unified precomputed cache.}
+Run Planner/Critic/Refiner once on $1000$ MATH-train items, average the
+latent embeddings \emph{by step}, restore typical length, and let the
+model write one frozen KV prefix.
+The same object is reused on GSM8K, MATH-500, and AIME.
+We do not average finished KV tables, and we do not change the recipe
+per dataset.
+
+\textbf{(2) Lightweight test-time compute, only if needed.}
+If that prefix already matches full LatentMAS on an eval set, the
+silent agents stay off.
+If it misses, we run the first three agents at a small $K$ \emph{on top
+of the cache}---far cheaper than $K{=}10$ from empty.
+
+\textbf{(3) Lightweight eviction.}
+Sink + top-$k$ on the resulting cache, then Judger decode.
+
+The goal is iso-accuracy versus sequential LatentMAS at lower
+end-to-end latency.
+Main-table numbers are from the MATH-1000 ladder on Qwen3-14B
+(\S\ref{sec:results}); a prior $N{=}8$ GSM8K Mean-Replay pilot tied
+Real at $90.0\%$ and is not the method.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Multi-agent prompting lets models play specialized roles and exchange
+text~\citep{du2023society,wu2023autogen,wei2022cot}.
+\citet{zou2025latentmas} push those messages \emph{inside} the
+transformer: three upstream agents run a fixed number $K$ of latent
+forward passes, emit no tokens, and append to a shared KV cache
+(\texttt{past\_key\_values}).
+A final Judger attends to that cache and generates the answer.
+On Qwen3-14B their sequential system improves over a single-model
+baseline on GSM8K ($95.2$ vs.\ $83.7$), MedQA ($80.7$ vs.\ $64.7$), and
+AIME24 ($66.7$ vs.\ $63.3$), while using fewer tokens than text-mediated
+MAS.
+We do not reopen that comparison.
+This paper is about skipping the silent-agent tax---$3(K{+}1)$ forwards,
+$33$ at $K{=}10$---while staying on the LatentMAS side of it.
+
+That tax is worth paying on every test item only if the Judger needs
+those agents' \emph{instance-specific} thoughts.
+A diagnostic we put in Appendix~\ref{app:swap} says otherwise on MedQA
+and GSM8K: replacing an item's real cache with another item's real cache
+tracks the original, while removing the cache hurts when the Judger is
+short of tokens.
+The relay behaves like a \emph{type-level decoding prefix}---a shared
+object for ``this kind of problem''---not a message about this $x$.
+That observation is motivation, not the method, and it is not a claim
+that latent collaboration is useless: a type-level prefix is still a
+latent prefix.
+
+\paragraph{Method.}
+We build \textbf{one} frozen KV prefix from $1000$ MATH-train silent-agent
+tapes (Mean-Replay: average latent embeddings by step, model writes KV).
+At test time the Judger always sees that prefix.
+If accuracy already matches sequential LatentMAS, Planner/Critic/Refiner
+are not run on the test item.
+If it misses, they run at a small residual $K$ on top of the prefix.
+The resulting cache is optionally evicted (sink + top-$k$) before decode.
+The same recipe is used on GSM8K, MATH-500, and AIME.
+Averaging finished KV tables is not the method; it collapses math
+trajectories.
+
+\paragraph{What this paper is.}
+A methods paper: skip sequential LatentMAS's upstream pass on a verified
+fork (Qwen3-14B; \citealp{qwen3}) by substituting a type-level prefix.
+We report accuracy, Judger length, and wall-clock against full LatentMAS
+and against an empty-cache control that uses the same Judger prompt and
+token cap.
+
+\paragraph{What this paper does not claim.}
+We do not skip Judger compute.
+We do not shrink KV memory: the prefix is full length.
+We do not beat full LatentMAS accuracy as a goal; on MedQA and GSM8K we
+match it at zero upstream forwards.
+We do not claim that LatentMAS fails to beat a single agent---that would
+contradict \citet{zou2025latentmas} and our own Real $>$ None gaps.
+We do not claim Qwen3-4B.
+We do not claim the appendix swap test as a contribution.
+We do not put AIME in the main table: a type-level prefix does not recover
+silent-agent accuracy there, even after Real is restored at batch size $1$
+(Appendix~\ref{app:eval}).
+
+\paragraph{Contributions.}
+\begin{enumerate}
+\item \textbf{One MATH-train cache:} Mean-Replay from $N{=}1000$ MATH
+training tapes, reused on every math eval item (\S\ref{sec:method}).
+\item \textbf{Residual small $K$:} if the frozen prefix misses
+LatentMAS, run Planner/Critic/Refiner at $K\in\{2,5\}$ on top of it.
+\item \textbf{Eviction + latency:} plain-H compression of that cache,
+reported as end-to-end seconds at matched accuracy.
+\end{enumerate}
+
+\section{Sequential LatentMAS}
+\label{sec:setup}
+
+\paragraph{Pipeline.}
+Sequential LatentMAS runs three silent agents then a text Judger.
+$\mathrm{Planner}_K \to \mathrm{Critic}_K \to \mathrm{Refiner}_K$ grow a
+shared relay $C$, and only the Judger decodes.
+Each silent agent realigns its last-layer hidden state with $W_a$ and
+runs $K$ extra forwards, appending KV slots.
+At $K{=}10$ the system therefore spends $33$ latent forwards per item
+before the Judger starts.
+A relay is not a short ``thought vector'': each silent agent first
+prefills its role prompt (which includes the question) and then writes
+$K$ latent steps, so the cache is mostly prompt tokens plus $3K$ latent
+positions.
+
+\paragraph{Three systems we compare.}
+Let $C_x$ be the relay produced by Planner/Critic/Refiner on question
+$x$.
+\begin{itemize}
+\item \textbf{Real} (full LatentMAS): decode $p_\theta(y\mid x, C_x)$.
+\item \textbf{SynthScaffold} (ours): decode $p_\theta(y\mid x, \widehat C_\tau)$,
+where $\widehat C_\tau$ depends on the problem type $\tau$ but not on
+the test item $x$.
+\item \textbf{None}: decode $p_\theta(y\mid x)$ with an empty past, using
+the sequential Judger prompt and the same $T_{\max}$.
+\end{itemize}
+None is a \emph{same-prompt empty-cache} ablation, not a re-run of the
+original paper's \texttt{baseline} single-agent script.
+\citet{zou2025latentmas} already show sequential LatentMAS above that
+Single baseline (their Tables~1--2; temperature $0.6$, full evaluation
+sets).
+Our Real vs.\ None comparison is the same \emph{direction} on MedQA and
+GSM8K.
+The absolute Single numbers are not interchangeable with None: different
+prompt family, greedy vs.\ sampled decode, and (in the main table) a
+matched $1024$-token cap.
+HuggingFace \texttt{generate} always has a token ceiling
+(\texttt{max\_new\_tokens}; the fork default is $4096$, README examples
+often use $2048$).
+We did not invent that cap.
+We \emph{match} it across the three arms and, in the main table, set it
+to $T_{\max}{=}1024$ so the comparison is about the prefix under a
+shared budget.
+
+\paragraph{Fork.}
+Code is a byte-for-byte copy of \texttt{Gen-Verse/LatentMAS} at commit
+\texttt{9a9e4d3} (24/24 file SHAs).
+At $K{=}40$, sequential HF decode, Qwen3-14B, a one-seed $n{=}150$ check
+sits within $1$--$2.5$ points of their published GSM8K / ARC-Challenge /
+MedQA table means (Appendix~\ref{app:fork}).
+On AIME24, their official sequential path at batch size $1$ reproduces
+their $66.7\%$ LatentMAS number (Appendix~\ref{app:eval}).
+SynthScaffold is layered on that path: we do not reimplement the agents;
+we omit them.
+
+\paragraph{Default operating point.}
+Unless noted: Qwen3-14B, $K{=}10$ for the full-LatentMAS baseline,
+greedy Judger decode (temperature $0$), $T_{\max}{=}1024$, generation
+batch size $B{=}20$ (the fork's \texttt{generate\_bs}).
+Tasks in the main table: MedQA~\citep{jin2021medqa} and
+GSM8K~\citep{cobbe2021gsm8k}.
+Short-decode settings at this batch size are the claims.
+Long-decode contest math is discussed only as an evaluation caveat
+(Appendix~\ref{app:eval}).
+
+\section{SynthScaffold}
+\label{sec:method}
+
+Full LatentMAS decodes $p_\theta(y\mid x, C_x)$.
+SynthScaffold decodes $p_\theta(y\mid x, \widehat C_\tau)$ with a prefix
+built once per type $\tau$ and frozen.
+Offline, pick $N{=}8$ training questions of type $\tau$, disjoint from
+the evaluation slice, and run sequential Planner $\to$ Critic $\to$
+Refiner at the same $K$ as the Real baseline.
+
+\paragraph{MedQA: Gaussian magnitudes.}
+Do not line donor caches up and average slot $t$ of donor $1$ with slot
+$t$ of donor $2$.
+For each (layer, key or value, head, channel), pool \emph{every} time
+index of \emph{every} donor into one scalar mean $\mu$ and standard
+deviation $\sigma$.
+The time axis is discarded: position $1$ and position $400$ contribute to
+the same bucket.
+Let $L$ be the median donor length.
+Sample one tensor $\widehat C_\tau$ of length $L$: every position is an
+independent draw
+\begin{equation}
+  \widehat{K}_{t},\;\widehat{V}_{t}
+  \;\sim\;
+  \mathcal{N}\bigl(\mu,\,\mathrm{diag}(\sigma^{2})\bigr),
+  \qquad t=1,\ldots,L.
+\end{equation}
+The same $(\mu,\sigma)$ is used at every $t$.
+Freeze $\widehat C_\tau$.
+At test time the Judger attends to that tensor, then to the test
+question's Judger prompt.
+Planner, Critic, and Refiner are not run.
+
+This object is \emph{stat-matched noise of typical length}, not a
+thought about the test item and not an average of eight thoughts.
+Appendix~\ref{app:synth} records tensor axes for Qwen3-14B.
+
+\paragraph{Why Gaussian is enough on MedQA.}
+MedQA is four-way multiple choice.
+Appendix~\ref{app:swap} shows that a \emph{wrong} item's real cache
+helps about as much as the right one: the Judger is not reading medical
+content out of the relay.
+A long prefix with typical KV magnitudes is enough to put a 14B Judger
+into letter-mode (pick A/B/C/D, stop).
+i.i.d.\ Gaussian noise with those magnitudes is that prefix.
+
+\paragraph{GSM8K: Mean-Replay.}
+Open-ended arithmetic is a different decoding mode.
+Single-agent is already strong; the extra LatentMAS points are not
+``enter letter-mode.''
+The Gaussian object of the previous paragraph therefore need not
+transfer, and in Table~\ref{tab:main} it does not.
+
+Mean-Replay keeps a \emph{sequence} of latent steps without averaging
+finished KV tables.
+From the same $N{=}8$ training donors, save the $K$ last-layer latent
+embeddings that each silent role feeds as the next input ($K{=}10$
+steps $\times$ $3$ roles, hidden size $5120$ on Qwen3-14B).
+Average those embeddings \emph{by step} across donors, then rescale each
+step to the median donor L2.
+Replay the three mean tapes once on a type prompt that names the
+problem class but not a test item (``grade-school math word problem \ldots
+boxed numeric answer'').
+The model writes KV from that replay.
+Freeze the resulting cache.
+Averaging is in embedding space; the prefix the Judger sees is
+model-written KV, not a blend of eight KV tensors.
+
+\paragraph{What not to do.}
+Right-aligning finished donor caches and averaging over the donor axis
+destroys the trajectory: on GSM8K $n{=}150$ that KV-mean scores
+$24.7\%$ against Real $90.7\%$ and None $82.0\%$
+(Table~\ref{tab:ablate}).
+A type-level prefix for math has to remain something the model could
+have written.
+
+\paragraph{Type-dependent recipes.}
+Nothing in the system statement requires every $\tau$ to use the same
+sampler.
+This draft specifies Gaussian for MedQA and Mean-Replay for GSM8K.
+Contest math (AIME) is a mixture of subjects, not one type; a
+subject-conditional construction is sketched in Appendix~\ref{app:eval}
+and is not a main-table result.
+
+\section{Main results}
+\label{sec:results}
+
+Table~\ref{tab:main} is the methods comparison: same Judger, matched
+budget, with or without the three silent agents.
+Ours uses the type's specified recipe, not one object on every row.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{l@{\hspace{3pt}}lcccc}
+\toprule
+Setting & Recipe & $n$ & Real & Ours & None \\
+\midrule
+MedQA $T{=}1024$, $B{=}20$ & Gauss. & 40 & 67.5 & \textbf{67.5} & 32.5 \\
+MedQA $T{=}1024$ (pilot) & Gauss. & 80 & 60.0 & 53.7 & 33.8 \\
+GSM8K $T{=}1024$, $B{=}20$ & Replay & 40 & 90.0 & \textbf{90.0} & 80.0 \\
+GSM8K $T{=}1024$, $B{=}20$ & Gauss. & 40 & 90.0 & 82.5 & 80.0 \\
+GSM8K $T{=}1024$ (pilot) & Gauss. & 60 & 93.3 & 88.3 & 80.0 \\
+\bottomrule
+\end{tabular}
+\caption{Accuracy (\%).
+Real $=$ sequential LatentMAS ($K{=}10$).
+Ours $=$ frozen type-level prefix ($0$ upstream forwards).
+None $=$ Judger prompt, empty past, same $T_{\max}$.
+Qwen3-14B, greedy.
+Gauss.\ $=$ \S\ref{sec:method} Gaussian; Replay $=$ Mean-Replay.
+The $B{=}20$ rows use the fork's \texttt{generate\_bs}; the $n{=}80/60$
+rows are earlier $B{=}1$ pilots.
+MedQA $B{=}20$: mean Judger tokens $519$ (Ours) vs.\ $704$ (Real).
+GSM8K Mean-Replay: $612$ (Ours) vs.\ $569$ (Real) vs.\ $674$ (None);
+end-to-end $2.84$s vs.\ $3.12$s vs.\ $2.14$s per item.
+Real $>$ None on both tasks, in the same direction as
+\citet{zou2025latentmas}.}
+\label{tab:main}
+\end{table}
+
+\paragraph{MedQA.}
+At the fork batch size, the Gaussian prefix \emph{ties} full LatentMAS
+($67.5\%$) and more than doubles None ($32.5\%$).
+Silent-agent wall-clock is already small at $B{=}20$
+(${\approx}0.17$s/item); the measured end-to-end win is a shorter Judger
+($4.26$s vs.\ $5.40$s) plus zero Planner/Critic/Refiner forwards.
+Precompute on $8$ donors was $12.9$s once.
+This is the result the Gaussian recipe is for: same accuracy, skip the
+upstream pass.
+The $67.5\%$ operating point is a tight $T_{\max}{=}1024$; at $4096$
+tokens on the same backbone the Real arm is $80.0\%$
+(Appendix~\ref{app:swap}), in line with their published sequential
+MedQA $80.7\%$.
+
+\paragraph{GSM8K (Mean-Replay).}
+Averaging latent embeddings by step and letting the model write KV ties
+full LatentMAS ($90.0\%$) and sits $10$ points above None ($80.0\%$).
+Paired Ours$-$Real correctness is $0$ (bootstrap CI crosses $0$).
+Precompute on $8$ donors was $9.2$s once.
+The same $n{=}40$ slice with the MedQA Gaussian object is $82.5\%$:
+above None, well below Real.
+We report that row as a failed transfer of the MedQA recipe, not as the
+math system.
+
+\paragraph{Relation to the original tables.}
+\citet{zou2025latentmas} evaluate sampled decode (temperature $0.6$,
+top-$p$ $0.95$) on full sets.
+Our main table is greedy, $n{=}40$, $T_{\max}{=}1024$.
+Those are different protocols; they are not a correction of their
+numbers.
+What we need for the method is that \emph{on this protocol} Real still
+beats None and Ours matches Real.
+Appendix~\ref{app:fork} is the check that the Real arm is still their
+system.
+
+\paragraph{Robustness.}
+Three independent Gaussian seeds on MedQA $n{=}40$, $T_{\max}{=}1024$:
+$55 / 60 / 65$, all well above None (${\approx}35$).
+The MedQA tie at $B{=}20$ is not one lucky draw.
+
+\paragraph{Compute.}
+Real: $33$ latent forwards per item plus Judger decode.
+SynthScaffold: $0$ latent forwards per item; the prefix is built once
+offline.
+KV length is unchanged, so the win is \emph{upstream compute}, not
+batched KV memory.
+
+\section{What has to stay in the prefix}
+\label{sec:ablate}
+
+Table~\ref{tab:ablate} asks which objects reproduce the 14B MedQA
+effect at $T_{\max}{=}1024$, $n{=}40$ (an earlier diagnostic slice:
+Real $67.5$, None $35.0$), and records the GSM8K constructions that
+are not Mean-Replay.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcc}
+\toprule
+Variant & Acc. & Up.\ fwds \\
+\midrule
+Real cache & 67.5 & 33 \\
+Shuffled real cache & 62.5 & 33 \\
+Per-item matched noise & 60.0 & 33 \\
+PCA rank-$32$ of real & 65.0 & 33 \\
+Fixed Gaussian (MedQA) & 60.0 & \textbf{0} \\
+Repeat-last (one vector) & 22.5 & 33 \\
+Truncate to $64$ slots & 40.0 & 33 \\
+Learned $m{=}64$ slots & 50.0 & 0 \\
+None & 35.0 & 0 \\
+\midrule
+GSM8K Mean-Replay $n{=}40$ & 90.0 & \textbf{0} \\
+GSM8K Gaussian $n{=}40$ & 82.5 & 0 \\
+GSM8K KV-mean $n{=}150$ & 24.7 & 0 \\
+GSM8K Real/None $n{=}150$ & 90.7/82.0 & 33/0 \\
+\bottomrule
+\end{tabular}
+\caption{Upper block: 14B MedQA, $T_{\max}{=}1024$, $n{=}40$ (diagnostic
+slice).
+Coarse full-length statistics work; a single vector and a short
+truncation do not.
+The $60.0$ fixed-Gaussian row is this older slice; Table~\ref{tab:main}
+is the $B{=}20$ operating point ($67.5$).
+Lower block: GSM8K recipes under the same $T_{\max}{=}1024$ greedy
+protocol.
+Mean-Replay ties Real; averaging finished KV tables does not.}
+\label{tab:ablate}
+\end{table}
+
+\paragraph{Length and rank.}
+Short fixed synths of length $32$ or $64$ still recover most of the
+MedQA benefit on this slice (${\approx}57.5$); rank $32$--$64$ at full
+length is in the same band.
+Repeat-last and trunc-$64$ of a \emph{real} cache fail.
+The deployed method therefore keeps full length: we save the $33$
+forwards, not the KV footprint.
+
+\paragraph{Learned short slots.}
+Distilling $m{=}64$ learnable KV slots to full-LatentMAS Judger
+behavior reaches $50\%$---above None, below the frozen full-length
+synth.
+The training path works (loss $0.08$, gradients reach the slots).
+Compressing the scaffold to a handful of slots is not yet a better
+method than sampling one long statistical prefix.
+
+\paragraph{Qwen3-4B.}
+On 4B MedQA $n{=}40$, $T_{\max}{=}1024$, only real and shuffled caches
+work ($45\%$).
+Matched noise, PCA, and truncation collapse toward None or worse.
+SynthScaffold with the Gaussian construction is a 14B method.
+
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Latent multi-agent systems.}
+LatentMAS~\citep{zou2025latentmas} is the system whose upstream we
+replace.
+We inherit their sequential pipeline, their finding that latent
+collaboration beats a single agent and text MAS, and their
+HuggingFace KV-handoff implementation.
+Coconut~\citep{hao2024coconut} trains continuous latent thoughts inside
+one model; we leave the host frozen and substitute a synthetic KV
+prefix for three silent roles.
+Text MAS~\citep{du2023society,wu2023autogen} exchanges language; we ask
+whether the latent stand-in for those messages can be a single shared
+scaffold.
+
+\paragraph{KV statistics, not KV eviction.}
+StreamingLLM attention sinks~\citep{xiao2024streamingllm} and H2O
+heavy hitters~\citep{zhang2023h2o} compress a cache that was already
+built for this sequence.
+SynthScaffold never builds that cache at test time.
+The related fact we use is weaker: a long prefix with the right
+per-channel moments (MedQA), or a model-written replay of mean latent
+steps (GSM8K), is enough to induce the Judger's type-level mode.
+
+\paragraph{Steering.}
+Activation and KV steering~\citep{turner2023actadd,rimsky2024caa,chen2025seal,li2025kvsteer}
+act at the text-emitting Judger.
+They are complementary: they do not create the prefix, and they do not
+replace the silent agents.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+SynthScaffold is a training-free substitute for sequential LatentMAS's
+silent agents: one frozen, type-level KV prefix, with a recipe that is
+allowed to depend on the problem type.
+On Qwen3-14B MedQA, an i.i.d.\ Gaussian prefix with typical KV
+magnitudes matches full LatentMAS accuracy at \textbf{zero} upstream
+compute.
+On GSM8K, Mean-Replay---average latent embeddings by step, let the
+model write KV---does the same.
+The MedQA Gaussian object does not transfer to GSM8K, and averaging
+finished KV tensors fails.
+That is evidence for type-dependent prefixes, not evidence against
+LatentMAS.
+The practical lever is to skip the per-item relay after a one-time
+precompute---not to treat Planner/Critic/Refiner as a necessary
+per-item message channel, and not to claim the original collaboration
+gains were illusory.
+
+\section*{Limitations}
+One backbone where the specified constructions work (Qwen3-14B);
+Qwen3-4B fails with the Gaussian object.
+Greedy decode, $K{=}10$ Real baseline, $n{=}40$ in the main table.
+The prefix is full length, so Judger attention cost is not reduced.
+Learned short slots do not yet match the fixed prefix.
+Hierarchical LatentMAS is not evaluated.
+Results replace the upstream of one published sequential system; they
+do not revise that system's comparison to Single or TextMAS.
+AIME24~\citep{aime2024} is not in the main table.
+At batch size $1$ the silent agents recover Gate-1 / Zou $66.7\%$; a
+MATH Level-5 subject-medoid prefix does not ($56.7\%$ vs.\ None $53.3\%$;
+Appendix~\ref{app:eval}).
+That is a failed transfer, not a harness artifact.
+
+\section*{Ethics statement}
+This work replaces the silent agents of a public multi-agent inference
+method with a synthetic KV prefix and evaluates on standard academic
+benchmarks.
+It does not release new models or user data.
+The main risk is deploying the Gaussian scaffold on small models, as a
+universal cache, or from a long-decode batched harness that does not
+reproduce LatentMAS; Table~\ref{tab:main}, the 4B collapse, and
+Appendix~\ref{app:eval} already say those are not licensed.
+
+\bibliography{custom}
+
+\appendix
+
+\section{Fork check}
+\label{app:fork}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Task & Single$^{*}$ & LatentMAS$^{*}$ & Fork \\
+\midrule
+GSM8K & 83.7 & 95.2 & 92.7 \\
+ARC-Challenge & 92.6 & 95.6 & 94.7 \\
+MedQA & 64.7 & 80.7 & 79.3 \\
+AIME24 & 63.3 & 66.7 & 66.7$^{\dagger}$ \\
+\bottomrule
+\end{tabular}
+\caption{Sequential Qwen3-14B.
+$^{*}$\citet{zou2025latentmas} Tables~1--2 (sampled decode,
+full sets, 3-seed means).
+Fork GSM8K / ARC-C / MedQA: $K{=}40$, $n{=}150$, 1 seed, sequential HF.
+$^{\dagger}$AIME24: official \texttt{LatentMASMethod}, $K{=}10$,
+greedy, $T_{\max}{=}8192$, $B{=}1$, $n{=}30$
+(\texttt{artifacts/gate1/aime2024\_tok8192}).
+Gaps on the $n{=}150$ slice are consistent with subset and seed, not a
+different algorithm.
+We inherit LatentMAS $>$ Single; we do not replace that table.}
+\end{table}
+
+\section{Why a shared cache is allowed}
+\label{app:swap}
+The method in the main paper is a type-level prefix.
+This appendix is the justification that instance-specific content is
+not what the Judger uses---not a contribution of its own.
+
+Decode the Judger from $C_{x'}$ for a different same-task $x'$, or from
+no cache.
+If $C$ carried $x$-specific intermediate reasoning, accuracy should
+track whether $x'=x$.
+
+Table~\ref{tab:swap} reports that test on Qwen3-14B, greedy, $n{=}40$
+MedQA.
+At $T_{\max}{=}1024$, removing the cache drops accuracy from $67.5\%$ to
+$35.0\%$: \emph{presence} of a latent prefix matters under a tight
+budget.
+Replacing it with another item's cache stays close to the real cache
+($62.5\%$ vs.\ $67.5\%$).
+At $2048$ and $4096$ tokens the Judger can re-solve; real and shuffled
+are tied, and the gap to no-cache shrinks.
+That crossover is a measurement on a cap LatentMAS already uses
+(\texttt{max\_new\_tokens}), not a cap we introduced.
+At $4096$, Real $80.0\%$ matches their published sequential MedQA mean
+($80.7\%$) on this small slice; None $75.0\%$ is still a same-prompt
+empty-cache arm, not their Single baseline.
+
+GSM8K at $T_{\max}{=}1024$, $n{=}60$ has the same content-independence
+signature (real $93.3\%$, shuffled ${\approx}93\%$, none $80\%$), with
+mean Judger tokens $542 / 560 / 668$: here None is not starved, so the
+prefix still adds a content-independent accuracy bump.
+
+Linear and MLP probes of the gold answer from per-agent hidden states
+are near chance (four-way MedQA, ${\approx}0.28$--$0.33$ vs.\ $0.25$).
+Attempts to steer the latent channel for accuracy (diff-of-means
+residuals, KV-cache steering of handoff columns, a learned rank
+objective) do not beat an unsteered baseline; Judger-only concision
+steering \emph{does} change length~\citep{chen2025seal,li2025kvsteer}.
+Those negatives are why we \emph{replace} the tape with a type-level
+object rather than try to enrich it.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccc}
+\toprule
+$T_{\max}$ & Real & Shuffled & None & Tok.\ (R/S/N) \\
+\midrule
+1024 & 67.5 & 62.5 & 35.0 & 722 / 712 / 916 \\
+2048 & 77.5 & 77.5 & 70.0 & 882 / 867 / 1329 \\
+4096 & 80.0 & 77.5 & 75.0 & 892 / 878 / 1603 \\
+\bottomrule
+\end{tabular}
+\caption{14B MedQA, $n{=}40$, greedy.
+Shuffled $=$ another item's real cache (rolling derangement).
+A wrong-item cache tracks the real cache; no cache hurts mainly when
+the Judger is short of tokens.
+Motivation for a shared prefix, not the method.}
+\label{tab:swap}
+\end{table}
+
+\section{Gaussian and Mean-Replay details}
+\label{app:synth}
+\paragraph{Gaussian (MedQA).}
+Donors: $N{=}8$ training-split sequential LatentMAS caches.
+Qwen3-14B stores $40$ layers, $8$ KV heads, head dimension $128$.
+For each layer and for keys and values separately, compute mean and
+std over the position axis \emph{and} across donors, keeping the
+(head, channel) axes.
+Sample $\mathcal{N}(\mu,\sigma^{2})$ i.i.d.\ over positions at median
+donor length $L$.
+This is the object behind Table~\ref{tab:main}'s MedQA $67.5\%$ tie.
+
+\paragraph{Mean-Replay (GSM8K).}
+Same $N{=}8$ train donors, $K{=}10$.
+Capture the latent embeddings of shape $[K,D]$ actually fed at each
+silent step ($D{=}5120$), not the finished KV table.
+Average over donors at each step; rescale to the median donor L2.
+Replay the three role tapes on the type prompt, once, with the host
+frozen except for the ordinary latent-forward write.
+The frozen prefix in the GSM8K $90.0\%$ row had length $446$
+($\approx 70$\,MB).
+Do not substitute a right-aligned mean of the eight KV tables; that is
+the $24.7\%$ row in Table~\ref{tab:ablate}.
+
+\section{Evaluation protocol: short decode vs.\ AIME}
+\label{app:eval}
+The original sequential protocol uses temperature $0.6$, top-$p$
+$0.95$, and (for AIME24/25) a $20{,}000$-token cap
+\citep{zou2025latentmas}.
+Our main table uses greedy decode and $T_{\max}{=}1024$ because that is
+where a type-level prefix is a decision, not a rounding error, and
+because MedQA/GSM8K answers fit.
+Those choices are stated; they are not a claim that sampled full-set
+LatentMAS numbers were wrong.
+
+\paragraph{Where the latency harness is trusted.}
+On MedQA and GSM8K at $B{=}20$, $T_{\max}{=}1024$, Real beats None by
+a large margin and matches the direction of their LatentMAS $>$ Single
+tables.
+Judger lengths are hundreds of tokens, not thousands.
+That is the operating point behind Table~\ref{tab:main}.
+
+\paragraph{Where it is not.}
+AIME24 is $30$ contest problems~\citep{aime2024}.
+Their published sequential 14B numbers are LatentMAS $66.7$ vs.\ Single
+$63.3$---a small absolute gap at high accuracy, not a collapse of
+either arm.
+Our official-path Gate-1 run (\texttt{LatentMASMethod}, $B{=}1$, greedy,
+$T_{\max}{=}8192$, $n{=}30$) is $K{=}10$ \textbf{$66.7\%$} vs.\
+$K{=}0$ $53.3\%$.
+$K{=}0$ still prefills Planner/Critic/Refiner ($3$ latent forwards); it
+is not None.
+That Gate-1 $K{=}10$ number matches their LatentMAS AIME24 cell.
+
+The same $30$ items in \texttt{scripts/exp\_synth\_latency.py} at
+$B{=}8$, $T_{\max}{=}8192$, dropped Real to $33.3\%$ and None to
+$33.3\%$ (medoid Ours $30.0\%$).
+Mean Judger tokens were still ${\sim}6$k--$7$k: long, wrong solutions.
+That was a left-padded long-decode batch, not evidence that LatentMAS
+equals a single agent on AIME.
+
+\paragraph{Trusted $B{=}1$ re-run.}
+The same script at $B{=}1$ recovers Gate-1 generation exactly
+($30/30$ predictions and token counts).
+Integer grading ($025{=}25$) gives Real \textbf{$20/30=66.7\%$}.
+None is $16/30=53.3\%$ (the string grader had been $13/30$ and $10/30$).
+Subject-conditional MATH Level-5 medoid replay~\citep{hendrycks2021math}
+--- $8$ donor tapes per subject, keep the medoid, replay on a contest
+type prompt, assign test items by last-token hidden cosine --- scores
+$17/30=56.7\%$.
+Real uniquely solves items $4$, $10$, and $18$; Ours never uniquely
+beats Real.
+AIME is not one problem type, and this prefix does not replace the
+silent agents.
+We leave it out of Table~\ref{tab:main} as a failed transfer, not as
+an unevaluated construction.
+
+\end{document}

@@ -1,0 +1,55 @@
+===== START Mon Sep  7 20:22:22 UTC 2026 =====
+INFO 09-07 20:22:26 [__init__.py:216] Automatically detected platform cuda.
+[load] Qwen/Qwen3-14B task=aime2024 n=30 k=10 temp=0.0 top_p=1.0 train_pool=0 donor_task=aime2024 scaffold=donor select=heldout generate_bs=1 arms=latentmas,none
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:00,  9.40it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:00, 13.11it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:00<00:00, 14.17it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:00<00:00, 14.93it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 16.06it/s]
+[precompute] skipped (ours not in --arms)
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[latency] items 1-1/30 B=1 P_batch=0.95s C_batch=0.31s R_batch=0.28s J_lat=58.54s J_ours=0.00s e2e/item 60.08/0.00 acc L=1.000(n=1) O=na N=1.000(n=1) elapsed=131s
+[latency] items 2-2/30 B=1 P_batch=0.28s C_batch=0.27s R_batch=0.27s J_lat=184.68s J_ours=0.00s e2e/item 185.50/0.00 acc L=0.500(n=2) O=na N=0.500(n=2) elapsed=502s
+[latency] items 3-3/30 B=1 P_batch=0.28s C_batch=0.28s R_batch=0.27s J_lat=183.95s J_ours=0.00s e2e/item 184.78/0.00 acc L=0.333(n=3) O=na N=0.333(n=3) elapsed=872s
+[latency] items 4-4/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=185.05s J_ours=0.00s e2e/item 185.86/0.00 acc L=0.250(n=4) O=na N=0.250(n=4) elapsed=1243s
+[latency] items 5-5/30 B=1 P_batch=0.27s C_batch=0.27s R_batch=0.27s J_lat=171.75s J_ours=0.00s e2e/item 172.57/0.00 acc L=0.400(n=5) O=na N=0.200(n=5) elapsed=1600s
+[latency] items 6-6/30 B=1 P_batch=0.27s C_batch=0.27s R_batch=0.27s J_lat=108.49s J_ours=0.00s e2e/item 109.31/0.00 acc L=0.500(n=6) O=na N=0.333(n=6) elapsed=1888s
+[latency] items 7-7/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=102.34s J_ours=0.00s e2e/item 103.16/0.00 acc L=0.571(n=7) O=na N=0.429(n=7) elapsed=2169s
+[latency] items 8-8/30 B=1 P_batch=0.28s C_batch=0.28s R_batch=0.27s J_lat=142.14s J_ours=0.00s e2e/item 142.97/0.00 acc L=0.500(n=8) O=na N=0.375(n=8) elapsed=2495s
+[latency] items 9-9/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=117.53s J_ours=0.00s e2e/item 118.34/0.00 acc L=0.556(n=9) O=na N=0.444(n=9) elapsed=2768s
+[latency] items 10-10/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=75.86s J_ours=0.00s e2e/item 76.68/0.00 acc L=0.600(n=10) O=na N=0.500(n=10) elapsed=2937s
+[latency] items 11-11/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=132.94s J_ours=0.00s e2e/item 133.75/0.00 acc L=0.636(n=11) O=na N=0.455(n=11) elapsed=3257s
+[latency] items 12-12/30 B=1 P_batch=0.28s C_batch=0.28s R_batch=0.27s J_lat=48.08s J_ours=0.00s e2e/item 48.90/0.00 acc L=0.667(n=12) O=na N=0.500(n=12) elapsed=3441s
+[latency] items 13-13/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.28s J_lat=66.67s J_ours=0.00s e2e/item 67.50/0.00 acc L=0.692(n=13) O=na N=0.538(n=13) elapsed=3632s
+[latency] items 14-14/30 B=1 P_batch=0.29s C_batch=0.28s R_batch=0.27s J_lat=185.80s J_ours=0.00s e2e/item 186.63/0.00 acc L=0.643(n=14) O=na N=0.500(n=14) elapsed=4004s
+[latency] items 15-15/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.29s J_lat=185.81s J_ours=0.00s e2e/item 186.65/0.00 acc L=0.667(n=15) O=na N=0.533(n=15) elapsed=4377s
+[latency] items 16-16/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=78.24s J_ours=0.00s e2e/item 79.06/0.00 acc L=0.625(n=16) O=na N=0.500(n=16) elapsed=4643s
+[latency] items 17-17/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.28s J_lat=126.39s J_ours=0.00s e2e/item 127.21/0.00 acc L=0.647(n=17) O=na N=0.529(n=17) elapsed=4893s
+[latency] items 18-18/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=185.73s J_ours=0.00s e2e/item 186.55/0.00 acc L=0.611(n=18) O=na N=0.500(n=18) elapsed=5266s
+[latency] items 19-19/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.28s J_lat=160.66s J_ours=0.00s e2e/item 161.49/0.00 acc L=0.579(n=19) O=na N=0.474(n=19) elapsed=5615s
+[latency] items 20-20/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=115.76s J_ours=0.00s e2e/item 116.58/0.00 acc L=0.600(n=20) O=na N=0.500(n=20) elapsed=5911s
+[latency] items 21-21/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=185.60s J_ours=0.00s e2e/item 186.41/0.00 acc L=0.571(n=21) O=na N=0.476(n=21) elapsed=6282s
+[latency] items 22-22/30 B=1 P_batch=0.27s C_batch=0.27s R_batch=0.27s J_lat=186.13s J_ours=0.00s e2e/item 186.95/0.00 acc L=0.545(n=22) O=na N=0.455(n=22) elapsed=6656s
+[latency] items 23-23/30 B=1 P_batch=0.27s C_batch=0.27s R_batch=0.27s J_lat=122.19s J_ours=0.00s e2e/item 123.00/0.00 acc L=0.565(n=23) O=na N=0.435(n=23) elapsed=6965s
+[latency] items 24-24/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=168.60s J_ours=0.00s e2e/item 169.41/0.00 acc L=0.542(n=24) O=na N=0.417(n=24) elapsed=7321s
+[latency] items 25-25/30 B=1 P_batch=0.27s C_batch=0.27s R_batch=0.27s J_lat=100.85s J_ours=0.00s e2e/item 101.67/0.00 acc L=0.520(n=25) O=na N=0.400(n=25) elapsed=7523s
+[latency] items 26-26/30 B=1 P_batch=0.27s C_batch=0.27s R_batch=0.27s J_lat=93.02s J_ours=0.00s e2e/item 93.83/0.00 acc L=0.500(n=26) O=na N=0.385(n=26) elapsed=7775s
+[latency] items 27-27/30 B=1 P_batch=0.27s C_batch=0.28s R_batch=0.27s J_lat=64.13s J_ours=0.00s e2e/item 64.94/0.00 acc L=0.481(n=27) O=na N=0.370(n=27) elapsed=7931s
+[latency] items 28-28/30 B=1 P_batch=0.26s C_batch=0.27s R_batch=0.27s J_lat=184.35s J_ours=0.00s e2e/item 185.15/0.00 acc L=0.464(n=28) O=na N=0.357(n=28) elapsed=8300s
+[latency] items 29-29/30 B=1 P_batch=0.29s C_batch=0.29s R_batch=0.28s J_lat=183.55s J_ours=0.00s e2e/item 184.42/0.00 acc L=0.448(n=29) O=na N=0.345(n=29) elapsed=8670s
+[latency] items 30-30/30 B=1 P_batch=0.26s C_batch=0.28s R_batch=0.27s J_lat=116.80s J_ours=0.00s e2e/item 117.60/0.00 acc L=0.433(n=30) O=na N=0.333(n=30) elapsed=8978s
+
+=== PER-AGENT LATENCY (mean sec/item at generate_bs=1) ===
+method             P       C       R      up    load  Judger     e2e     tok     acc
+latentmas       0.30    0.28    0.27    0.84   0.000  134.05  134.90  5926.8   0.433
+none            0.00    0.00    0.00    0.00   0.000  164.30  164.30  7236.7   0.333
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s            +0.000 [+0.000,+0.000] n=0
+  ours_minus_latentmas_e2e_s               +0.000 [+0.000,+0.000] n=0
+  ours_minus_latentmas_tokens              +0.000 [+0.000,+0.000] n=0
+  ours_minus_latentmas_correct             +0.000 [+0.000,+0.000] n=0
+  ours_minus_latentmas_upstream_s          +0.000 [+0.000,+0.000] n=0
+
+[precompute] 0.0s total  amortized 0.000s / test item  ours e2e+amort 0.00s
+
+[done] /workspace/latentmas-baseline/artifacts/exp_synth_latency/aime2024_bs1_real_none/report.json
+EXP_SYNTH_LATENCY_DONE
+===== END Mon Sep  7 22:53:01 UTC 2026 rc=0 =====

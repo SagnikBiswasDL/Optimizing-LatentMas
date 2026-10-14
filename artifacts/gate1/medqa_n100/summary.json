@@ -21,9 +21,15 @@
       "k": 0,
       "n": 100,
       "accuracy": 0.78,
-      "accuracy_ci": [0.69, 0.86],
+      "accuracy_ci": [
+        0.69,
+        0.86
+      ],
       "mean_latency_sec": 40.58766965970397,
-      "latency_ci": [36.01862833991554, 45.1247791296672],
+      "latency_ci": [
+        36.01862833991554,
+        45.1247791296672
+      ],
       "mean_output_tokens": 1730.85,
       "latent_forwards": 3,
       "n_failures": 0,
@@ -34,9 +40,15 @@
       "k": 5,
       "n": 100,
       "accuracy": 0.77,
-      "accuracy_ci": [0.68, 0.85],
+      "accuracy_ci": [
+        0.68,
+        0.85
+      ],
       "mean_latency_sec": 26.24186329379678,
-      "latency_ci": [22.969631310178897, 29.881533322668634],
+      "latency_ci": [
+        22.969631310178897,
+        29.881533322668634
+      ],
       "mean_output_tokens": 1097.39,
       "latent_forwards": 18,
       "n_failures": 0,
@@ -47,9 +59,15 @@
       "k": 10,
       "n": 100,
       "accuracy": 0.83,
-      "accuracy_ci": [0.76, 0.9],
+      "accuracy_ci": [
+        0.76,
+        0.9
+      ],
       "mean_latency_sec": 22.944456785656513,
-      "latency_ci": [20.670360199741086, 25.317242083795367],
+      "latency_ci": [
+        20.670360199741086,
+        25.317242083795367
+      ],
       "mean_output_tokens": 943.51,
       "latent_forwards": 33,
       "n_failures": 0,
@@ -60,9 +78,15 @@
       "k": 20,
       "n": 100,
       "accuracy": 0.79,
-      "accuracy_ci": [0.71, 0.87],
+      "accuracy_ci": [
+        0.71,
+        0.87
+      ],
       "mean_latency_sec": 24.933531456552444,
-      "latency_ci": [22.103420648916625, 27.75321668008808],
+      "latency_ci": [
+        22.103420648916625,
+        27.75321668008808
+      ],
       "mean_output_tokens": 992.46,
       "latent_forwards": 63,
       "n_failures": 0,
@@ -73,9 +97,15 @@
       "k": 40,
       "n": 100,
       "accuracy": 0.79,
-      "accuracy_ci": [0.71, 0.86],
+      "accuracy_ci": [
+        0.71,
+        0.86
+      ],
       "mean_latency_sec": 25.823304383270443,
-      "latency_ci": [23.13309417374991, 28.586826599936],
+      "latency_ci": [
+        23.13309417374991,
+        28.586826599936
+      ],
       "mean_output_tokens": 967.1,
       "latent_forwards": 123,
       "n_failures": 0,
@@ -83,9 +113,71 @@
       "peak_gpu_mem_gb": 28.51185655593872
     }
   ],
+  "paired_vs_max_k": {
+    "0": {
+      "mean_diff": 0.01,
+      "ci_lo": -0.05,
+      "ci_hi": 0.07,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "5": {
+      "mean_diff": 0.02,
+      "ci_lo": -0.03,
+      "ci_hi": 0.07,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "10": {
+      "mean_diff": -0.04,
+      "ci_lo": -0.09,
+      "ci_hi": 0.0,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "20": {
+      "mean_diff": 0.0,
+      "ci_lo": -0.04,
+      "ci_hi": 0.04,
+      "credible_positive": false,
+      "credible_negative": false
+    }
+  },
   "budget_suggestion": {
     "k_full": 10,
     "k_small": 0,
+    "candidates": [
+      {
+        "k_small": 0,
+        "k_full": 10,
+        "paired_acc_diff_full_minus_small": {
+          "mean_diff": 0.05,
+          "ci_lo": 0.0,
+          "ci_hi": 0.1,
+          "credible_positive": false,
+          "credible_negative": false
+        },
+        "latency_reduction": -0.7689531741312319,
+        "credible_accuracy_loss": false,
+        "meaningful_latency_reduction": false,
+        "selected": false
+      },
+      {
+        "k_small": 5,
+        "k_full": 10,
+        "paired_acc_diff_full_minus_small": {
+          "mean_diff": 0.06,
+          "ci_lo": 0.02,
+          "ci_hi": 0.11,
+          "credible_positive": true,
+          "credible_negative": false
+        },
+        "latency_reduction": -0.14371255501684432,
+        "credible_accuracy_loss": true,
+        "meaningful_latency_reduction": false,
+        "selected": false
+      }
+    ],
     "recommendation": {
       "k_small": 0,
       "k_full": 10,

@@ -1,0 +1,1474 @@
+[arr] START Tue Aug 25 00:28:03 UTC 2026
+[arr] START gsm8k_n100_b64_s42 Tue Aug 25 00:28:03 UTC 2026
+[load] Qwen/Qwen3-14B task=gsm8k n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.11it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.92it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.90it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.88it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.89it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.93it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.98it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.51it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.13it/s]
+[compress] evict budget=64 sink=4 importance=key_norm
+[latency] 1/100 P=1.68s C=1.03s R=1.01s J_full=6.83s J_ours=7.54s J_k10=6.51s tok_k10=272 acc_k10=1 tok 281/314 acc 1/1 elapsed=26s
+[latency] 2/100 P=1.00s C=1.00s R=1.01s J_full=5.99s J_ours=5.26s J_k10=6.61s tok_k10=274 acc_k10=1 tok 250/220 acc 1/1 elapsed=47s
+[latency] 3/100 P=1.00s C=1.01s R=1.00s J_full=24.61s J_ours=13.88s J_k10=37.17s tok_k10=1516 acc_k10=1 tok 1019/573 acc 1/1 elapsed=127s
+[latency] 4/100 P=1.00s C=1.01s R=1.00s J_full=10.05s J_ours=9.52s J_k10=9.42s tok_k10=381 acc_k10=1 tok 416/394 acc 1/1 elapsed=160s
+[latency] 5/100 P=1.01s C=1.01s R=1.00s J_full=9.16s J_ours=21.61s J_k10=22.39s tok_k10=923 acc_k10=1 tok 380/890 acc 1/1 elapsed=217s
+[latency] 6/100 P=1.00s C=1.01s R=1.00s J_full=17.39s J_ours=23.90s J_k10=17.65s tok_k10=732 acc_k10=1 tok 721/989 acc 1/1 elapsed=279s
+[latency] 7/100 P=1.04s C=1.06s R=1.02s J_full=8.49s J_ours=4.76s J_k10=8.22s tok_k10=339 acc_k10=1 tok 352/196 acc 1/1 elapsed=305s
+[latency] 8/100 P=1.00s C=1.01s R=1.00s J_full=22.54s J_ours=27.04s J_k10=40.15s tok_k10=1659 acc_k10=1 tok 937/1122 acc 1/1 elapsed=398s
+[latency] 9/100 P=1.00s C=1.01s R=1.01s J_full=22.40s J_ours=14.09s J_k10=24.49s tok_k10=1014 acc_k10=1 tok 932/583 acc 1/1 elapsed=463s
+[latency] 10/100 P=1.01s C=1.01s R=1.00s J_full=10.88s J_ours=11.02s J_k10=10.08s tok_k10=418 acc_k10=1 tok 450/455 acc 1/1 elapsed=499s
+[latency] 11/100 P=1.00s C=1.00s R=1.00s J_full=8.34s J_ours=10.76s J_k10=9.31s tok_k10=385 acc_k10=1 tok 346/444 acc 1/1 elapsed=531s
+[latency] 12/100 P=1.00s C=1.00s R=1.00s J_full=17.90s J_ours=17.85s J_k10=18.24s tok_k10=757 acc_k10=1 tok 744/737 acc 1/1 elapsed=589s
+[latency] 13/100 P=1.00s C=1.01s R=1.00s J_full=24.59s J_ours=46.53s J_k10=28.21s tok_k10=1173 acc_k10=1 tok 1018/1924 acc 1/1 elapsed=692s
+[latency] 14/100 P=1.00s C=1.00s R=0.99s J_full=21.39s J_ours=20.33s J_k10=9.53s tok_k10=396 acc_k10=1 tok 885/842 acc 1/1 elapsed=747s
+[latency] 15/100 P=1.00s C=1.01s R=1.00s J_full=13.24s J_ours=10.95s J_k10=8.52s tok_k10=354 acc_k10=0 tok 547/452 acc 1/0 elapsed=784s
+[latency] 16/100 P=1.00s C=1.01s R=1.00s J_full=10.76s J_ours=19.85s J_k10=12.90s tok_k10=535 acc_k10=1 tok 445/823 acc 1/1 elapsed=831s
+[latency] 17/100 P=1.00s C=1.00s R=1.00s J_full=8.63s J_ours=11.10s J_k10=8.15s tok_k10=338 acc_k10=1 tok 357/458 acc 1/1 elapsed=863s
+[latency] 18/100 P=1.00s C=1.00s R=1.00s J_full=9.78s J_ours=13.55s J_k10=9.55s tok_k10=397 acc_k10=1 tok 405/560 acc 1/1 elapsed=900s
+[latency] 19/100 P=1.00s C=1.00s R=1.00s J_full=10.91s J_ours=6.32s J_k10=10.41s tok_k10=435 acc_k10=1 tok 451/260 acc 1/1 elapsed=931s
+[latency] 20/100 P=0.99s C=1.00s R=0.99s J_full=20.07s J_ours=13.30s J_k10=20.19s tok_k10=837 acc_k10=1 tok 838/548 acc 1/1 elapsed=989s
+[latency] 21/100 P=1.00s C=1.00s R=0.99s J_full=16.99s J_ours=25.10s J_k10=16.58s tok_k10=686 acc_k10=1 tok 706/1039 acc 1/1 elapsed=1051s
+[latency] 22/100 P=1.01s C=1.00s R=1.00s J_full=13.50s J_ours=11.97s J_k10=12.86s tok_k10=532 acc_k10=1 tok 559/493 acc 1/1 elapsed=1093s
+[latency] 23/100 P=1.00s C=1.01s R=1.00s J_full=9.86s J_ours=5.98s J_k10=9.14s tok_k10=378 acc_k10=1 tok 408/246 acc 1/1 elapsed=1122s
+[latency] 24/100 P=1.00s C=1.01s R=1.00s J_full=10.62s J_ours=6.51s J_k10=7.33s tok_k10=304 acc_k10=1 tok 440/268 acc 1/1 elapsed=1150s
+[latency] 25/100 P=1.00s C=1.00s R=1.00s J_full=10.77s J_ours=17.41s J_k10=11.63s tok_k10=481 acc_k10=1 tok 446/720 acc 1/1 elapsed=1194s
+[latency] 26/100 P=0.99s C=1.00s R=0.99s J_full=11.49s J_ours=15.16s J_k10=11.28s tok_k10=467 acc_k10=1 tok 477/628 acc 1/1 elapsed=1236s
+[latency] 27/100 P=1.00s C=1.01s R=1.00s J_full=17.14s J_ours=11.77s J_k10=16.42s tok_k10=678 acc_k10=1 tok 712/486 acc 1/1 elapsed=1285s
+[latency] 28/100 P=1.00s C=1.01s R=1.00s J_full=7.44s J_ours=8.01s J_k10=11.10s tok_k10=460 acc_k10=1 tok 308/330 acc 1/0 elapsed=1315s
+[latency] 29/100 P=1.00s C=1.00s R=1.00s J_full=10.73s J_ours=8.18s J_k10=9.47s tok_k10=391 acc_k10=1 tok 444/336 acc 1/1 elapsed=1348s
+[latency] 30/100 P=1.00s C=1.00s R=1.00s J_full=7.57s J_ours=14.47s J_k10=7.14s tok_k10=295 acc_k10=1 tok 314/598 acc 1/1 elapsed=1381s
+[latency] 31/100 P=1.00s C=1.00s R=1.00s J_full=13.66s J_ours=12.88s J_k10=13.99s tok_k10=578 acc_k10=1 tok 563/532 acc 1/1 elapsed=1425s
+[latency] 32/100 P=1.00s C=1.00s R=1.00s J_full=15.70s J_ours=15.21s J_k10=14.34s tok_k10=594 acc_k10=1 tok 651/626 acc 1/1 elapsed=1474s
+[latency] 33/100 P=1.01s C=1.00s R=1.00s J_full=7.62s J_ours=7.86s J_k10=10.65s tok_k10=440 acc_k10=1 tok 315/323 acc 1/1 elapsed=1504s
+[latency] 34/100 P=1.00s C=1.01s R=1.00s J_full=12.52s J_ours=8.42s J_k10=11.99s tok_k10=496 acc_k10=1 tok 518/346 acc 1/1 elapsed=1541s
+[latency] 35/100 P=1.00s C=1.00s R=0.99s J_full=9.60s J_ours=5.23s J_k10=11.21s tok_k10=463 acc_k10=1 tok 399/215 acc 1/1 elapsed=1571s
+[latency] 36/100 P=1.00s C=1.00s R=1.00s J_full=10.00s J_ours=9.24s J_k10=8.30s tok_k10=344 acc_k10=1 tok 413/381 acc 1/1 elapsed=1602s
+[latency] 37/100 P=1.00s C=1.00s R=1.00s J_full=7.89s J_ours=4.96s J_k10=8.00s tok_k10=329 acc_k10=1 tok 327/204 acc 1/1 elapsed=1627s
+[latency] 38/100 P=1.00s C=1.00s R=1.00s J_full=43.19s J_ours=25.95s J_k10=24.91s tok_k10=1034 acc_k10=1 tok 1786/1071 acc 1/0 elapsed=1725s
+[latency] 39/100 P=1.00s C=1.00s R=1.00s J_full=19.28s J_ours=10.88s J_k10=22.30s tok_k10=922 acc_k10=1 tok 796/448 acc 1/1 elapsed=1781s
+[latency] 40/100 P=1.00s C=1.01s R=1.00s J_full=22.26s J_ours=17.56s J_k10=22.69s tok_k10=945 acc_k10=1 tok 921/727 acc 1/1 elapsed=1847s
+[latency] 41/100 P=1.00s C=1.00s R=1.00s J_full=19.79s J_ours=10.32s J_k10=8.75s tok_k10=360 acc_k10=1 tok 820/424 acc 1/1 elapsed=1890s
+[latency] 42/100 P=1.00s C=1.01s R=1.00s J_full=17.93s J_ours=15.18s J_k10=24.09s tok_k10=997 acc_k10=1 tok 743/629 acc 1/1 elapsed=1951s
+[latency] 43/100 P=0.99s C=1.01s R=0.99s J_full=9.10s J_ours=7.14s J_k10=8.83s tok_k10=366 acc_k10=1 tok 378/295 acc 1/1 elapsed=1980s
+[latency] 44/100 P=1.00s C=1.01s R=1.00s J_full=17.45s J_ours=14.99s J_k10=20.97s tok_k10=868 acc_k10=1 tok 724/621 acc 1/1 elapsed=2037s
+[latency] 45/100 P=1.00s C=1.01s R=1.00s J_full=14.49s J_ours=15.92s J_k10=13.72s tok_k10=569 acc_k10=1 tok 600/659 acc 1/1 elapsed=2085s
+[latency] 46/100 P=1.00s C=1.01s R=1.01s J_full=18.09s J_ours=15.55s J_k10=28.73s tok_k10=1194 acc_k10=1 tok 747/643 acc 1/1 elapsed=2151s
+[latency] 47/100 P=1.00s C=1.00s R=1.00s J_full=11.57s J_ours=15.38s J_k10=11.13s tok_k10=460 acc_k10=1 tok 479/636 acc 1/1 elapsed=2193s
+[latency] 48/100 P=1.00s C=1.00s R=1.00s J_full=15.11s J_ours=12.53s J_k10=7.96s tok_k10=330 acc_k10=1 tok 628/516 acc 1/1 elapsed=2233s
+[latency] 49/100 P=1.00s C=1.00s R=0.99s J_full=10.37s J_ours=9.94s J_k10=10.00s tok_k10=414 acc_k10=1 tok 428/410 acc 1/1 elapsed=2267s
+[latency] 50/100 P=1.00s C=1.00s R=0.99s J_full=11.66s J_ours=8.35s J_k10=11.63s tok_k10=481 acc_k10=1 tok 486/343 acc 1/1 elapsed=2302s
+[latency] 51/100 P=0.99s C=1.00s R=0.99s J_full=14.28s J_ours=9.65s J_k10=13.84s tok_k10=572 acc_k10=1 tok 593/399 acc 1/1 elapsed=2344s
+[latency] 52/100 P=1.00s C=1.00s R=1.00s J_full=10.49s J_ours=5.41s J_k10=10.27s tok_k10=427 acc_k10=1 tok 436/223 acc 1/1 elapsed=2374s
+[latency] 53/100 P=1.00s C=1.01s R=1.01s J_full=10.99s J_ours=8.98s J_k10=11.32s tok_k10=468 acc_k10=1 tok 454/370 acc 1/1 elapsed=2409s
+[latency] 54/100 P=1.00s C=1.01s R=1.00s J_full=15.46s J_ours=17.08s J_k10=16.58s tok_k10=687 acc_k10=1 tok 638/706 acc 1/1 elapsed=2462s
+[latency] 55/100 P=1.00s C=1.00s R=1.00s J_full=14.04s J_ours=18.74s J_k10=10.41s tok_k10=431 acc_k10=1 tok 580/775 acc 1/1 elapsed=2509s
+[latency] 56/100 P=1.00s C=1.01s R=1.00s J_full=6.34s J_ours=2.78s J_k10=6.39s tok_k10=265 acc_k10=1 tok 263/114 acc 1/1 elapsed=2528s
+[latency] 57/100 P=0.99s C=1.00s R=1.00s J_full=6.31s J_ours=3.79s J_k10=6.66s tok_k10=275 acc_k10=1 tok 261/155 acc 1/1 elapsed=2549s
+[latency] 58/100 P=0.99s C=1.00s R=1.00s J_full=11.57s J_ours=16.43s J_k10=12.63s tok_k10=523 acc_k10=1 tok 479/682 acc 1/1 elapsed=2593s
+[latency] 59/100 P=1.00s C=1.01s R=1.00s J_full=12.26s J_ours=10.44s J_k10=9.54s tok_k10=393 acc_k10=1 tok 507/430 acc 0/1 elapsed=2630s
+[latency] 60/100 P=1.01s C=1.00s R=1.00s J_full=7.58s J_ours=7.47s J_k10=8.59s tok_k10=355 acc_k10=1 tok 313/307 acc 1/1 elapsed=2657s
+[latency] 61/100 P=1.01s C=1.00s R=0.99s J_full=15.31s J_ours=11.83s J_k10=8.75s tok_k10=363 acc_k10=1 tok 636/489 acc 1/1 elapsed=2697s
+[latency] 62/100 P=0.99s C=1.00s R=1.00s J_full=6.48s J_ours=9.31s J_k10=6.89s tok_k10=287 acc_k10=1 tok 269/383 acc 1/1 elapsed=2723s
+[latency] 63/100 P=0.99s C=0.99s R=0.99s J_full=48.93s J_ours=21.63s J_k10=49.43s tok_k10=2048 acc_k10=0 tok 2048/896 acc 0/1 elapsed=2847s
+[latency] 64/100 P=1.00s C=1.01s R=1.00s J_full=20.67s J_ours=16.72s J_k10=18.17s tok_k10=751 acc_k10=1 tok 854/692 acc 1/1 elapsed=2906s
+[latency] 65/100 P=1.00s C=1.00s R=1.00s J_full=6.93s J_ours=4.16s J_k10=7.01s tok_k10=291 acc_k10=1 tok 286/171 acc 1/1 elapsed=2928s
+[latency] 66/100 P=1.00s C=1.00s R=1.01s J_full=9.04s J_ours=9.15s J_k10=7.76s tok_k10=323 acc_k10=1 tok 373/377 acc 1/1 elapsed=2958s
+[latency] 67/100 P=1.00s C=1.00s R=1.00s J_full=13.40s J_ours=11.91s J_k10=13.51s tok_k10=559 acc_k10=1 tok 555/492 acc 1/1 elapsed=3001s
+[latency] 68/100 P=1.00s C=1.00s R=1.00s J_full=12.80s J_ours=14.15s J_k10=10.52s tok_k10=434 acc_k10=1 tok 533/585 acc 1/1 elapsed=3042s
+[latency] 69/100 P=1.01s C=1.00s R=1.00s J_full=11.76s J_ours=10.91s J_k10=8.43s tok_k10=349 acc_k10=1 tok 487/450 acc 1/1 elapsed=3077s
+[latency] 70/100 P=1.00s C=1.00s R=1.00s J_full=10.45s J_ours=11.24s J_k10=10.47s tok_k10=434 acc_k10=1 tok 433/464 acc 1/1 elapsed=3113s
+[latency] 71/100 P=1.00s C=1.00s R=1.00s J_full=19.84s J_ours=21.33s J_k10=20.21s tok_k10=832 acc_k10=1 tok 820/878 acc 1/1 elapsed=3178s
+[latency] 72/100 P=1.00s C=1.00s R=1.00s J_full=6.59s J_ours=7.08s J_k10=7.90s tok_k10=325 acc_k10=1 tok 273/291 acc 1/1 elapsed=3204s
+[latency] 73/100 P=1.00s C=1.00s R=1.00s J_full=13.23s J_ours=8.03s J_k10=13.05s tok_k10=541 acc_k10=1 tok 548/329 acc 1/1 elapsed=3242s
+[latency] 74/100 P=1.00s C=1.01s R=1.00s J_full=14.07s J_ours=14.05s J_k10=13.16s tok_k10=542 acc_k10=1 tok 580/578 acc 1/1 elapsed=3287s
+[latency] 75/100 P=1.00s C=1.00s R=1.00s J_full=12.92s J_ours=16.19s J_k10=19.52s tok_k10=808 acc_k10=1 tok 534/667 acc 1/1 elapsed=3339s
+[latency] 76/100 P=1.00s C=1.00s R=1.00s J_full=13.00s J_ours=15.07s J_k10=9.68s tok_k10=399 acc_k10=1 tok 535/618 acc 1/1 elapsed=3381s
+[latency] 77/100 P=1.01s C=1.01s R=1.01s J_full=18.60s J_ours=17.83s J_k10=19.01s tok_k10=790 acc_k10=1 tok 766/733 acc 1/1 elapsed=3440s
+[latency] 78/100 P=1.00s C=1.00s R=0.99s J_full=7.74s J_ours=9.85s J_k10=8.78s tok_k10=363 acc_k10=1 tok 319/405 acc 1/1 elapsed=3471s
+[latency] 79/100 P=1.00s C=1.00s R=0.99s J_full=23.09s J_ours=16.40s J_k10=23.51s tok_k10=973 acc_k10=1 tok 955/676 acc 1/1 elapsed=3537s
+[latency] 80/100 P=1.00s C=1.00s R=1.00s J_full=5.94s J_ours=8.02s J_k10=6.22s tok_k10=257 acc_k10=1 tok 245/330 acc 1/1 elapsed=3561s
+[latency] 81/100 P=1.00s C=1.00s R=0.99s J_full=10.33s J_ours=11.34s J_k10=9.16s tok_k10=378 acc_k10=1 tok 426/467 acc 1/1 elapsed=3596s
+[latency] 82/100 P=1.00s C=1.01s R=1.00s J_full=9.48s J_ours=10.48s J_k10=8.85s tok_k10=364 acc_k10=1 tok 392/432 acc 1/1 elapsed=3629s
+[latency] 83/100 P=1.00s C=1.01s R=1.01s J_full=10.91s J_ours=6.88s J_k10=13.05s tok_k10=546 acc_k10=1 tok 455/282 acc 1/1 elapsed=3663s
+[latency] 84/100 P=0.98s C=0.99s R=0.99s J_full=6.03s J_ours=5.98s J_k10=8.30s tok_k10=343 acc_k10=1 tok 248/247 acc 1/1 elapsed=3688s
+[latency] 85/100 P=1.00s C=1.01s R=1.00s J_full=9.48s J_ours=6.58s J_k10=9.10s tok_k10=378 acc_k10=1 tok 393/271 acc 1/1 elapsed=3717s
+[latency] 86/100 P=1.00s C=1.01s R=1.00s J_full=49.40s J_ours=10.57s J_k10=33.05s tok_k10=1369 acc_k10=0 tok 2048/434 acc 1/1 elapsed=3813s
+[latency] 87/100 P=1.00s C=1.01s R=1.00s J_full=14.00s J_ours=19.54s J_k10=23.03s tok_k10=953 acc_k10=1 tok 580/807 acc 1/1 elapsed=3874s
+[latency] 88/100 P=1.00s C=1.00s R=0.99s J_full=49.38s J_ours=45.10s J_k10=49.36s tok_k10=2048 acc_k10=0 tok 2048/1857 acc 0/1 elapsed=4021s
+[latency] 89/100 P=1.00s C=1.00s R=1.00s J_full=9.41s J_ours=12.16s J_k10=10.48s tok_k10=433 acc_k10=1 tok 390/500 acc 1/1 elapsed=4057s
+[latency] 90/100 P=1.00s C=1.00s R=1.00s J_full=22.68s J_ours=18.16s J_k10=20.45s tok_k10=844 acc_k10=1 tok 934/749 acc 1/1 elapsed=4123s
+[latency] 91/100 P=1.00s C=1.01s R=1.00s J_full=10.18s J_ours=9.37s J_k10=10.65s tok_k10=439 acc_k10=1 tok 419/385 acc 1/1 elapsed=4157s
+[latency] 92/100 P=1.00s C=1.00s R=1.00s J_full=14.63s J_ours=9.08s J_k10=7.30s tok_k10=302 acc_k10=1 tok 602/373 acc 1/1 elapsed=4191s
+[latency] 93/100 P=1.00s C=1.00s R=1.00s J_full=17.34s J_ours=7.47s J_k10=7.96s tok_k10=330 acc_k10=1 tok 719/307 acc 1/1 elapsed=4228s
+[latency] 94/100 P=1.00s C=1.00s R=1.00s J_full=25.19s J_ours=47.03s J_k10=38.32s tok_k10=1581 acc_k10=0 tok 1044/1939 acc 0/0 elapsed=4342s
+[latency] 95/100 P=1.00s C=1.01s R=1.00s J_full=13.67s J_ours=10.10s J_k10=20.38s tok_k10=844 acc_k10=1 tok 563/416 acc 1/1 elapsed=4390s
+[latency] 96/100 P=1.00s C=1.00s R=1.00s J_full=13.30s J_ours=12.69s J_k10=13.55s tok_k10=557 acc_k10=1 tok 550/523 acc 1/1 elapsed=4434s
+[latency] 97/100 P=1.00s C=1.01s R=1.00s J_full=8.49s J_ours=6.83s J_k10=6.35s tok_k10=262 acc_k10=1 tok 351/280 acc 1/1 elapsed=4459s
+[latency] 98/100 P=1.00s C=1.01s R=1.00s J_full=14.95s J_ours=10.98s J_k10=10.49s tok_k10=432 acc_k10=1 tok 615/452 acc 1/1 elapsed=4500s
+[latency] 99/100 P=1.00s C=1.01s R=1.00s J_full=14.82s J_ours=24.76s J_k10=21.08s tok_k10=872 acc_k10=1 tok 614/1021 acc 1/1 elapsed=4564s
+[latency] 100/100 P=1.00s C=1.01s R=1.00s J_full=16.02s J_ours=8.29s J_k10=9.53s tok_k10=393 acc_k10=1 tok 661/341 acc 1/1 elapsed=4602s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.01    1.01    1.00   0.008   14.47   17.48   599.4   0.960
+ours            1.01    1.01    1.00   0.008   13.26   16.28   547.2   0.960
+k10             0.27    0.28    0.28   0.000   14.43   15.26   597.2   0.950
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -1.209 [-2.665,+0.224] n=100
+  ours_minus_latentmas_e2e_s       -1.201 [-2.657,+0.232] n=100
+  ours_minus_latentmas_tokens      -52.100 [-112.553,+7.581] n=100
+  ours_minus_latentmas_correct     +0.000 [-0.050,+0.050] n=100
+  k10_minus_latentmas_judger_s     -0.037 [-0.980,+0.971] n=100
+  k10_minus_latentmas_e2e_s        -2.226 [-3.167,-1.218] n=100
+  k10_minus_latentmas_tokens       -2.110 [-41.141,+39.221] n=100
+  k10_minus_latentmas_correct      -0.010 [-0.050,+0.020] n=100
+  ours_minus_k10_judger_s          -1.172 [-2.427,+0.002] n=100
+  ours_minus_k10_e2e_s             +1.025 [-0.231,+2.203] n=100
+  ours_minus_k10_tokens            -49.990 [-101.602,-1.499] n=100
+  ours_minus_k10_correct           +0.010 [-0.030,+0.060] n=100
+
+[done] artifacts/exp_latency_mem/arr_gsm8k_n100_b64_s42/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK gsm8k_n100_b64_s42 Tue Aug 25 01:46:10 UTC 2026
+[arr] START math_n100_b128_s42 Tue Aug 25 01:46:10 UTC 2026
+[load] Qwen/Qwen3-14B task=math n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  2.97it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.89it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.84it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.87it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.89it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.88it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.93it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.55it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.12it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/100 P=1.65s C=0.99s R=0.96s J_full=18.62s J_ours=13.60s J_k10=17.32s tok_k10=757 acc_k10=1 tok 810/593 acc 1/1 elapsed=54s
+[latency] 2/100 P=0.96s C=0.96s R=0.96s J_full=46.78s J_ours=47.66s J_k10=39.54s tok_k10=1724 acc_k10=1 tok 2038/2078 acc 1/1 elapsed=192s
+[latency] 3/100 P=0.95s C=0.96s R=0.95s J_full=19.81s J_ours=17.67s J_k10=20.69s tok_k10=908 acc_k10=1 tok 861/768 acc 1/1 elapsed=254s
+[latency] 4/100 P=0.96s C=0.97s R=0.96s J_full=14.18s J_ours=15.36s J_k10=19.67s tok_k10=855 acc_k10=1 tok 612/658 acc 1/1 elapsed=306s
+[latency] 5/100 P=0.97s C=0.98s R=0.97s J_full=14.63s J_ours=24.73s J_k10=25.26s tok_k10=1094 acc_k10=1 tok 632/1068 acc 1/1 elapsed=375s
+[latency] 6/100 P=0.95s C=0.96s R=0.96s J_full=11.57s J_ours=8.52s J_k10=9.49s tok_k10=410 acc_k10=1 tok 499/367 acc 1/1 elapsed=408s
+[latency] 7/100 P=0.96s C=0.96s R=0.97s J_full=29.47s J_ours=20.88s J_k10=16.50s tok_k10=716 acc_k10=1 tok 1272/899 acc 1/1 elapsed=479s
+[latency] 8/100 P=0.96s C=0.96s R=0.96s J_full=39.48s J_ours=47.90s J_k10=32.75s tok_k10=1409 acc_k10=1 tok 1705/2061 acc 1/1 elapsed=602s
+[latency] 9/100 P=0.96s C=0.96s R=0.96s J_full=17.03s J_ours=16.83s J_k10=13.10s tok_k10=567 acc_k10=1 tok 729/724 acc 1/1 elapsed=653s
+[latency] 10/100 P=0.96s C=0.97s R=0.97s J_full=94.73s J_ours=94.81s J_k10=94.83s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=941s
+[latency] 11/100 P=0.96s C=0.96s R=0.96s J_full=37.53s J_ours=38.72s J_k10=39.75s tok_k10=1724 acc_k10=1 tok 1622/1670 acc 1/1 elapsed=1061s
+[latency] 12/100 P=0.96s C=0.97s R=0.96s J_full=40.51s J_ours=70.82s J_k10=94.40s tok_k10=4096 acc_k10=0 tok 1756/3059 acc 0/1 elapsed=1270s
+[latency] 13/100 P=0.96s C=0.97s R=0.96s J_full=37.97s J_ours=19.46s J_k10=47.33s tok_k10=2036 acc_k10=1 tok 1645/842 acc 1/1 elapsed=1379s
+[latency] 14/100 P=0.96s C=0.97s R=0.97s J_full=11.08s J_ours=7.80s J_k10=11.23s tok_k10=485 acc_k10=1 tok 474/335 acc 1/1 elapsed=1413s
+[latency] 15/100 P=0.98s C=1.00s R=1.00s J_full=36.10s J_ours=27.10s J_k10=40.40s tok_k10=1742 acc_k10=1 tok 1551/1165 acc 1/1 elapsed=1520s
+[latency] 16/100 P=0.96s C=0.96s R=0.96s J_full=39.58s J_ours=41.55s J_k10=35.49s tok_k10=1522 acc_k10=1 tok 1708/1795 acc 1/1 elapsed=1640s
+[latency] 17/100 P=0.95s C=0.96s R=0.96s J_full=12.37s J_ours=16.97s J_k10=18.24s tok_k10=787 acc_k10=1 tok 541/735 acc 1/1 elapsed=1692s
+[latency] 18/100 P=0.96s C=0.97s R=0.97s J_full=82.77s J_ours=50.63s J_k10=52.98s tok_k10=2286 acc_k10=1 tok 3597/2193 acc 1/1 elapsed=1882s
+[latency] 19/100 P=0.96s C=0.97s R=0.97s J_full=95.15s J_ours=95.19s J_k10=94.68s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=2170s
+[latency] 20/100 P=0.96s C=0.96s R=0.96s J_full=45.67s J_ours=49.48s J_k10=55.05s tok_k10=2370 acc_k10=1 tok 1962/2134 acc 1/1 elapsed=2324s
+[latency] 21/100 P=0.96s C=0.97s R=0.97s J_full=10.58s J_ours=11.98s J_k10=10.35s tok_k10=446 acc_k10=1 tok 457/517 acc 1/1 elapsed=2361s
+[latency] 22/100 P=0.96s C=0.96s R=0.96s J_full=59.51s J_ours=61.45s J_k10=49.56s tok_k10=2140 acc_k10=1 tok 2560/2654 acc 1/1 elapsed=2535s
+[latency] 23/100 P=0.97s C=0.96s R=0.96s J_full=39.90s J_ours=31.15s J_k10=24.90s tok_k10=1074 acc_k10=1 tok 1731/1343 acc 1/1 elapsed=2635s
+[latency] 24/100 P=0.95s C=0.96s R=0.96s J_full=23.88s J_ours=25.99s J_k10=21.06s tok_k10=911 acc_k10=0 tok 1029/1119 acc 0/0 elapsed=2709s
+[latency] 25/100 P=0.96s C=0.97s R=0.96s J_full=17.48s J_ours=19.39s J_k10=17.30s tok_k10=747 acc_k10=1 tok 753/835 acc 1/1 elapsed=2767s
+[latency] 26/100 P=0.96s C=0.97s R=0.96s J_full=39.61s J_ours=53.23s J_k10=43.72s tok_k10=1884 acc_k10=0 tok 1702/2287 acc 0/0 elapsed=2907s
+[latency] 27/100 P=0.96s C=0.96s R=0.96s J_full=95.24s J_ours=95.00s J_k10=95.09s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=3196s
+[latency] 28/100 P=0.96s C=0.97s R=0.97s J_full=11.02s J_ours=15.38s J_k10=15.12s tok_k10=650 acc_k10=1 tok 474/661 acc 1/1 elapsed=3242s
+[latency] 29/100 P=0.96s C=0.97s R=0.96s J_full=20.55s J_ours=12.40s J_k10=21.27s tok_k10=916 acc_k10=1 tok 884/533 acc 1/1 elapsed=3300s
+[latency] 30/100 P=0.96s C=0.97s R=0.96s J_full=13.49s J_ours=11.03s J_k10=13.50s tok_k10=588 acc_k10=1 tok 584/475 acc 1/1 elapsed=3341s
+[latency] 31/100 P=0.95s C=0.95s R=0.95s J_full=11.36s J_ours=14.33s J_k10=14.23s tok_k10=616 acc_k10=1 tok 492/620 acc 1/1 elapsed=3385s
+[latency] 32/100 P=0.95s C=0.95s R=0.95s J_full=12.16s J_ours=16.37s J_k10=11.16s tok_k10=482 acc_k10=1 tok 527/706 acc 1/1 elapsed=3428s
+[latency] 33/100 P=0.96s C=0.96s R=0.96s J_full=94.74s J_ours=70.92s J_k10=95.26s tok_k10=4096 acc_k10=0 tok 4096/3048 acc 0/1 elapsed=3693s
+[latency] 34/100 P=0.96s C=0.96s R=0.96s J_full=28.48s J_ours=29.84s J_k10=34.46s tok_k10=1486 acc_k10=1 tok 1223/1282 acc 1/1 elapsed=3789s
+[latency] 35/100 P=0.95s C=0.97s R=0.96s J_full=23.35s J_ours=20.57s J_k10=23.55s tok_k10=1015 acc_k10=1 tok 1007/886 acc 1/1 elapsed=3860s
+[latency] 36/100 P=0.96s C=0.96s R=0.95s J_full=16.80s J_ours=13.75s J_k10=17.30s tok_k10=743 acc_k10=1 tok 721/590 acc 1/1 elapsed=3912s
+[latency] 37/100 P=0.96s C=0.96s R=0.96s J_full=48.53s J_ours=41.94s J_k10=40.15s tok_k10=1735 acc_k10=0 tok 2083/1806 acc 0/0 elapsed=4046s
+[latency] 38/100 P=0.95s C=0.96s R=0.96s J_full=16.26s J_ours=8.31s J_k10=11.63s tok_k10=498 acc_k10=1 tok 704/359 acc 1/1 elapsed=4086s
+[latency] 39/100 P=0.96s C=0.96s R=0.96s J_full=9.54s J_ours=10.49s J_k10=12.85s tok_k10=554 acc_k10=1 tok 412/451 acc 1/1 elapsed=4123s
+[latency] 40/100 P=0.99s C=0.96s R=1.00s J_full=26.93s J_ours=15.15s J_k10=16.21s tok_k10=697 acc_k10=1 tok 1157/650 acc 1/1 elapsed=4185s
+[latency] 41/100 P=0.95s C=0.96s R=0.95s J_full=8.40s J_ours=12.32s J_k10=9.13s tok_k10=395 acc_k10=1 tok 362/525 acc 1/1 elapsed=4218s
+[latency] 42/100 P=0.96s C=0.97s R=0.96s J_full=54.68s J_ours=48.42s J_k10=95.52s tok_k10=4096 acc_k10=0 tok 2356/2083 acc 1/1 elapsed=4421s
+[latency] 43/100 P=0.96s C=0.96s R=0.96s J_full=16.90s J_ours=9.98s J_k10=12.02s tok_k10=518 acc_k10=1 tok 731/428 acc 1/1 elapsed=4463s
+[latency] 44/100 P=0.96s C=0.96s R=0.96s J_full=94.93s J_ours=95.37s J_k10=94.85s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=4752s
+[latency] 45/100 P=0.95s C=0.96s R=0.96s J_full=11.94s J_ours=11.00s J_k10=15.72s tok_k10=681 acc_k10=1 tok 516/475 acc 1/1 elapsed=4794s
+[latency] 46/100 P=0.96s C=0.96s R=0.96s J_full=18.59s J_ours=26.24s J_k10=19.20s tok_k10=832 acc_k10=1 tok 801/1131 acc 1/1 elapsed=4862s
+[latency] 47/100 P=0.96s C=0.96s R=0.95s J_full=47.35s J_ours=63.85s J_k10=43.10s tok_k10=1854 acc_k10=1 tok 2046/2754 acc 1/1 elapsed=5020s
+[latency] 48/100 P=0.96s C=0.96s R=0.96s J_full=15.40s J_ours=14.46s J_k10=16.27s tok_k10=692 acc_k10=1 tok 661/618 acc 1/1 elapsed=5070s
+[latency] 49/100 P=0.96s C=0.98s R=0.98s J_full=10.19s J_ours=18.48s J_k10=14.36s tok_k10=621 acc_k10=1 tok 439/798 acc 1/1 elapsed=5117s
+[latency] 50/100 P=0.96s C=0.96s R=0.96s J_full=19.03s J_ours=13.72s J_k10=10.78s tok_k10=466 acc_k10=1 tok 822/592 acc 1/1 elapsed=5164s
+[latency] 51/100 P=0.95s C=0.97s R=0.96s J_full=38.35s J_ours=52.21s J_k10=44.08s tok_k10=1876 acc_k10=1 tok 1657/2253 acc 1/1 elapsed=5302s
+[latency] 52/100 P=0.96s C=0.97s R=0.96s J_full=47.27s J_ours=19.16s J_k10=26.66s tok_k10=1151 acc_k10=1 tok 2028/825 acc 1/1 elapsed=5399s
+[latency] 53/100 P=0.95s C=0.96s R=0.96s J_full=15.95s J_ours=14.82s J_k10=15.69s tok_k10=680 acc_k10=1 tok 690/641 acc 1/1 elapsed=5449s
+[latency] 54/100 P=0.95s C=0.96s R=0.95s J_full=14.71s J_ours=13.35s J_k10=13.11s tok_k10=565 acc_k10=1 tok 635/576 acc 1/1 elapsed=5494s
+[latency] 55/100 P=0.95s C=0.96s R=0.96s J_full=12.77s J_ours=8.37s J_k10=16.35s tok_k10=707 acc_k10=1 tok 548/359 acc 1/1 elapsed=5535s
+[latency] 56/100 P=0.95s C=0.96s R=0.95s J_full=15.10s J_ours=36.76s J_k10=20.04s tok_k10=862 acc_k10=1 tok 652/1581 acc 1/1 elapsed=5611s
+[latency] 57/100 P=0.95s C=0.96s R=0.95s J_full=9.75s J_ours=12.33s J_k10=12.25s tok_k10=530 acc_k10=1 tok 424/533 acc 1/1 elapsed=5649s
+[latency] 58/100 P=0.96s C=0.96s R=0.96s J_full=18.65s J_ours=10.19s J_k10=14.57s tok_k10=630 acc_k10=1 tok 804/438 acc 1/1 elapsed=5696s
+[latency] 59/100 P=0.96s C=0.96s R=0.97s J_full=17.00s J_ours=17.29s J_k10=16.69s tok_k10=720 acc_k10=1 tok 733/746 acc 1/1 elapsed=5750s
+[latency] 60/100 P=0.96s C=0.97s R=0.96s J_full=18.65s J_ours=13.95s J_k10=16.47s tok_k10=713 acc_k10=1 tok 807/601 acc 1/1 elapsed=5803s
+[latency] 61/100 P=0.95s C=0.96s R=0.95s J_full=69.03s J_ours=86.43s J_k10=94.62s tok_k10=4096 acc_k10=0 tok 2986/3733 acc 1/1 elapsed=6057s
+[latency] 62/100 P=0.96s C=0.97s R=0.96s J_full=43.83s J_ours=33.12s J_k10=33.19s tok_k10=1434 acc_k10=1 tok 1902/1428 acc 1/1 elapsed=6171s
+[latency] 63/100 P=0.96s C=0.97s R=0.96s J_full=33.58s J_ours=36.81s J_k10=51.38s tok_k10=2212 acc_k10=1 tok 1447/1583 acc 1/1 elapsed=6296s
+[latency] 64/100 P=0.95s C=0.96s R=0.96s J_full=40.05s J_ours=45.51s J_k10=57.40s tok_k10=2479 acc_k10=1 tok 1728/1964 acc 1/1 elapsed=6443s
+[latency] 65/100 P=0.96s C=0.96s R=0.96s J_full=75.98s J_ours=95.08s J_k10=95.40s tok_k10=4096 acc_k10=0 tok 3268/4096 acc 1/0 elapsed=6713s
+[latency] 66/100 P=0.96s C=0.97s R=0.96s J_full=8.49s J_ours=11.86s J_k10=9.32s tok_k10=404 acc_k10=1 tok 370/511 acc 1/1 elapsed=6746s
+[latency] 67/100 P=0.96s C=0.96s R=0.95s J_full=19.37s J_ours=17.89s J_k10=19.83s tok_k10=859 acc_k10=1 tok 841/776 acc 1/1 elapsed=6807s
+[latency] 68/100 P=0.95s C=0.96s R=0.95s J_full=19.38s J_ours=18.61s J_k10=23.24s tok_k10=1002 acc_k10=1 tok 840/804 acc 1/1 elapsed=6872s
+[latency] 69/100 P=0.96s C=0.96s R=0.95s J_full=42.92s J_ours=94.62s J_k10=51.68s tok_k10=2202 acc_k10=1 tok 1854/4096 acc 1/0 elapsed=7065s
+[latency] 70/100 P=0.96s C=0.97s R=0.96s J_full=25.49s J_ours=25.86s J_k10=26.86s tok_k10=1165 acc_k10=1 tok 1103/1121 acc 1/1 elapsed=7147s
+[latency] 71/100 P=0.95s C=0.96s R=0.96s J_full=14.92s J_ours=18.00s J_k10=16.61s tok_k10=719 acc_k10=1 tok 644/777 acc 1/1 elapsed=7200s
+[latency] 72/100 P=0.95s C=0.96s R=0.95s J_full=86.43s J_ours=25.99s J_k10=48.64s tok_k10=2104 acc_k10=1 tok 3745/1121 acc 0/0 elapsed=7365s
+[latency] 73/100 P=0.95s C=0.96s R=0.95s J_full=12.85s J_ours=14.01s J_k10=18.79s tok_k10=809 acc_k10=1 tok 557/606 acc 1/1 elapsed=7414s
+[latency] 74/100 P=0.96s C=0.96s R=0.96s J_full=18.52s J_ours=17.39s J_k10=16.61s tok_k10=720 acc_k10=1 tok 800/750 acc 1/1 elapsed=7470s
+[latency] 75/100 P=0.95s C=0.96s R=0.95s J_full=19.43s J_ours=18.45s J_k10=21.67s tok_k10=937 acc_k10=1 tok 840/796 acc 1/1 elapsed=7533s
+[latency] 76/100 P=0.95s C=0.96s R=0.95s J_full=21.54s J_ours=13.97s J_k10=23.07s tok_k10=999 acc_k10=1 tok 934/602 acc 1/1 elapsed=7596s
+[latency] 77/100 P=0.95s C=0.95s R=0.95s J_full=16.97s J_ours=20.05s J_k10=20.36s tok_k10=880 acc_k10=1 tok 735/866 acc 1/1 elapsed=7657s
+[latency] 78/100 P=0.95s C=0.96s R=0.96s J_full=13.29s J_ours=14.63s J_k10=10.40s tok_k10=448 acc_k10=1 tok 575/632 acc 1/1 elapsed=7699s
+[latency] 79/100 P=0.95s C=0.95s R=0.94s J_full=45.33s J_ours=34.24s J_k10=48.59s tok_k10=2103 acc_k10=1 tok 1972/1493 acc 1/1 elapsed=7830s
+[latency] 80/100 P=0.95s C=0.96s R=0.96s J_full=8.43s J_ours=9.58s J_k10=9.11s tok_k10=393 acc_k10=1 tok 365/412 acc 1/1 elapsed=7861s
+[latency] 81/100 P=0.96s C=0.96s R=0.96s J_full=94.99s J_ours=94.76s J_k10=95.30s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=8150s
+[latency] 82/100 P=0.95s C=0.96s R=0.95s J_full=27.19s J_ours=19.75s J_k10=23.04s tok_k10=997 acc_k10=1 tok 1169/842 acc 1/1 elapsed=8224s
+[latency] 83/100 P=1.00s C=1.01s R=1.01s J_full=53.86s J_ours=66.49s J_k10=95.08s tok_k10=4096 acc_k10=0 tok 2317/2865 acc 1/1 elapsed=8443s
+[latency] 84/100 P=0.96s C=0.97s R=0.97s J_full=32.57s J_ours=33.49s J_k10=16.31s tok_k10=703 acc_k10=1 tok 1409/1442 acc 1/1 elapsed=8529s
+[latency] 85/100 P=0.96s C=0.96s R=0.96s J_full=40.20s J_ours=31.28s J_k10=29.13s tok_k10=1251 acc_k10=1 tok 1723/1345 acc 1/1 elapsed=8633s
+[latency] 86/100 P=0.96s C=0.96s R=0.96s J_full=19.99s J_ours=17.24s J_k10=18.18s tok_k10=779 acc_k10=1 tok 859/742 acc 1/1 elapsed=8692s
+[latency] 87/100 P=0.96s C=0.97s R=0.96s J_full=8.06s J_ours=7.93s J_k10=8.59s tok_k10=370 acc_k10=1 tok 348/340 acc 1/1 elapsed=8721s
+[latency] 88/100 P=0.95s C=0.96s R=0.97s J_full=26.15s J_ours=27.49s J_k10=27.32s tok_k10=1178 acc_k10=1 tok 1131/1187 acc 1/1 elapsed=8805s
+[latency] 89/100 P=0.96s C=0.96s R=0.96s J_full=85.41s J_ours=63.19s J_k10=90.59s tok_k10=3770 acc_k10=1 tok 3652/2638 acc 1/1 elapsed=9048s
+[latency] 90/100 P=0.96s C=0.96s R=0.97s J_full=27.53s J_ours=17.92s J_k10=40.76s tok_k10=1688 acc_k10=1 tok 1173/759 acc 1/1 elapsed=9138s
+[latency] 91/100 P=0.99s C=1.02s R=0.96s J_full=6.73s J_ours=7.69s J_k10=8.28s tok_k10=343 acc_k10=1 tok 287/326 acc 1/1 elapsed=9165s
+[latency] 92/100 P=0.99s C=1.04s R=1.03s J_full=19.62s J_ours=16.65s J_k10=14.98s tok_k10=641 acc_k10=1 tok 826/706 acc 1/1 elapsed=9220s
+[latency] 93/100 P=0.97s C=0.96s R=0.96s J_full=27.74s J_ours=26.39s J_k10=26.09s tok_k10=1111 acc_k10=1 tok 1192/1130 acc 1/1 elapsed=9304s
+[latency] 94/100 P=0.95s C=0.95s R=0.95s J_full=22.11s J_ours=21.95s J_k10=23.04s tok_k10=986 acc_k10=1 tok 962/949 acc 1/1 elapsed=9374s
+[latency] 95/100 P=0.98s C=0.98s R=0.98s J_full=95.31s J_ours=94.79s J_k10=94.80s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=9663s
+[latency] 96/100 P=0.96s C=0.97s R=0.95s J_full=22.66s J_ours=18.88s J_k10=21.22s tok_k10=920 acc_k10=1 tok 979/818 acc 1/1 elapsed=9729s
+[latency] 97/100 P=0.96s C=0.96s R=0.95s J_full=94.70s J_ours=95.04s J_k10=95.05s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=10018s
+[latency] 98/100 P=0.96s C=0.96s R=0.96s J_full=11.79s J_ours=12.40s J_k10=13.45s tok_k10=579 acc_k10=1 tok 507/533 acc 1/1 elapsed=10059s
+[latency] 99/100 P=0.96s C=0.96s R=0.96s J_full=12.46s J_ours=9.12s J_k10=8.03s tok_k10=347 acc_k10=1 tok 540/391 acc 1/1 elapsed=10093s
+[latency] 100/100 P=0.96s C=0.96s R=0.96s J_full=37.23s J_ours=34.21s J_k10=39.78s tok_k10=1720 acc_k10=0 tok 1613/1475 acc 0/0 elapsed=10207s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       0.97    0.96    0.96   0.008   32.72   35.61  1411.9   0.860
+ours            0.97    0.96    0.96   0.008   31.85   34.75  1372.5   0.860
+k10             0.26    0.27    0.26   0.000   33.80   34.59  1455.7   0.830
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -0.868 [-3.352,+1.425] n=100
+  ours_minus_latentmas_e2e_s       -0.860 [-3.343,+1.432] n=100
+  ours_minus_latentmas_tokens      -39.370 [-147.412,+60.025] n=100
+  ours_minus_latentmas_correct     +0.000 [-0.040,+0.040] n=100
+  k10_minus_latentmas_judger_s     +1.078 [-1.108,+3.443] n=100
+  k10_minus_latentmas_e2e_s        -1.025 [-3.206,+1.341] n=100
+  k10_minus_latentmas_tokens       +43.800 [-50.253,+146.384] n=100
+  k10_minus_latentmas_correct      -0.030 [-0.070,+0.010] n=100
+  ours_minus_k10_judger_s          -1.946 [-4.072,+0.152] n=100
+  ours_minus_k10_e2e_s             +0.165 [-1.957,+2.262] n=100
+  ours_minus_k10_tokens            -83.170 [-174.343,+7.132] n=100
+  ours_minus_k10_correct           +0.030 [-0.020,+0.080] n=100
+
+[done] artifacts/exp_latency_mem/arr_math_n100_b128_s42/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK math_n100_b128_s42 Tue Aug 25 04:37:45 UTC 2026
+[arr] START gpqa_n100_b128_s42 Tue Aug 25 04:37:45 UTC 20[arGenerating test split:   0%|          | 0/198 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 198/198 [00:00<00:00, 25680.21 examples/s]
+[load] Qwen/Qwen3-14B task=gpqa n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.01it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.78it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.81it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.86it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.89it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.91it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.95it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.60it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.13it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/100 P=1.62s C=0.99s R=0.97s J_full=97.65s J_ours=19.19s J_k10=103.66s tok_k10=4516 acc_k10=0 tok 4254/840 acc 0/1 elapsed=225s
+[latency] 2/100 P=0.96s C=0.96s R=0.95s J_full=58.74s J_ours=76.17s J_k10=26.04s tok_k10=1135 acc_k10=1 tok 2566/3325 acc 1/1 elapsed=390s
+[latency] 3/100 P=0.96s C=0.96s R=0.96s J_full=41.69s J_ours=71.70s J_k10=33.89s tok_k10=1479 acc_k10=1 tok 1817/3131 acc 1/1 elapsed=541s
+[latency] 4/100 P=0.96s C=0.96s R=0.96s J_full=32.92s J_ours=51.10s J_k10=41.90s tok_k10=1825 acc_k10=1 tok 1432/2238 acc 1/1 elapsed=670s
+[latency] 5/100 P=0.96s C=0.97s R=0.96s J_full=188.47s J_ours=43.80s J_k10=58.39s tok_k10=2550 acc_k10=1 tok 8192/1899 acc 0/1 elapsed=965s
+[latency] 6/100 P=0.95s C=0.95s R=0.95s J_full=189.05s J_ours=158.33s J_k10=188.51s tok_k10=8192 acc_k10=0 tok 8192/6878 acc 0/1 elapsed=1504s
+[latency] 7/100 P=0.97s C=0.98s R=0.98s J_full=135.80s J_ours=76.70s J_k10=114.18s tok_k10=4943 acc_k10=0 tok 5885/3329 acc 0/0 elapsed=1835s
+[latency] 8/100 P=0.96s C=0.96s R=0.96s J_full=142.13s J_ours=36.58s J_k10=64.23s tok_k10=2795 acc_k10=0 tok 6162/1597 acc 1/0 elapsed=2081s
+[latency] 9/100 P=0.95s C=0.95s R=0.95s J_full=128.09s J_ours=188.44s J_k10=89.98s tok_k10=3891 acc_k10=1 tok 5568/8192 acc 1/0 elapsed=2491s
+[latency] 10/100 P=0.96s C=0.96s R=0.96s J_full=69.46s J_ours=68.77s J_k10=74.69s tok_k10=3248 acc_k10=0 tok 3009/2995 acc 0/0 elapsed=2708s
+[latency] 11/100 P=0.96s C=0.97s R=0.97s J_full=51.51s J_ours=158.28s J_k10=67.34s tok_k10=2920 acc_k10=0 tok 2241/6872 acc 0/1 elapsed=2989s
+[latency] 12/100 P=0.96s C=0.96s R=0.95s J_full=12.02s J_ours=13.51s J_k10=20.14s tok_k10=875 acc_k10=0 tok 521/588 acc 0/0 elapsed=3038s
+[latency] 13/100 P=0.96s C=0.96s R=0.96s J_full=149.43s J_ours=188.69s J_k10=76.61s tok_k10=3332 acc_k10=1 tok 6496/8192 acc 1/0 elapsed=3457s
+[latency] 14/100 P=0.95s C=0.96s R=0.95s J_full=38.93s J_ours=38.92s J_k10=22.47s tok_k10=980 acc_k10=1 tok 1690/1694 acc 1/1 elapsed=3561s
+[latency] 15/100 P=0.96s C=0.97s R=0.96s J_full=12.98s J_ours=19.29s J_k10=27.38s tok_k10=1194 acc_k10=0 tok 564/839 acc 0/0 elapsed=3624s
+[latency] 16/100 P=0.95s C=0.96s R=0.96s J_full=111.18s J_ours=143.68s J_k10=185.20s tok_k10=8000 acc_k10=0 tok 4828/6222 acc 0/0 elapsed=4068s
+[latency] 17/100 P=0.96s C=0.96s R=0.96s J_full=152.08s J_ours=8.85s J_k10=165.14s tok_k10=7154 acc_k10=1 tok 6583/384 acc 1/0 elapsed=4398s
+[latency] 18/100 P=0.95s C=0.96s R=0.95s J_full=39.16s J_ours=23.10s J_k10=41.00s tok_k10=1777 acc_k10=1 tok 1693/991 acc 1/1 elapsed=4504s
+[latency] 19/100 P=1.00s C=1.01s R=1.00s J_full=146.66s J_ours=7.28s J_k10=79.06s tok_k10=3432 acc_k10=1 tok 6358/313 acc 1/0 elapsed=4741s
+[latency] 20/100 P=0.96s C=0.95s R=0.96s J_full=56.84s J_ours=94.87s J_k10=59.27s tok_k10=2575 acc_k10=1 tok 2456/4123 acc 1/1 elapsed=4956s
+[latency] 21/100 P=0.96s C=0.97s R=0.96s J_full=121.90s J_ours=123.29s J_k10=96.97s tok_k10=4202 acc_k10=1 tok 5288/5354 acc 1/0 elapsed=5302s
+[latency] 22/100 P=0.95s C=0.96s R=0.96s J_full=188.71s J_ours=172.85s J_k10=189.17s tok_k10=8192 acc_k10=0 tok 8192/7475 acc 0/1 elapsed=5856s
+[latency] 23/100 P=0.96s C=0.98s R=0.97s J_full=76.04s J_ours=48.51s J_k10=100.46s tok_k10=4337 acc_k10=0 tok 3258/2081 acc 1/0 elapsed=6085s
+[latency] 24/100 P=0.97s C=0.99s R=0.97s J_full=48.25s J_ours=79.63s J_k10=76.38s tok_k10=3298 acc_k10=1 tok 2046/3443 acc 1/1 elapsed=6293s
+[latency] 25/100 P=0.96s C=0.97s R=0.97s J_full=187.07s J_ours=169.90s J_k10=173.57s tok_k10=7418 acc_k10=0 tok 8109/7444 acc 0/0 elapsed=6827s
+[latency] 26/100 P=0.97s C=0.99s R=0.98s J_full=60.03s J_ours=72.78s J_k10=64.89s tok_k10=2469 acc_k10=1 tok 2365/2783 acc 1/1 elapsed=7029s
+[latency] 27/100 P=1.09s C=1.10s R=1.09s J_full=80.63s J_ours=85.87s J_k10=121.97s tok_k10=4851 acc_k10=1 tok 3061/3313 acc 1/1 elapsed=7321s
+[latency] 28/100 P=1.05s C=1.05s R=1.05s J_full=40.55s J_ours=17.66s J_k10=35.46s tok_k10=1347 acc_k10=1 tok 1565/670 acc 1/1 elapsed=7419s
+[latency] 29/100 P=1.10s C=1.10s R=1.09s J_full=200.76s J_ours=95.41s J_k10=173.53s tok_k10=6592 acc_k10=0 tok 7601/3637 acc 0/0 elapsed=7893s
+[latency] 30/100 P=1.11s C=1.11s R=1.10s J_full=47.64s J_ours=68.31s J_k10=34.63s tok_k10=1294 acc_k10=1 tok 1796/2555 acc 1/1 elapsed=8048s
+[latency] 31/100 P=1.11s C=1.11s R=1.11s J_full=86.68s J_ours=79.23s J_k10=213.52s tok_k10=8192 acc_k10=0 tok 3294/3029 acc 0/0 elapsed=8432s
+[latency] 32/100 P=1.09s C=1.09s R=1.08s J_full=51.29s J_ours=72.00s J_k10=72.07s tok_k10=2771 acc_k10=0 tok 1965/2766 acc 0/1 elapsed=8631s
+[latency] 33/100 P=1.08s C=1.08s R=1.08s J_full=81.96s J_ours=88.35s J_k10=89.71s tok_k10=3601 acc_k10=1 tok 3299/3562 acc 1/1 elapsed=8895s
+[latency] 34/100 P=1.03s C=1.04s R=1.03s J_full=29.97s J_ours=59.94s J_k10=27.29s tok_k10=1096 acc_k10=1 tok 1203/2411 acc 1/1 elapsed=9016s
+[latency] 35/100 P=1.03s C=1.03s R=1.03s J_full=42.06s J_ours=12.07s J_k10=41.32s tok_k10=1666 acc_k10=0 tok 1695/484 acc 0/0 elapsed=9116s
+[latency] 36/100 P=1.03s C=1.04s R=1.02s J_full=131.92s J_ours=12.77s J_k10=147.51s tok_k10=5954 acc_k10=1 tok 5313/514 acc 1/1 elapsed=9412s
+[latency] 37/100 P=1.04s C=1.05s R=1.05s J_full=62.66s J_ours=33.78s J_k10=59.93s tok_k10=2399 acc_k10=1 tok 2518/1359 acc 1/0 elapsed=9572s
+[latency] 38/100 P=1.03s C=1.04s R=1.03s J_full=48.00s J_ours=42.19s J_k10=48.07s tok_k10=1940 acc_k10=1 tok 1932/1700 acc 1/1 elapsed=9715s
+[latency] 39/100 P=1.03s C=1.04s R=1.03s J_full=21.17s J_ours=26.19s J_k10=24.24s tok_k10=976 acc_k10=0 tok 853/1054 acc 0/0 elapsed=9790s
+[latency] 40/100 P=1.04s C=1.04s R=1.04s J_full=19.35s J_ours=39.83s J_k10=43.22s tok_k10=1735 acc_k10=1 tok 779/1603 acc 1/1 elapsed=9897s
+[latency] 41/100 P=1.05s C=1.05s R=1.05s J_full=101.33s J_ours=144.60s J_k10=108.69s tok_k10=4356 acc_k10=1 tok 4069/5812 acc 1/1 elapsed=10255s
+[latency] 42/100 P=1.03s C=1.04s R=1.05s J_full=204.03s J_ours=11.85s J_k10=105.17s tok_k10=4229 acc_k10=0 tok 8192/475 acc 0/0 elapsed=10580s
+[latency] 43/100 P=1.03s C=1.04s R=1.03s J_full=94.45s J_ours=24.71s J_k10=104.75s tok_k10=4204 acc_k10=1 tok 3794/991 acc 0/0 elapsed=10808s
+[latency] 44/100 P=1.03s C=1.03s R=1.04s J_full=14.63s J_ours=14.88s J_k10=18.74s tok_k10=755 acc_k10=0 tok 590/599 acc 0/0 elapsed=10861s
+[latency] 45/100 P=1.03s C=1.03s R=1.03s J_full=73.71s J_ours=43.08s J_k10=45.99s tok_k10=1849 acc_k10=1 tok 2963/1731 acc 1/1 elapsed=11027s
+[latency] 46/100 P=1.03s C=1.03s R=1.03s J_full=63.29s J_ours=31.47s J_k10=77.22s tok_k10=3104 acc_k10=1 tok 2550/1267 acc 1/1 elapsed=11203s
+[latency] 47/100 P=1.03s C=1.03s R=1.03s J_full=74.92s J_ours=11.88s J_k10=103.81s tok_k10=4177 acc_k10=1 tok 3020/479 acc 1/1 elapsed=11398s
+[latency] 48/100 P=1.03s C=1.03s R=1.03s J_full=17.41s J_ours=19.09s J_k10=17.13s tok_k10=688 acc_k10=1 tok 701/767 acc 1/1 elapsed=11455s
+[latency] 49/100 P=1.04s C=1.03s R=1.04s J_full=23.28s J_ours=15.08s J_k10=24.24s tok_k10=977 acc_k10=1 tok 935/606 acc 1/1 elapsed=11522s
+[latency] 50/100 P=1.04s C=1.04s R=1.03s J_full=31.44s J_ours=48.66s J_k10=37.77s tok_k10=1516 acc_k10=1 tok 1257/1948 acc 1/1 elapsed=11644s
+[latency] 51/100 P=1.04s C=1.03s R=1.04s J_full=154.30s J_ours=28.27s J_k10=116.07s tok_k10=4664 acc_k10=1 tok 6186/1130 acc 1/1 elapsed=11946s
+[latency] 52/100 P=1.04s C=1.04s R=1.05s J_full=62.38s J_ours=89.85s J_k10=78.25s tok_k10=3145 acc_k10=1 tok 2511/3602 acc 1/0 elapsed=12181s
+[latency] 53/100 P=1.03s C=1.03s R=1.03s J_full=139.77s J_ours=104.62s J_k10=155.58s tok_k10=6244 acc_k10=0 tok 5594/4195 acc 0/0 elapsed=12585s
+[latency] 54/100 P=1.03s C=1.03s R=1.03s J_full=37.68s J_ours=89.67s J_k10=47.23s tok_k10=1895 acc_k10=1 tok 1511/3596 acc 1/0 elapsed=12763s
+[latency] 55/100 P=1.03s C=1.03s R=1.03s J_full=53.24s J_ours=58.61s J_k10=53.44s tok_k10=2144 acc_k10=1 tok 2133/2351 acc 1/0 elapsed=12933s
+[latency] 56/100 P=1.08s C=1.09s R=1.10s J_full=79.04s J_ours=15.06s J_k10=64.80s tok_k10=2590 acc_k10=1 tok 3169/601 acc 1/0 elapsed=13096s
+[latency] 57/100 P=1.03s C=1.04s R=1.04s J_full=186.54s J_ours=60.52s J_k10=61.76s tok_k10=2480 acc_k10=1 tok 7485/2422 acc 1/1 elapsed=13409s
+[latency] 58/100 P=1.03s C=1.03s R=1.03s J_full=26.45s J_ours=25.14s J_k10=38.23s tok_k10=1530 acc_k10=1 tok 1061/1007 acc 1/1 elapsed=13502s
+[latency] 59/100 P=1.04s C=1.03s R=1.03s J_full=204.34s J_ours=203.65s J_k10=190.60s tok_k10=7669 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=14105s
+[latency] 60/100 P=1.04s C=1.05s R=1.06s J_full=30.35s J_ours=51.28s J_k10=20.44s tok_k10=797 acc_k10=1 tok 1213/2032 acc 1/1 elapsed=14211s
+[latency] 61/100 P=1.07s C=1.06s R=1.05s J_full=10.43s J_ours=21.66s J_k10=25.35s tok_k10=1014 acc_k10=1 tok 407/865 acc 1/1 elapsed=14273s
+[latency] 62/100 P=1.03s C=1.04s R=1.03s J_full=32.14s J_ours=20.16s J_k10=28.25s tok_k10=1133 acc_k10=1 tok 1287/803 acc 1/1 elapsed=14357s
+[latency] 63/100 P=1.04s C=1.05s R=1.04s J_full=30.85s J_ours=14.71s J_k10=18.54s tok_k10=743 acc_k10=1 tok 1236/589 acc 1/1 elapsed=14425s
+[latency] 64/100 P=1.06s C=1.07s R=1.08s J_full=43.93s J_ours=29.07s J_k10=80.45s tok_k10=3215 acc_k10=1 tok 1753/1163 acc 1/0 elapsed=14583s
+[latency] 65/100 P=1.04s C=1.04s R=1.04s J_full=23.39s J_ours=14.99s J_k10=70.88s tok_k10=2804 acc_k10=0 tok 936/601 acc 0/0 elapsed=14696s
+[latency] 66/100 P=1.04s C=1.04s R=1.04s J_full=205.64s J_ours=198.24s J_k10=204.84s tok_k10=8192 acc_k10=1 tok 8192/7905 acc 0/0 elapsed=15309s
+[latency] 67/100 P=1.03s C=1.03s R=1.03s J_full=13.75s J_ours=15.15s J_k10=17.77s tok_k10=711 acc_k10=1 tok 550/605 acc 1/1 elapsed=15359s
+[latency] 68/100 P=1.04s C=1.05s R=1.05s J_full=65.48s J_ours=74.82s J_k10=38.70s tok_k10=1543 acc_k10=0 tok 2621/2994 acc 0/0 elapsed=15543s
+[latency] 69/100 P=1.04s C=1.04s R=1.13s J_full=17.66s J_ours=27.83s J_k10=20.86s tok_k10=831 acc_k10=1 tok 704/1112 acc 1/1 elapsed=15613s
+[latency] 70/100 P=1.05s C=1.06s R=1.06s J_full=93.96s J_ours=44.44s J_k10=56.71s tok_k10=2270 acc_k10=1 tok 3774/1784 acc 1/1 elapsed=15812s
+[latency] 71/100 P=1.04s C=1.04s R=1.04s J_full=13.59s J_ours=15.79s J_k10=14.57s tok_k10=579 acc_k10=0 tok 529/631 acc 0/0 elapsed=15860s
+[latency] 72/100 P=1.22s C=1.32s R=1.37s J_full=204.76s J_ours=205.70s J_k10=206.05s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=16482s
+[latency] 73/100 P=1.03s C=1.04s R=1.04s J_full=24.18s J_ours=7.81s J_k10=21.87s tok_k10=870 acc_k10=1 tok 965/312 acc 1/0 elapsed=16540s
+[latency] 74/100 P=1.03s C=1.04s R=1.04s J_full=11.93s J_ours=9.26s J_k10=10.61s tok_k10=414 acc_k10=1 tok 478/371 acc 1/1 elapsed=16576s
+[latency] 75/100 P=1.04s C=1.03s R=1.03s J_full=70.43s J_ours=42.56s J_k10=76.22s tok_k10=3032 acc_k10=0 tok 2815/1703 acc 0/0 elapsed=16769s
+[latency] 76/100 P=1.03s C=1.04s R=1.03s J_full=104.78s J_ours=74.12s J_k10=114.24s tok_k10=4558 acc_k10=0 tok 4194/2958 acc 0/0 elapsed=17066s
+[latency] 77/100 P=1.04s C=1.05s R=1.05s J_full=27.36s J_ours=13.89s J_k10=42.92s tok_k10=1707 acc_k10=0 tok 1087/552 acc 1/0 elapsed=17154s
+[latency] 78/100 P=1.05s C=1.06s R=1.06s J_full=106.53s J_ours=114.11s J_k10=132.80s tok_k10=5297 acc_k10=0 tok 4239/4519 acc 0/0 elapsed=17512s
+[latency] 79/100 P=1.04s C=1.04s R=1.04s J_full=105.78s J_ours=150.00s J_k10=86.05s tok_k10=3405 acc_k10=1 tok 4189/5966 acc 0/0 elapsed=17858s
+[latency] 80/100 P=1.05s C=1.07s R=1.07s J_full=93.97s J_ours=26.07s J_k10=95.61s tok_k10=3810 acc_k10=0 tok 3762/1044 acc 0/0 elapsed=18078s
+[latency] 81/100 P=1.04s C=1.04s R=1.04s J_full=91.09s J_ours=38.85s J_k10=109.65s tok_k10=4350 acc_k10=1 tok 3635/1551 acc 1/0 elapsed=18321s
+[latency] 82/100 P=1.04s C=1.04s R=1.04s J_full=102.47s J_ours=176.44s J_k10=112.42s tok_k10=4451 acc_k10=0 tok 4116/7096 acc 0/0 elapsed=18716s
+[latency] 83/100 P=1.04s C=1.04s R=1.04s J_full=205.35s J_ours=165.30s J_k10=205.29s tok_k10=8192 acc_k10=0 tok 8192/6589 acc 0/0 elapsed=19296s
+[latency] 84/100 P=1.04s C=1.05s R=1.05s J_full=73.17s J_ours=17.65s J_k10=84.68s tok_k10=3382 acc_k10=0 tok 2932/703 acc 0/0 elapsed=19476s
+[latency] 85/100 P=1.04s C=1.05s R=1.05s J_full=121.27s J_ours=13.65s J_k10=142.30s tok_k10=5689 acc_k10=0 tok 4838/545 acc 0/1 elapsed=19757s
+[latency] 86/100 P=1.03s C=1.05s R=1.04s J_full=137.90s J_ours=95.33s J_k10=137.24s tok_k10=5482 acc_k10=0 tok 5516/3804 acc 0/0 elapsed=20132s
+[latency] 87/100 P=1.04s C=1.04s R=1.03s J_full=130.97s J_ours=27.26s J_k10=87.85s tok_k10=3514 acc_k10=0 tok 5227/1090 acc 0/1 elapsed=20382s
+[latency] 88/100 P=1.04s C=1.03s R=1.03s J_full=126.98s J_ours=100.20s J_k10=93.40s tok_k10=3758 acc_k10=0 tok 5082/4005 acc 0/0 elapsed=20706s
+[latency] 89/100 P=1.05s C=1.04s R=1.04s J_full=75.23s J_ours=13.02s J_k10=89.02s tok_k10=3565 acc_k10=0 tok 3014/521 acc 0/0 elapsed=20888s
+[latency] 90/100 P=1.06s C=1.11s R=1.06s J_full=104.31s J_ours=13.96s J_k10=87.19s tok_k10=3478 acc_k10=0 tok 4154/556 acc 0/1 elapsed=21097s
+[latency] 91/100 P=1.03s C=1.05s R=1.03s J_full=97.37s J_ours=87.16s J_k10=48.93s tok_k10=1956 acc_k10=0 tok 3911/3491 acc 0/0 elapsed=21335s
+[latency] 92/100 P=1.04s C=1.05s R=1.06s J_full=119.93s J_ours=126.80s J_k10=152.68s tok_k10=6051 acc_k10=0 tok 4794/5036 acc 0/0 elapsed=21738s
+[latency] 93/100 P=1.04s C=1.04s R=1.04s J_full=50.40s J_ours=38.66s J_k10=43.88s tok_k10=1746 acc_k10=0 tok 2000/1536 acc 0/1 elapsed=21875s
+[latency] 94/100 P=1.05s C=1.05s R=1.05s J_full=66.95s J_ours=141.08s J_k10=68.31s tok_k10=2730 acc_k10=0 tok 2664/5510 acc 0/1 elapsed=22155s
+[latency] 95/100 P=1.04s C=1.04s R=1.04s J_full=192.53s J_ours=206.14s J_k10=123.63s tok_k10=4917 acc_k10=0 tok 7668/8192 acc 0/1 elapsed=22682s
+[latency] 96/100 P=1.04s C=1.06s R=1.05s J_full=26.08s J_ours=28.22s J_k10=49.34s tok_k10=1953 acc_k10=1 tok 1038/1122 acc 1/0 elapsed=22789s
+[latency] 97/100 P=1.04s C=1.05s R=1.03s J_full=141.41s J_ours=172.93s J_k10=116.58s tok_k10=4641 acc_k10=1 tok 5615/6861 acc 0/1 elapsed=23224s
+[latency] 98/100 P=1.04s C=1.04s R=1.04s J_full=79.85s J_ours=65.85s J_k10=99.95s tok_k10=3993 acc_k10=1 tok 3204/2625 acc 0/0 elapsed=23474s
+[latency] 99/100 P=1.03s C=1.04s R=1.03s J_full=73.35s J_ours=91.14s J_k10=85.55s tok_k10=3411 acc_k10=0 tok 2926/3635 acc 0/0 elapsed=23728s
+[latency] 100/100 P=1.04s C=1.06s R=1.04s J_full=95.93s J_ours=22.55s J_k10=179.25s tok_k10=7135 acc_k10=1 tok 3833/901 acc 1/1 elapsed=24030s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.03    1.03    1.03   0.009   85.67   88.76  3500.3   0.520
+ours            1.03    1.03    1.03   0.009   67.42   70.52  2757.2   0.480
+k10             0.28    0.29    0.29   0.000   83.23   84.09  3388.7   0.560
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -18.247 [-28.503,-8.376] n=100
+  ours_minus_latentmas_e2e_s       -18.238 [-28.494,-8.368] n=100
+  ours_minus_latentmas_tokens      -743.140 [-1161.575,-338.986] n=100
+  ours_minus_latentmas_correct     -0.040 [-0.150,+0.060] n=100
+  k10_minus_latentmas_judger_s     -2.437 [-9.294,+4.351] n=100
+  k10_minus_latentmas_e2e_s        -4.666 [-11.530,+2.115] n=100
+  k10_minus_latentmas_tokens       -111.640 [-392.264,+167.857] n=100
+  k10_minus_latentmas_correct      +0.040 [-0.020,+0.100] n=100
+  ours_minus_k10_judger_s          -15.810 [-26.111,-5.569] n=100
+  ours_minus_k10_e2e_s             -13.572 [-23.874,-3.349] n=100
+  ours_minus_k10_tokens            -631.500 [-1043.283,-212.628] n=100
+  ours_minus_k10_correct           -0.080 [-0.190,+0.020] n=100
+
+[done] artifacts/exp_latency_mem/arr_gpqa_n100_b128_s42/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK gpqa_n100_b128_s42 Tue Aug 25 11:19:40 UTC 2026
+[arr] START gsm8k_n100_b64_s123 Tue Aug 25 11:19:40 UTC 2026
+[load] Qwen/Qwen3-14B task=gsm8k n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  2.63it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.54it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:02,  2.47it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.49it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.53it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.56it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.62it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.21it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  2.77it/s]
+[compress] evict budget=64 sink=4 importance=key_norm
+[latency] 1/100 P=1.68s C=1.02s R=1.00s J_full=5.92s J_ours=5.64s J_k10=6.38s tok_k10=270 acc_k10=1 tok 246/238 acc 1/1 elapsed=23s
+[latency] 2/100 P=1.00s C=0.99s R=0.99s J_full=5.21s J_ours=6.93s J_k10=6.16s tok_k10=261 acc_k10=1 tok 220/291 acc 1/1 elapsed=45s
+[latency] 3/100 P=0.98s C=0.98s R=0.98s J_full=20.41s J_ours=19.21s J_k10=22.03s tok_k10=928 acc_k10=1 tok 860/808 acc 1/1 elapsed=110s
+[latency] 4/100 P=0.99s C=0.99s R=0.99s J_full=9.00s J_ours=7.99s J_k10=9.21s tok_k10=387 acc_k10=1 tok 379/335 acc 1/1 elapsed=140s
+[latency] 5/100 P=0.99s C=1.01s R=0.99s J_full=19.84s J_ours=18.21s J_k10=9.20s tok_k10=385 acc_k10=1 tok 837/763 acc 1/1 elapsed=191s
+[latency] 6/100 P=0.99s C=0.99s R=0.99s J_full=17.27s J_ours=18.51s J_k10=21.17s tok_k10=891 acc_k10=1 tok 724/777 acc 1/1 elapsed=252s
+[latency] 7/100 P=1.00s C=0.99s R=1.00s J_full=8.38s J_ours=7.66s J_k10=8.23s tok_k10=345 acc_k10=1 tok 351/319 acc 1/1 elapsed=280s
+[latency] 8/100 P=0.98s C=0.99s R=0.99s J_full=31.94s J_ours=21.86s J_k10=32.54s tok_k10=1359 acc_k10=1 tok 1340/915 acc 1/1 elapsed=370s
+[latency] 9/100 P=0.99s C=1.00s R=0.99s J_full=19.43s J_ours=20.74s J_k10=19.30s tok_k10=809 acc_k10=1 tok 816/867 acc 1/1 elapsed=433s
+[latency] 10/100 P=0.99s C=1.00s R=0.98s J_full=10.58s J_ours=8.16s J_k10=10.60s tok_k10=445 acc_k10=1 tok 443/340 acc 1/1 elapsed=466s
+[latency] 11/100 P=0.97s C=0.98s R=0.97s J_full=13.44s J_ours=8.19s J_k10=9.63s tok_k10=402 acc_k10=1 tok 570/342 acc 1/1 elapsed=501s
+[latency] 12/100 P=0.98s C=0.99s R=1.00s J_full=14.04s J_ours=12.40s J_k10=14.33s tok_k10=604 acc_k10=1 tok 592/521 acc 1/1 elapsed=546s
+[latency] 13/100 P=0.97s C=0.98s R=0.99s J_full=27.77s J_ours=37.29s J_k10=27.27s tok_k10=1145 acc_k10=1 tok 1159/1556 acc 1/0 elapsed=642s
+[latency] 14/100 P=0.99s C=0.99s R=0.98s J_full=17.33s J_ours=21.22s J_k10=16.42s tok_k10=688 acc_k10=1 tok 726/890 acc 1/1 elapsed=701s
+[latency] 15/100 P=0.99s C=1.00s R=0.99s J_full=9.84s J_ours=14.31s J_k10=7.21s tok_k10=303 acc_k10=1 tok 411/598 acc 1/0 elapsed=736s
+[latency] 16/100 P=0.98s C=0.99s R=1.00s J_full=11.13s J_ours=19.34s J_k10=13.47s tok_k10=569 acc_k10=1 tok 466/810 acc 1/1 elapsed=784s
+[latency] 17/100 P=0.99s C=0.99s R=0.98s J_full=8.41s J_ours=12.50s J_k10=7.19s tok_k10=302 acc_k10=1 tok 353/521 acc 1/1 elapsed=816s
+[latency] 18/100 P=0.99s C=0.99s R=0.98s J_full=9.28s J_ours=17.31s J_k10=14.41s tok_k10=606 acc_k10=1 tok 389/722 acc 1/1 elapsed=860s
+[latency] 19/100 P=1.00s C=0.99s R=0.99s J_full=10.46s J_ours=7.57s J_k10=11.70s tok_k10=491 acc_k10=1 tok 437/315 acc 1/1 elapsed=894s
+[latency] 20/100 P=0.98s C=0.99s R=0.98s J_full=17.21s J_ours=18.15s J_k10=15.40s tok_k10=644 acc_k10=1 tok 723/756 acc 1/1 elapsed=949s
+[latency] 21/100 P=0.99s C=1.00s R=0.99s J_full=23.70s J_ours=21.49s J_k10=19.92s tok_k10=832 acc_k10=1 tok 992/901 acc 1/1 elapsed=1017s
+[latency] 22/100 P=0.99s C=0.99s R=0.99s J_full=13.36s J_ours=8.08s J_k10=11.33s tok_k10=475 acc_k10=1 tok 558/337 acc 1/1 elapsed=1054s
+[latency] 23/100 P=0.99s C=0.99s R=0.99s J_full=8.69s J_ours=10.50s J_k10=7.63s tok_k10=319 acc_k10=1 tok 363/439 acc 1/1 elapsed=1085s
+[latency] 24/100 P=0.99s C=0.99s R=0.99s J_full=8.67s J_ours=7.00s J_k10=7.69s tok_k10=322 acc_k10=1 tok 362/291 acc 1/1 elapsed=1112s
+[latency] 25/100 P=0.99s C=0.99s R=0.99s J_full=13.90s J_ours=14.44s J_k10=15.51s tok_k10=650 acc_k10=1 tok 581/604 acc 0/1 elapsed=1160s
+[latency] 26/100 P=0.99s C=0.99s R=0.99s J_full=11.68s J_ours=8.07s J_k10=12.17s tok_k10=509 acc_k10=1 tok 489/336 acc 1/1 elapsed=1195s
+[latency] 27/100 P=0.98s C=0.99s R=0.99s J_full=20.90s J_ours=15.84s J_k10=19.40s tok_k10=811 acc_k10=1 tok 879/662 acc 1/1 elapsed=1255s
+[latency] 28/100 P=0.98s C=1.00s R=0.99s J_full=12.17s J_ours=12.65s J_k10=11.84s tok_k10=497 acc_k10=1 tok 510/528 acc 1/1 elapsed=1296s
+[latency] 29/100 P=0.99s C=0.99s R=0.99s J_full=9.64s J_ours=8.39s J_k10=10.35s tok_k10=433 acc_k10=1 tok 406/349 acc 1/1 elapsed=1328s
+[latency] 30/100 P=1.00s C=0.99s R=0.99s J_full=7.43s J_ours=13.88s J_k10=7.30s tok_k10=305 acc_k10=1 tok 311/578 acc 1/1 elapsed=1360s
+[latency] 31/100 P=0.98s C=0.99s R=0.98s J_full=13.87s J_ours=7.46s J_k10=13.81s tok_k10=577 acc_k10=1 tok 579/311 acc 1/1 elapsed=1399s
+[latency] 32/100 P=0.98s C=0.98s R=0.97s J_full=14.44s J_ours=11.01s J_k10=13.41s tok_k10=567 acc_k10=1 tok 608/464 acc 1/1 elapsed=1442s
+[latency] 33/100 P=0.99s C=0.98s R=0.97s J_full=8.11s J_ours=7.35s J_k10=7.80s tok_k10=329 acc_k10=1 tok 340/309 acc 1/1 elapsed=1469s
+[latency] 34/100 P=0.98s C=0.99s R=0.98s J_full=11.43s J_ours=10.93s J_k10=11.39s tok_k10=477 acc_k10=1 tok 480/455 acc 1/1 elapsed=1506s
+[latency] 35/100 P=0.99s C=0.98s R=0.98s J_full=5.85s J_ours=5.15s J_k10=9.36s tok_k10=392 acc_k10=1 tok 246/215 acc 1/1 elapsed=1530s
+[latency] 36/100 P=0.98s C=0.99s R=0.99s J_full=10.09s J_ours=10.22s J_k10=9.94s tok_k10=417 acc_k10=1 tok 422/425 acc 1/1 elapsed=1564s
+[latency] 37/100 P=1.00s C=0.99s R=0.99s J_full=8.59s J_ours=9.32s J_k10=9.27s tok_k10=387 acc_k10=1 tok 360/388 acc 1/1 elapsed=1595s
+[latency] 38/100 P=0.98s C=0.99s R=1.00s J_full=24.82s J_ours=25.33s J_k10=21.76s tok_k10=912 acc_k10=1 tok 1038/1059 acc 1/0 elapsed=1671s
+[latency] 39/100 P=0.99s C=0.99s R=0.99s J_full=16.05s J_ours=15.65s J_k10=12.45s tok_k10=520 acc_k10=1 tok 671/653 acc 1/1 elapsed=1719s
+[latency] 40/100 P=0.99s C=1.00s R=0.98s J_full=25.42s J_ours=10.82s J_k10=23.27s tok_k10=973 acc_k10=1 tok 1069/451 acc 1/1 elapsed=1782s
+[latency] 41/100 P=0.99s C=0.99s R=0.99s J_full=8.48s J_ours=11.40s J_k10=7.93s tok_k10=331 acc_k10=1 tok 354/475 acc 1/1 elapsed=1814s
+[latency] 42/100 P=0.99s C=0.99s R=0.99s J_full=22.63s J_ours=14.31s J_k10=27.47s tok_k10=1151 acc_k10=1 tok 946/599 acc 1/1 elapsed=1882s
+[latency] 43/100 P=0.98s C=1.01s R=0.98s J_full=8.68s J_ours=7.29s J_k10=9.03s tok_k10=379 acc_k10=1 tok 365/305 acc 1/1 elapsed=1911s
+[latency] 44/100 P=0.99s C=0.99s R=0.98s J_full=16.29s J_ours=13.10s J_k10=18.82s tok_k10=786 acc_k10=1 tok 683/548 acc 1/1 elapsed=1963s
+[latency] 45/100 P=0.99s C=0.99s R=0.99s J_full=14.06s J_ours=9.65s J_k10=13.10s tok_k10=549 acc_k10=1 tok 588/402 acc 1/1 elapsed=2004s
+[latency] 46/100 P=0.98s C=1.01s R=1.00s J_full=20.11s J_ours=10.68s J_k10=15.64s tok_k10=658 acc_k10=1 tok 836/446 acc 1/1 elapsed=2054s
+[latency] 47/100 P=0.98s C=0.99s R=1.00s J_full=12.42s J_ours=17.97s J_k10=11.69s tok_k10=494 acc_k10=1 tok 521/761 acc 1/1 elapsed=2100s
+[latency] 48/100 P=0.97s C=0.99s R=0.98s J_full=12.98s J_ours=8.94s J_k10=10.89s tok_k10=461 acc_k10=1 tok 551/376 acc 1/1 elapsed=2136s
+[latency] 49/100 P=0.98s C=0.98s R=0.97s J_full=8.41s J_ours=9.85s J_k10=10.22s tok_k10=429 acc_k10=1 tok 353/412 acc 1/1 elapsed=2169s
+[latency] 50/100 P=0.98s C=0.99s R=0.98s J_full=11.49s J_ours=12.25s J_k10=11.06s tok_k10=466 acc_k10=1 tok 483/512 acc 1/1 elapsed=2207s
+[latency] 51/100 P=0.97s C=0.98s R=0.98s J_full=11.36s J_ours=14.52s J_k10=13.55s tok_k10=568 acc_k10=1 tok 478/605 acc 1/1 elapsed=2250s
+[latency] 52/100 P=0.98s C=0.99s R=0.98s J_full=10.30s J_ours=3.49s J_k10=9.89s tok_k10=416 acc_k10=1 tok 433/146 acc 1/1 elapsed=2278s
+[latency] 53/100 P=0.98s C=1.00s R=0.99s J_full=10.76s J_ours=11.58s J_k10=11.92s tok_k10=498 acc_k10=1 tok 451/484 acc 1/1 elapsed=2316s
+[latency] 54/100 P=0.99s C=1.00s R=1.00s J_full=15.86s J_ours=16.06s J_k10=15.70s tok_k10=659 acc_k10=1 tok 664/677 acc 1/1 elapsed=2367s
+[latency] 55/100 P=0.98s C=1.00s R=0.98s J_full=11.37s J_ours=11.62s J_k10=8.76s tok_k10=366 acc_k10=1 tok 475/485 acc 1/1 elapsed=2403s
+[latency] 56/100 P=0.98s C=0.99s R=0.99s J_full=6.85s J_ours=4.37s J_k10=6.73s tok_k10=285 acc_k10=1 tok 288/182 acc 1/1 elapsed=2425s
+[latency] 57/100 P=0.97s C=0.98s R=0.99s J_full=4.59s J_ours=2.97s J_k10=4.63s tok_k10=193 acc_k10=1 tok 194/123 acc 1/1 elapsed=2440s
+[latency] 58/100 P=0.98s C=0.99s R=0.98s J_full=10.72s J_ours=13.21s J_k10=18.72s tok_k10=786 acc_k10=1 tok 454/558 acc 1/1 elapsed=2487s
+[latency] 59/100 P=0.98s C=0.99s R=0.98s J_full=10.06s J_ours=11.31s J_k10=10.44s tok_k10=435 acc_k10=0 tok 422/472 acc 1/1 elapsed=2523s
+[latency] 60/100 P=0.99s C=1.00s R=0.99s J_full=8.83s J_ours=9.78s J_k10=8.69s tok_k10=365 acc_k10=1 tok 370/409 acc 1/1 elapsed=2554s
+[latency] 61/100 P=0.99s C=0.99s R=0.98s J_full=12.57s J_ours=9.88s J_k10=10.63s tok_k10=444 acc_k10=1 tok 528/412 acc 1/1 elapsed=2590s
+[latency] 62/100 P=0.98s C=0.99s R=0.98s J_full=7.11s J_ours=11.00s J_k10=6.89s tok_k10=290 acc_k10=1 tok 299/459 acc 1/1 elapsed=2619s
+[latency] 63/100 P=0.99s C=0.99s R=0.98s J_full=48.90s J_ours=33.34s J_k10=48.87s tok_k10=2048 acc_k10=0 tok 2048/1394 acc 0/1 elapsed=2754s
+[latency] 64/100 P=0.99s C=0.99s R=0.99s J_full=19.20s J_ours=21.64s J_k10=16.68s tok_k10=699 acc_k10=1 tok 802/904 acc 1/1 elapsed=2815s
+[latency] 65/100 P=1.00s C=0.99s R=0.99s J_full=9.24s J_ours=4.12s J_k10=6.81s tok_k10=286 acc_k10=1 tok 387/171 acc 1/1 elapsed=2839s
+[latency] 66/100 P=1.00s C=0.99s R=1.00s J_full=8.07s J_ours=5.83s J_k10=7.57s tok_k10=319 acc_k10=1 tok 337/242 acc 1/1 elapsed=2865s
+[latency] 67/100 P=0.98s C=0.99s R=0.99s J_full=11.82s J_ours=10.54s J_k10=11.60s tok_k10=486 acc_k10=1 tok 497/445 acc 1/1 elapsed=2903s
+[latency] 68/100 P=0.99s C=0.99s R=0.98s J_full=12.11s J_ours=7.92s J_k10=12.16s tok_k10=508 acc_k10=1 tok 510/330 acc 1/1 elapsed=2938s
+[latency] 69/100 P=0.99s C=0.99s R=0.98s J_full=8.51s J_ours=8.44s J_k10=8.56s tok_k10=359 acc_k10=1 tok 358/352 acc 1/1 elapsed=2968s
+[latency] 70/100 P=0.98s C=0.99s R=1.00s J_full=10.68s J_ours=8.99s J_k10=10.56s tok_k10=442 acc_k10=1 tok 449/376 acc 1/1 elapsed=3002s
+[latency] 71/100 P=0.99s C=1.00s R=0.98s J_full=13.28s J_ours=15.61s J_k10=19.24s tok_k10=805 acc_k10=1 tok 557/653 acc 1/1 elapsed=3054s
+[latency] 72/100 P=0.99s C=0.99s R=0.98s J_full=8.88s J_ours=7.15s J_k10=8.92s tok_k10=372 acc_k10=1 tok 373/298 acc 1/1 elapsed=3083s
+[latency] 73/100 P=0.98s C=0.99s R=0.98s J_full=10.80s J_ours=8.54s J_k10=11.45s tok_k10=481 acc_k10=1 tok 451/356 acc 1/1 elapsed=3117s
+[latency] 74/100 P=0.98s C=0.99s R=0.99s J_full=14.32s J_ours=16.21s J_k10=13.80s tok_k10=577 acc_k10=1 tok 600/677 acc 1/1 elapsed=3165s
+[latency] 75/100 P=1.00s C=0.99s R=0.99s J_full=17.76s J_ours=15.67s J_k10=15.18s tok_k10=636 acc_k10=1 tok 744/662 acc 1/1 elapsed=3218s
+[latency] 76/100 P=0.99s C=0.99s R=0.98s J_full=17.52s J_ours=13.66s J_k10=18.00s tok_k10=752 acc_k10=1 tok 735/571 acc 1/1 elapsed=3271s
+[latency] 77/100 P=0.99s C=0.99s R=0.99s J_full=18.29s J_ours=19.75s J_k10=18.15s tok_k10=760 acc_k10=1 tok 764/823 acc 1/1 elapsed=3331s
+[latency] 78/100 P=1.00s C=0.99s R=0.98s J_full=11.99s J_ours=5.79s J_k10=11.93s tok_k10=499 acc_k10=1 tok 503/241 acc 1/1 elapsed=3364s
+[latency] 79/100 P=0.98s C=0.99s R=0.98s J_full=21.31s J_ours=16.25s J_k10=22.24s tok_k10=929 acc_k10=1 tok 895/679 acc 1/1 elapsed=3428s
+[latency] 80/100 P=0.99s C=0.99s R=0.98s J_full=5.97s J_ours=8.62s J_k10=6.08s tok_k10=254 acc_k10=1 tok 249/358 acc 1/1 elapsed=3452s
+[latency] 81/100 P=0.98s C=1.00s R=0.99s J_full=9.84s J_ours=12.60s J_k10=8.28s tok_k10=344 acc_k10=1 tok 412/525 acc 1/1 elapsed=3487s
+[latency] 82/100 P=0.99s C=0.99s R=0.98s J_full=10.13s J_ours=11.82s J_k10=6.99s tok_k10=293 acc_k10=1 tok 424/494 acc 1/1 elapsed=3519s
+[latency] 83/100 P=0.98s C=0.99s R=0.98s J_full=11.15s J_ours=6.54s J_k10=9.04s tok_k10=377 acc_k10=1 tok 466/272 acc 1/1 elapsed=3550s
+[latency] 84/100 P=0.98s C=0.99s R=0.99s J_full=10.75s J_ours=6.95s J_k10=9.39s tok_k10=396 acc_k10=1 tok 448/289 acc 1/1 elapsed=3581s
+[latency] 85/100 P=1.00s C=0.99s R=0.99s J_full=9.77s J_ours=14.10s J_k10=8.80s tok_k10=370 acc_k10=1 tok 409/588 acc 1/1 elapsed=3617s
+[latency] 86/100 P=0.99s C=1.00s R=0.99s J_full=27.00s J_ours=7.00s J_k10=22.46s tok_k10=939 acc_k10=0 tok 1134/292 acc 1/1 elapsed=3677s
+[latency] 87/100 P=0.99s C=1.00s R=0.99s J_full=9.16s J_ours=13.36s J_k10=16.18s tok_k10=678 acc_k10=1 tok 383/557 acc 1/1 elapsed=3720s
+[latency] 88/100 P=0.98s C=0.99s R=0.98s J_full=43.89s J_ours=38.45s J_k10=46.52s tok_k10=1953 acc_k10=1 tok 1841/1602 acc 1/1 elapsed=3853s
+[latency] 89/100 P=0.99s C=1.01s R=0.98s J_full=8.45s J_ours=13.36s J_k10=8.34s tok_k10=348 acc_k10=1 tok 354/558 acc 1/1 elapsed=3887s
+[latency] 90/100 P=0.99s C=0.99s R=0.99s J_full=21.77s J_ours=14.81s J_k10=16.80s tok_k10=706 acc_k10=1 tok 912/619 acc 1/1 elapsed=3944s
+[latency] 91/100 P=0.98s C=0.99s R=0.99s J_full=10.33s J_ours=10.39s J_k10=10.11s tok_k10=427 acc_k10=1 tok 432/438 acc 1/1 elapsed=3978s
+[latency] 92/100 P=0.97s C=0.98s R=0.97s J_full=12.75s J_ours=7.51s J_k10=14.34s tok_k10=603 acc_k10=1 tok 534/312 acc 1/1 elapsed=4017s
+[latency] 93/100 P=0.99s C=0.99s R=0.99s J_full=7.91s J_ours=8.08s J_k10=7.42s tok_k10=315 acc_k10=1 tok 332/339 acc 1/1 elapsed=4044s
+[latency] 94/100 P=0.98s C=0.99s R=0.97s J_full=30.85s J_ours=21.57s J_k10=41.85s tok_k10=1750 acc_k10=0 tok 1301/903 acc 0/0 elapsed=4142s
+[latency] 95/100 P=0.98s C=0.98s R=0.98s J_full=11.73s J_ours=9.65s J_k10=11.83s tok_k10=500 acc_k10=1 tok 491/402 acc 1/1 elapsed=4179s
+[latency] 96/100 P=0.99s C=0.99s R=0.99s J_full=14.22s J_ours=11.73s J_k10=12.95s tok_k10=540 acc_k10=1 tok 595/489 acc 1/1 elapsed=4222s
+[latency] 97/100 P=0.98s C=1.00s R=0.99s J_full=8.83s J_ours=6.03s J_k10=8.73s tok_k10=369 acc_k10=1 tok 370/253 acc 1/1 elapsed=4249s
+[latency] 98/100 P=0.99s C=0.98s R=0.98s J_full=14.96s J_ours=12.31s J_k10=13.49s tok_k10=563 acc_k10=1 tok 628/514 acc 1/1 elapsed=4293s
+[latency] 99/100 P=1.00s C=1.00s R=0.99s J_full=19.85s J_ours=18.64s J_k10=20.28s tok_k10=850 acc_k10=1 tok 833/782 acc 1/1 elapsed=4356s
+[latency] 100/100 P=0.99s C=0.99s R=0.98s J_full=11.02s J_ours=6.08s J_k10=13.73s tok_k10=578 acc_k10=1 tok 462/254 acc 1/1 elapsed=4391s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       0.99    0.99    0.99   0.008   13.85   16.82   580.6   0.970
+ours            0.99    0.99    0.99   0.008   12.51   15.49   523.0   0.960
+k10             0.27    0.27    0.27   0.000   13.75   14.56   576.6   0.960
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -1.336 [-2.247,-0.487] n=100
+  ours_minus_latentmas_e2e_s       -1.328 [-2.240,-0.480] n=100
+  ours_minus_latentmas_tokens      -57.610 [-95.961,-21.948] n=100
+  ours_minus_latentmas_correct     -0.010 [-0.050,+0.030] n=100
+  k10_minus_latentmas_judger_s     -0.095 [-0.628,+0.410] n=100
+  k10_minus_latentmas_e2e_s        -2.256 [-2.793,-1.744] n=100
+  k10_minus_latentmas_tokens       -4.040 [-26.493,+17.442] n=100
+  k10_minus_latentmas_correct      -0.010 [-0.050,+0.020] n=100
+  ours_minus_k10_judger_s          -1.241 [-2.255,-0.294] n=100
+  ours_minus_k10_e2e_s             +0.928 [-0.083,+1.877] n=100
+  ours_minus_k10_tokens            -53.570 [-95.961,-13.739] n=100
+  ours_minus_k10_correct           +0.000 [-0.050,+0.050] n=100
+
+[done] artifacts/exp_latency_mem/arr_gsm8k_n100_b64_s123/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK gsm8k_n100_b64_s123 Tue Aug 25 12:34:17 UTC 2026
+[arr] START math_n100_b128_s123 Tue Aug 25 12:34:17 UTC 2026
+[load] Qwen/Qwen3-14B task=math n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  2.91it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.97it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:01,  3.07it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.06it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.13it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  3.04it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.07it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.82it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.31it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/100 P=1.65s C=1.00s R=0.98s J_full=15.57s J_ours=16.26s J_k10=18.98s tok_k10=815 acc_k10=1 tok 661/696 acc 1/1 elapsed=55s
+[latency] 2/100 P=1.03s C=0.99s R=0.97s J_full=49.21s J_ours=42.67s J_k10=54.62s tok_k10=2324 acc_k10=1 tok 2098/1822 acc 1/1 elapsed=206s
+[latency] 3/100 P=0.97s C=0.98s R=0.97s J_full=23.43s J_ours=24.83s J_k10=23.19s tok_k10=994 acc_k10=1 tok 997/1057 acc 1/1 elapsed=281s
+[latency] 4/100 P=0.98s C=0.99s R=0.98s J_full=14.02s J_ours=16.44s J_k10=14.34s tok_k10=606 acc_k10=1 tok 592/693 acc 1/1 elapsed=329s
+[latency] 5/100 P=1.00s C=1.00s R=1.00s J_full=27.07s J_ours=19.12s J_k10=19.91s tok_k10=848 acc_k10=1 tok 1155/816 acc 1/1 elapsed=399s
+[latency] 6/100 P=0.97s C=0.98s R=0.98s J_full=9.56s J_ours=9.24s J_k10=9.14s tok_k10=392 acc_k10=1 tok 408/397 acc 1/1 elapsed=431s
+[latency] 7/100 P=0.96s C=0.97s R=0.97s J_full=22.36s J_ours=24.82s J_k10=27.81s tok_k10=1186 acc_k10=1 tok 959/1060 acc 1/1 elapsed=510s
+[latency] 8/100 P=0.98s C=0.98s R=0.98s J_full=55.70s J_ours=31.95s J_k10=50.05s tok_k10=2138 acc_k10=1 tok 2364/1366 acc 1/1 elapsed=651s
+[latency] 9/100 P=0.97s C=0.97s R=0.98s J_full=13.43s J_ours=21.21s J_k10=12.77s tok_k10=545 acc_k10=1 tok 572/909 acc 1/1 elapsed=702s
+[latency] 10/100 P=0.98s C=0.98s R=0.98s J_full=96.41s J_ours=96.46s J_k10=96.32s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=995s
+[latency] 11/100 P=0.98s C=0.98s R=0.98s J_full=41.38s J_ours=32.46s J_k10=30.23s tok_k10=1292 acc_k10=1 tok 1759/1380 acc 1/1 elapsed=1103s
+[latency] 12/100 P=0.98s C=0.98s R=0.97s J_full=96.09s J_ours=96.29s J_k10=84.89s tok_k10=3613 acc_k10=1 tok 4096/4096 acc 0/0 elapsed=1384s
+[latency] 13/100 P=0.97s C=0.98s R=0.98s J_full=42.15s J_ours=37.17s J_k10=48.20s tok_k10=2062 acc_k10=1 tok 1796/1586 acc 1/1 elapsed=1515s
+[latency] 14/100 P=0.98s C=1.00s R=0.98s J_full=9.58s J_ours=8.78s J_k10=11.23s tok_k10=477 acc_k10=1 tok 406/373 acc 1/1 elapsed=1549s
+[latency] 15/100 P=0.97s C=0.98s R=0.97s J_full=35.30s J_ours=32.68s J_k10=36.65s tok_k10=1554 acc_k10=1 tok 1501/1388 acc 1/1 elapsed=1657s
+[latency] 16/100 P=0.98s C=0.98s R=0.98s J_full=39.85s J_ours=48.75s J_k10=56.31s tok_k10=2381 acc_k10=1 tok 1696/2073 acc 1/1 elapsed=1806s
+[latency] 17/100 P=0.97s C=0.98s R=0.99s J_full=17.54s J_ours=21.32s J_k10=21.38s tok_k10=905 acc_k10=1 tok 748/908 acc 1/1 elapsed=1870s
+[latency] 18/100 P=0.98s C=0.98s R=0.98s J_full=54.03s J_ours=35.39s J_k10=60.40s tok_k10=2570 acc_k10=1 tok 2283/1504 acc 1/1 elapsed=2023s
+[latency] 19/100 P=0.97s C=0.97s R=0.98s J_full=96.57s J_ours=96.52s J_k10=96.95s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=2317s
+[latency] 20/100 P=0.97s C=0.98s R=0.97s J_full=78.01s J_ours=67.29s J_k10=91.14s tok_k10=3879 acc_k10=1 tok 3314/2869 acc 1/1 elapsed=2557s
+[latency] 21/100 P=0.97s C=0.98s R=0.98s J_full=10.53s J_ours=12.18s J_k10=11.43s tok_k10=485 acc_k10=1 tok 451/516 acc 1/1 elapsed=2595s
+[latency] 22/100 P=0.97s C=0.98s R=0.98s J_full=54.83s J_ours=90.11s J_k10=59.94s tok_k10=2570 acc_k10=1 tok 2334/3819 acc 1/1 elapsed=2804s
+[latency] 23/100 P=0.98s C=0.97s R=0.97s J_full=30.96s J_ours=33.84s J_k10=26.40s tok_k10=1130 acc_k10=1 tok 1318/1443 acc 1/1 elapsed=2899s
+[latency] 24/100 P=0.97s C=0.98s R=0.97s J_full=19.33s J_ours=21.29s J_k10=22.69s tok_k10=959 acc_k10=0 tok 824/902 acc 0/0 elapsed=2966s
+[latency] 25/100 P=0.97s C=0.99s R=0.98s J_full=33.76s J_ours=34.90s J_k10=20.28s tok_k10=866 acc_k10=1 tok 1433/1482 acc 1/1 elapsed=3059s
+[latency] 26/100 P=0.97s C=0.98s R=0.97s J_full=49.98s J_ours=47.94s J_k10=41.71s tok_k10=1771 acc_k10=0 tok 2119/2034 acc 0/0 elapsed=3202s
+[latency] 27/100 P=0.97s C=0.98s R=0.98s J_full=96.32s J_ours=96.41s J_k10=96.47s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=3495s
+[latency] 28/100 P=0.98s C=0.98s R=0.98s J_full=14.66s J_ours=16.79s J_k10=17.02s tok_k10=725 acc_k10=1 tok 621/713 acc 1/1 elapsed=3547s
+[latency] 29/100 P=0.98s C=0.98s R=0.98s J_full=19.00s J_ours=12.49s J_k10=17.27s tok_k10=724 acc_k10=1 tok 806/529 acc 1/1 elapsed=3600s
+[latency] 30/100 P=0.98s C=0.98s R=0.98s J_full=12.89s J_ours=10.86s J_k10=12.91s tok_k10=550 acc_k10=1 tok 549/461 acc 1/1 elapsed=3640s
+[latency] 31/100 P=0.97s C=0.98s R=0.97s J_full=12.84s J_ours=12.90s J_k10=15.82s tok_k10=670 acc_k10=1 tok 546/540 acc 1/1 elapsed=3685s
+[latency] 32/100 P=1.00s C=1.00s R=1.00s J_full=17.84s J_ours=13.45s J_k10=12.88s tok_k10=552 acc_k10=1 tok 749/570 acc 1/1 elapsed=3733s
+[latency] 33/100 P=0.96s C=0.97s R=0.97s J_full=96.49s J_ours=96.24s J_k10=96.10s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=4026s
+[latency] 34/100 P=0.97s C=0.97s R=0.97s J_full=35.93s J_ours=30.51s J_k10=31.29s tok_k10=1330 acc_k10=1 tok 1527/1290 acc 1/1 elapsed=4127s
+[latency] 35/100 P=1.01s C=0.98s R=0.97s J_full=25.32s J_ours=27.75s J_k10=24.23s tok_k10=1031 acc_k10=1 tok 1077/1187 acc 1/1 elapsed=4208s
+[latency] 36/100 P=0.97s C=0.97s R=0.97s J_full=14.11s J_ours=19.02s J_k10=17.62s tok_k10=750 acc_k10=1 tok 601/817 acc 1/1 elapsed=4263s
+[latency] 37/100 P=0.97s C=0.98s R=0.97s J_full=38.94s J_ours=40.29s J_k10=48.74s tok_k10=2080 acc_k10=0 tok 1651/1707 acc 1/0 elapsed=4395s
+[latency] 38/100 P=0.97s C=0.98s R=0.97s J_full=11.19s J_ours=12.45s J_k10=17.15s tok_k10=731 acc_k10=1 tok 476/528 acc 1/1 elapsed=4439s
+[latency] 39/100 P=0.97s C=0.99s R=0.98s J_full=12.07s J_ours=8.71s J_k10=11.38s tok_k10=482 acc_k10=1 tok 512/368 acc 1/1 elapsed=4475s
+[latency] 40/100 P=0.97s C=0.98s R=0.97s J_full=25.27s J_ours=15.59s J_k10=23.56s tok_k10=1002 acc_k10=1 tok 1073/659 acc 1/1 elapsed=4543s
+[latency] 41/100 P=0.97s C=0.97s R=0.97s J_full=8.26s J_ours=10.84s J_k10=8.35s tok_k10=357 acc_k10=1 tok 350/460 acc 1/1 elapsed=4574s
+[latency] 42/100 P=0.97s C=0.97s R=0.97s J_full=39.74s J_ours=30.04s J_k10=34.89s tok_k10=1474 acc_k10=1 tok 1696/1284 acc 1/1 elapsed=4683s
+[latency] 43/100 P=0.97s C=0.98s R=0.98s J_full=17.07s J_ours=16.20s J_k10=16.66s tok_k10=704 acc_k10=1 tok 723/685 acc 1/1 elapsed=4736s
+[latency] 44/100 P=0.98s C=0.97s R=0.97s J_full=96.78s J_ours=96.76s J_k10=96.52s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=5030s
+[latency] 45/100 P=0.97s C=0.98s R=0.97s J_full=21.05s J_ours=13.17s J_k10=21.03s tok_k10=899 acc_k10=1 tok 895/561 acc 1/1 elapsed=5089s
+[latency] 46/100 P=0.97s C=0.98s R=0.97s J_full=19.81s J_ours=18.51s J_k10=16.17s tok_k10=687 acc_k10=1 tok 841/786 acc 1/1 elapsed=5147s
+[latency] 47/100 P=0.98s C=0.98s R=0.97s J_full=53.50s J_ours=49.40s J_k10=63.88s tok_k10=2703 acc_k10=1 tok 2275/2102 acc 1/1 elapsed=5318s
+[latency] 48/100 P=0.97s C=0.98s R=0.97s J_full=19.55s J_ours=13.83s J_k10=15.80s tok_k10=671 acc_k10=1 tok 830/587 acc 1/1 elapsed=5371s
+[latency] 49/100 P=0.97s C=0.98s R=0.98s J_full=9.85s J_ours=15.26s J_k10=13.38s tok_k10=569 acc_k10=1 tok 417/648 acc 1/1 elapsed=5413s
+[latency] 50/100 P=0.98s C=0.98s R=0.98s J_full=15.35s J_ours=13.56s J_k10=12.36s tok_k10=530 acc_k10=1 tok 649/574 acc 1/1 elapsed=5458s
+[latency] 51/100 P=0.96s C=0.98s R=0.97s J_full=43.34s J_ours=42.50s J_k10=44.19s tok_k10=1874 acc_k10=1 tok 1838/1807 acc 1/1 elapsed=5592s
+[latency] 52/100 P=0.97s C=0.98s R=0.98s J_full=28.87s J_ours=28.29s J_k10=33.26s tok_k10=1414 acc_k10=1 tok 1224/1195 acc 1/1 elapsed=5686s
+[latency] 53/100 P=0.97s C=0.98s R=0.97s J_full=14.93s J_ours=22.92s J_k10=13.54s tok_k10=576 acc_k10=1 tok 634/969 acc 1/1 elapsed=5741s
+[latency] 54/100 P=0.97s C=0.98s R=0.97s J_full=15.91s J_ours=13.16s J_k10=13.71s tok_k10=584 acc_k10=1 tok 674/557 acc 1/1 elapsed=5788s
+[latency] 55/100 P=0.96s C=0.98s R=0.98s J_full=15.46s J_ours=6.31s J_k10=11.12s tok_k10=472 acc_k10=1 tok 658/267 acc 1/1 elapsed=5824s
+[latency] 56/100 P=0.97s C=0.97s R=0.97s J_full=22.84s J_ours=17.71s J_k10=17.55s tok_k10=745 acc_k10=1 tok 968/754 acc 1/1 elapsed=5886s
+[latency] 57/100 P=0.97s C=0.98s R=0.97s J_full=9.16s J_ours=13.03s J_k10=8.54s tok_k10=366 acc_k10=1 tok 391/553 acc 1/1 elapsed=5921s
+[latency] 58/100 P=0.97s C=0.98s R=0.97s J_full=14.89s J_ours=12.18s J_k10=15.64s tok_k10=665 acc_k10=1 tok 640/519 acc 1/1 elapsed=5967s
+[latency] 59/100 P=0.96s C=0.97s R=0.98s J_full=15.04s J_ours=22.94s J_k10=28.06s tok_k10=1201 acc_k10=1 tok 646/978 acc 1/1 elapsed=6037s
+[latency] 60/100 P=0.97s C=0.98s R=0.97s J_full=11.94s J_ours=15.84s J_k10=13.24s tok_k10=562 acc_k10=1 tok 506/670 acc 1/1 elapsed=6082s
+[latency] 61/100 P=0.98s C=0.98s R=0.98s J_full=62.99s J_ours=47.19s J_k10=83.80s tok_k10=3552 acc_k10=1 tok 2684/2003 acc 1/0 elapsed=6279s
+[latency] 62/100 P=0.98s C=0.99s R=0.98s J_full=40.64s J_ours=36.68s J_k10=42.80s tok_k10=1815 acc_k10=1 tok 1729/1557 acc 1/1 elapsed=6403s
+[latency] 63/100 P=0.97s C=0.99s R=0.97s J_full=29.23s J_ours=58.85s J_k10=49.13s tok_k10=2081 acc_k10=1 tok 1238/2491 acc 1/1 elapsed=6544s
+[latency] 64/100 P=0.97s C=0.98s R=0.98s J_full=52.81s J_ours=32.64s J_k10=46.10s tok_k10=1949 acc_k10=1 tok 2249/1382 acc 1/1 elapsed=6679s
+[latency] 65/100 P=0.97s C=0.98s R=0.97s J_full=96.54s J_ours=33.57s J_k10=96.56s tok_k10=4096 acc_k10=0 tok 4096/1424 acc 0/0 elapsed=6910s
+[latency] 66/100 P=0.98s C=0.98s R=0.98s J_full=9.14s J_ours=9.01s J_k10=7.85s tok_k10=335 acc_k10=1 tok 390/382 acc 1/1 elapsed=6940s
+[latency] 67/100 P=0.98s C=0.97s R=0.97s J_full=21.42s J_ours=10.91s J_k10=16.34s tok_k10=692 acc_k10=1 tok 909/462 acc 1/1 elapsed=6992s
+[latency] 68/100 P=0.97s C=0.98s R=0.97s J_full=21.22s J_ours=19.27s J_k10=17.50s tok_k10=739 acc_k10=1 tok 901/817 acc 1/1 elapsed=7054s
+[latency] 69/100 P=0.98s C=0.98s R=0.97s J_full=41.92s J_ours=32.04s J_k10=59.24s tok_k10=2510 acc_k10=1 tok 1775/1360 acc 1/1 elapsed=7191s
+[latency] 70/100 P=0.98s C=0.98s R=0.97s J_full=21.46s J_ours=19.28s J_k10=33.32s tok_k10=1416 acc_k10=1 tok 911/819 acc 1/1 elapsed=7268s
+[latency] 71/100 P=0.97s C=0.98s R=0.98s J_full=13.28s J_ours=19.67s J_k10=10.52s tok_k10=448 acc_k10=1 tok 565/836 acc 1/1 elapsed=7316s
+[latency] 72/100 P=0.97s C=0.98s R=0.97s J_full=50.20s J_ours=63.73s J_k10=64.79s tok_k10=2752 acc_k10=0 tok 2122/2702 acc 1/0 elapsed=7498s
+[latency] 73/100 P=0.97s C=0.98s R=0.97s J_full=19.61s J_ours=18.24s J_k10=13.30s tok_k10=564 acc_k10=1 tok 835/774 acc 1/1 elapsed=7553s
+[latency] 74/100 P=0.97s C=0.97s R=0.97s J_full=19.40s J_ours=19.89s J_k10=18.17s tok_k10=773 acc_k10=1 tok 823/842 acc 1/1 elapsed=7614s
+[latency] 75/100 P=0.97s C=0.98s R=0.97s J_full=21.59s J_ours=22.55s J_k10=23.17s tok_k10=984 acc_k10=1 tok 917/955 acc 1/1 elapsed=7685s
+[latency] 76/100 P=0.97s C=0.98s R=0.97s J_full=28.66s J_ours=20.27s J_k10=22.91s tok_k10=974 acc_k10=1 tok 1217/859 acc 1/1 elapsed=7761s
+[latency] 77/100 P=0.97s C=0.97s R=0.96s J_full=25.05s J_ours=27.86s J_k10=22.86s tok_k10=973 acc_k10=1 tok 1073/1188 acc 1/1 elapsed=7840s
+[latency] 78/100 P=0.97s C=0.98s R=0.97s J_full=11.95s J_ours=13.25s J_k10=11.91s tok_k10=508 acc_k10=1 tok 508/562 acc 1/1 elapsed=7881s
+[latency] 79/100 P=0.97s C=0.98s R=0.97s J_full=51.18s J_ours=29.35s J_k10=40.48s tok_k10=1723 acc_k10=1 tok 2173/1254 acc 1/1 elapsed=8006s
+[latency] 80/100 P=0.96s C=0.97s R=0.97s J_full=9.73s J_ours=10.74s J_k10=10.82s tok_k10=463 acc_k10=1 tok 413/457 acc 1/1 elapsed=8041s
+[latency] 81/100 P=0.97s C=0.97s R=0.97s J_full=96.33s J_ours=96.29s J_k10=96.66s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=8334s
+[latency] 82/100 P=0.97s C=0.98s R=0.97s J_full=20.68s J_ours=15.61s J_k10=19.71s tok_k10=836 acc_k10=1 tok 880/659 acc 1/1 elapsed=8394s
+[latency] 83/100 P=0.97s C=0.98s R=0.98s J_full=96.69s J_ours=38.47s J_k10=96.52s tok_k10=4096 acc_k10=0 tok 4096/1631 acc 0/1 elapsed=8629s
+[latency] 84/100 P=0.97s C=0.98s R=0.98s J_full=29.95s J_ours=22.29s J_k10=23.79s tok_k10=1015 acc_k10=1 tok 1262/951 acc 1/1 elapsed=8709s
+[latency] 85/100 P=0.97s C=0.97s R=0.97s J_full=30.99s J_ours=26.45s J_k10=40.19s tok_k10=1665 acc_k10=1 tok 1321/1124 acc 1/1 elapsed=8810s
+[latency] 86/100 P=1.01s C=1.01s R=1.00s J_full=21.04s J_ours=22.08s J_k10=16.01s tok_k10=684 acc_k10=1 tok 876/942 acc 1/1 elapsed=8873s
+[latency] 87/100 P=0.97s C=0.98s R=0.98s J_full=9.81s J_ours=11.13s J_k10=9.80s tok_k10=419 acc_k10=1 tok 417/475 acc 1/1 elapsed=8908s
+[latency] 88/100 P=0.96s C=0.97s R=0.97s J_full=28.56s J_ours=26.24s J_k10=25.04s tok_k10=1059 acc_k10=1 tok 1218/1121 acc 1/1 elapsed=8991s
+[latency] 89/100 P=0.98s C=0.98s R=0.97s J_full=75.00s J_ours=67.97s J_k10=97.54s tok_k10=4096 acc_k10=0 tok 3154/2868 acc 1/1 elapsed=9235s
+[latency] 90/100 P=0.98s C=0.99s R=0.99s J_full=26.40s J_ours=26.08s J_k10=23.60s tok_k10=991 acc_k10=1 tok 1112/1094 acc 1/1 elapsed=9315s
+[latency] 91/100 P=0.99s C=0.99s R=0.98s J_full=7.75s J_ours=7.13s J_k10=9.75s tok_k10=408 acc_k10=1 tok 326/298 acc 1/1 elapsed=9344s
+[latency] 92/100 P=0.99s C=0.99s R=0.98s J_full=16.54s J_ours=15.67s J_k10=14.28s tok_k10=604 acc_k10=1 tok 693/656 acc 1/1 elapsed=9394s
+[latency] 93/100 P=0.98s C=0.99s R=0.98s J_full=30.30s J_ours=22.25s J_k10=25.35s tok_k10=1066 acc_k10=1 tok 1278/933 acc 1/1 elapsed=9476s
+[latency] 94/100 P=0.98s C=0.98s R=0.98s J_full=29.04s J_ours=26.21s J_k10=21.25s tok_k10=890 acc_k10=1 tok 1224/1103 acc 1/1 elapsed=9556s
+[latency] 95/100 P=1.00s C=1.00s R=1.00s J_full=97.37s J_ours=97.47s J_k10=97.10s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=9852s
+[latency] 96/100 P=0.99s C=0.99s R=0.98s J_full=23.68s J_ours=24.18s J_k10=22.66s tok_k10=954 acc_k10=1 tok 995/1012 acc 1/1 elapsed=9926s
+[latency] 97/100 P=0.98s C=0.99s R=0.99s J_full=97.58s J_ours=97.71s J_k10=97.35s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=10223s
+[latency] 98/100 P=0.98s C=0.98s R=0.98s J_full=12.64s J_ours=15.12s J_k10=10.20s tok_k10=430 acc_k10=1 tok 533/637 acc 1/1 elapsed=10264s
+[latency] 99/100 P=0.98s C=0.98s R=0.98s J_full=7.70s J_ours=11.00s J_k10=6.98s tok_k10=296 acc_k10=1 tok 327/464 acc 1/1 elapsed=10294s
+[latency] 100/100 P=0.97s C=0.98s R=0.98s J_full=32.16s J_ours=38.77s J_k10=44.09s tok_k10=1876 acc_k10=0 tok 1367/1644 acc 0/0 elapsed=10413s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       0.98    0.98    0.98   0.008   34.01   36.95  1443.0   0.860
+ours            0.98    0.98    0.98   0.008   31.59   34.54  1340.2   0.840
+k10             0.26    0.27    0.27   0.000   34.77   35.57  1475.4   0.840
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -2.421 [-4.814,-0.298] n=100
+  ours_minus_latentmas_e2e_s       -2.413 [-4.806,-0.290] n=100
+  ours_minus_latentmas_tokens      -102.820 [-204.851,-12.506] n=100
+  ours_minus_latentmas_correct     -0.020 [-0.060,+0.020] n=100
+  k10_minus_latentmas_judger_s     +0.756 [-0.512,+2.130] n=100
+  k10_minus_latentmas_e2e_s        -1.380 [-2.646,-0.011] n=100
+  k10_minus_latentmas_tokens       +32.400 [-20.605,+89.900] n=100
+  k10_minus_latentmas_correct      -0.020 [-0.060,+0.020] n=100
+  ours_minus_k10_judger_s          -3.177 [-5.663,-1.052] n=100
+  ours_minus_k10_e2e_s             -1.033 [-3.526,+1.086] n=100
+  ours_minus_k10_tokens            -135.220 [-239.893,-45.437] n=100
+  ours_minus_k10_correct           +0.000 [-0.040,+0.040] n=100
+
+[done] artifacts/exp_latency_mem/arr_math_n100_b128_s123/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK math_n100_b128_s123 Tue Aug 25 15:29:14 UTC 2026
+[arr] START gpqa_n100_b128_s123 Tue Aug 25 15:29:14 UTC 2026
+[load] Qwen/Qwen3-14B task=gpqa n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.01it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:01,  3.06it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.97it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.99it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.03it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  3.04it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.09it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.80it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.29it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/100 P=1.67s C=1.03s R=1.00s J_full=158.25s J_ours=85.82s J_k10=96.22s tok_k10=3705 acc_k10=0 tok 6053/3324 acc 0/0 elapsed=345s
+[latency] 2/100 P=1.08s C=1.08s R=1.07s J_full=33.77s J_ours=26.20s J_k10=61.15s tok_k10=2361 acc_k10=1 tok 1304/1008 acc 1/1 elapsed=470s
+[latency] 3/100 P=1.08s C=1.08s R=1.08s J_full=43.07s J_ours=37.65s J_k10=31.99s tok_k10=1236 acc_k10=1 tok 1659/1449 acc 1/1 elapsed=587s
+[latency] 4/100 P=1.08s C=1.08s R=1.08s J_full=47.44s J_ours=55.22s J_k10=55.84s tok_k10=2151 acc_k10=1 tok 1826/2131 acc 1/1 elapsed=750s
+[latency] 5/100 P=1.08s C=1.08s R=1.08s J_full=212.74s J_ours=84.93s J_k10=136.18s tok_k10=5228 acc_k10=1 tok 8192/3239 acc 0/1 elapsed=1188s
+[latency] 6/100 P=1.08s C=1.08s R=1.08s J_full=213.52s J_ours=213.26s J_k10=212.25s tok_k10=8192 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=1831s
+[latency] 7/100 P=1.09s C=1.10s R=1.10s J_full=151.18s J_ours=75.45s J_k10=94.77s tok_k10=3631 acc_k10=1 tok 5809/2895 acc 0/0 elapsed=2157s
+[latency] 8/100 P=1.09s C=1.08s R=1.08s J_full=102.38s J_ours=59.13s J_k10=90.41s tok_k10=3479 acc_k10=0 tok 3928/2273 acc 0/0 elapsed=2413s
+[latency] 9/100 P=1.07s C=1.08s R=1.08s J_full=87.61s J_ours=151.11s J_k10=120.22s tok_k10=4621 acc_k10=1 tok 3333/5739 acc 1/0 elapsed=2776s
+[latency] 10/100 P=1.08s C=1.08s R=1.08s J_full=116.03s J_ours=70.26s J_k10=137.39s tok_k10=5287 acc_k10=0 tok 4447/2700 acc 0/0 elapsed=3104s
+[latency] 11/100 P=1.08s C=1.10s R=1.10s J_full=58.13s J_ours=13.51s J_k10=50.75s tok_k10=1955 acc_k10=0 tok 2231/519 acc 0/0 elapsed=3230s
+[latency] 12/100 P=1.08s C=1.09s R=1.08s J_full=20.50s J_ours=16.43s J_k10=16.28s tok_k10=627 acc_k10=0 tok 788/633 acc 0/0 elapsed=3288s
+[latency] 13/100 P=1.08s C=1.08s R=1.08s J_full=200.17s J_ours=86.20s J_k10=133.96s tok_k10=5167 acc_k10=1 tok 7669/3322 acc 1/1 elapsed=3712s
+[latency] 14/100 P=1.08s C=1.08s R=1.08s J_full=41.69s J_ours=52.11s J_k10=43.18s tok_k10=1671 acc_k10=1 tok 1604/2001 acc 1/1 elapsed=3853s
+[latency] 15/100 P=1.08s C=1.09s R=1.08s J_full=39.40s J_ours=21.72s J_k10=42.82s tok_k10=1656 acc_k10=0 tok 1512/839 acc 0/0 elapsed=3961s
+[latency] 16/100 P=1.07s C=1.08s R=1.08s J_full=106.57s J_ours=29.63s J_k10=106.96s tok_k10=4129 acc_k10=0 tok 4134/1141 acc 1/0 elapsed=4209s
+[latency] 17/100 P=1.08s C=1.08s R=1.08s J_full=164.35s J_ours=148.50s J_k10=110.21s tok_k10=4264 acc_k10=0 tok 6356/5745 acc 0/0 elapsed=4636s
+[latency] 18/100 P=1.07s C=1.08s R=1.07s J_full=33.41s J_ours=27.49s J_k10=63.12s tok_k10=2445 acc_k10=1 tok 1292/1063 acc 1/1 elapsed=4764s
+[latency] 19/100 P=1.07s C=1.07s R=1.07s J_full=102.99s J_ours=7.71s J_k10=117.45s tok_k10=4521 acc_k10=1 tok 3990/298 acc 1/0 elapsed=4996s
+[latency] 20/100 P=1.08s C=1.09s R=1.09s J_full=125.33s J_ours=61.05s J_k10=133.48s tok_k10=5157 acc_k10=1 tok 4826/2350 acc 1/1 elapsed=5320s
+[latency] 21/100 P=1.08s C=1.09s R=1.08s J_full=72.71s J_ours=108.46s J_k10=131.15s tok_k10=5046 acc_k10=1 tok 2805/4193 acc 1/0 elapsed=5637s
+[latency] 22/100 P=1.07s C=1.09s R=1.08s J_full=213.28s J_ours=212.88s J_k10=211.98s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=6279s
+[latency] 23/100 P=1.06s C=1.08s R=1.08s J_full=95.03s J_ours=97.16s J_k10=58.13s tok_k10=2254 acc_k10=1 tok 3661/3742 acc 1/0 elapsed=6533s
+[latency] 24/100 P=1.07s C=1.08s R=1.08s J_full=137.61s J_ours=186.57s J_k10=78.51s tok_k10=3021 acc_k10=1 tok 5312/7187 acc 1/0 elapsed=6940s
+[latency] 25/100 P=1.08s C=1.08s R=1.08s J_full=199.22s J_ours=145.94s J_k10=194.77s tok_k10=7533 acc_k10=0 tok 7684/5609 acc 0/0 elapsed=7484s
+[latency] 26/100 P=1.08s C=1.08s R=1.08s J_full=87.04s J_ours=77.84s J_k10=68.00s tok_k10=2624 acc_k10=1 tok 3338/3016 acc 1/1 elapsed=7721s
+[latency] 27/100 P=1.09s C=1.08s R=1.08s J_full=105.58s J_ours=22.45s J_k10=106.10s tok_k10=4091 acc_k10=1 tok 4067/869 acc 0/1 elapsed=7960s
+[latency] 28/100 P=1.07s C=1.08s R=1.08s J_full=31.44s J_ours=20.04s J_k10=39.10s tok_k10=1505 acc_k10=1 tok 1212/773 acc 1/1 elapsed=8054s
+[latency] 29/100 P=1.13s C=1.08s R=1.08s J_full=214.35s J_ours=141.49s J_k10=212.33s tok_k10=8192 acc_k10=0 tok 8192/5443 acc 0/0 elapsed=8627s
+[latency] 30/100 P=1.06s C=1.06s R=1.07s J_full=41.60s J_ours=83.00s J_k10=31.57s tok_k10=1222 acc_k10=1 tok 1617/3202 acc 1/0 elapsed=8787s
+[latency] 31/100 P=1.07s C=1.08s R=1.08s J_full=110.42s J_ours=78.26s J_k10=165.26s tok_k10=6381 acc_k10=0 tok 4273/3029 acc 0/0 elapsed=9145s
+[latency] 32/100 P=1.08s C=1.08s R=1.08s J_full=56.70s J_ours=60.78s J_k10=55.40s tok_k10=2137 acc_k10=0 tok 2187/2351 acc 0/1 elapsed=9322s
+[latency] 33/100 P=1.07s C=1.08s R=1.08s J_full=211.96s J_ours=105.18s J_k10=77.83s tok_k10=3005 acc_k10=1 tok 8192/4074 acc 0/1 elapsed=9721s
+[latency] 34/100 P=1.07s C=1.07s R=1.07s J_full=33.34s J_ours=46.85s J_k10=25.07s tok_k10=972 acc_k10=1 tok 1283/1802 acc 1/1 elapsed=9831s
+[latency] 35/100 P=1.06s C=1.07s R=1.06s J_full=39.76s J_ours=19.75s J_k10=26.13s tok_k10=1011 acc_k10=0 tok 1541/763 acc 0/0 elapsed=9920s
+[latency] 36/100 P=1.07s C=1.08s R=1.07s J_full=74.08s J_ours=20.76s J_k10=61.67s tok_k10=2388 acc_k10=1 tok 2864/804 acc 1/1 elapsed=10081s
+[latency] 37/100 P=1.08s C=1.09s R=1.09s J_full=179.90s J_ours=15.95s J_k10=52.60s tok_k10=2028 acc_k10=1 tok 6936/616 acc 1/0 elapsed=10334s
+[latency] 38/100 P=1.07s C=1.08s R=1.07s J_full=65.35s J_ours=56.31s J_k10=42.31s tok_k10=1635 acc_k10=1 tok 2528/2181 acc 1/1 elapsed=10502s
+[latency] 39/100 P=1.07s C=1.08s R=1.07s J_full=14.73s J_ours=37.36s J_k10=24.96s tok_k10=965 acc_k10=0 tok 570/1440 acc 0/0 elapsed=10583s
+[latency] 40/100 P=1.08s C=1.08s R=1.08s J_full=32.90s J_ours=34.62s J_k10=36.72s tok_k10=1416 acc_k10=1 tok 1269/1337 acc 1/1 elapsed=10691s
+[latency] 41/100 P=1.09s C=1.10s R=1.10s J_full=63.03s J_ours=112.85s J_k10=84.09s tok_k10=3208 acc_k10=1 tok 2441/4347 acc 1/1 elapsed=10955s
+[latency] 42/100 P=1.09s C=1.10s R=1.11s J_full=71.78s J_ours=20.08s J_k10=131.97s tok_k10=5058 acc_k10=1 tok 2755/773 acc 1/0 elapsed=11184s
+[latency] 43/100 P=1.07s C=1.09s R=1.08s J_full=76.42s J_ours=108.94s J_k10=61.06s tok_k10=2343 acc_k10=1 tok 2930/4190 acc 1/1 elapsed=11434s
+[latency] 44/100 P=1.08s C=1.08s R=1.08s J_full=29.85s J_ours=14.22s J_k10=19.47s tok_k10=751 acc_k10=0 tok 1145/547 acc 0/0 elapsed=11502s
+[latency] 45/100 P=1.08s C=1.08s R=1.08s J_full=58.37s J_ours=144.62s J_k10=59.39s tok_k10=2293 acc_k10=1 tok 2245/5551 acc 1/1 elapsed=11768s
+[latency] 46/100 P=1.08s C=1.07s R=1.08s J_full=88.25s J_ours=34.56s J_k10=69.31s tok_k10=2662 acc_k10=1 tok 3387/1329 acc 1/1 elapsed=11965s
+[latency] 47/100 P=1.07s C=1.08s R=1.07s J_full=46.44s J_ours=52.46s J_k10=154.61s tok_k10=5948 acc_k10=1 tok 1788/2020 acc 1/1 elapsed=12222s
+[latency] 48/100 P=1.08s C=1.09s R=1.10s J_full=15.46s J_ours=21.95s J_k10=30.36s tok_k10=1162 acc_k10=1 tok 593/838 acc 1/1 elapsed=12294s
+[latency] 49/100 P=1.09s C=1.08s R=1.08s J_full=22.56s J_ours=20.34s J_k10=29.15s tok_k10=1120 acc_k10=1 tok 869/782 acc 1/1 elapsed=12370s
+[latency] 50/100 P=1.08s C=1.08s R=1.08s J_full=25.64s J_ours=30.39s J_k10=38.69s tok_k10=1485 acc_k10=1 tok 986/1165 acc 1/0 elapsed=12469s
+[latency] 51/100 P=1.09s C=1.09s R=1.09s J_full=200.34s J_ours=51.54s J_k10=57.47s tok_k10=2216 acc_k10=1 tok 7716/1980 acc 1/1 elapsed=12783s
+[latency] 52/100 P=1.08s C=1.09s R=1.09s J_full=81.38s J_ours=11.75s J_k10=54.55s tok_k10=2098 acc_k10=1 tok 3125/449 acc 1/0 elapsed=12935s
+[latency] 53/100 P=1.07s C=1.08s R=1.08s J_full=135.35s J_ours=96.21s J_k10=94.58s tok_k10=3625 acc_k10=1 tok 5193/3689 acc 0/0 elapsed=13265s
+[latency] 54/100 P=1.07s C=1.08s R=1.07s J_full=76.84s J_ours=62.99s J_k10=45.54s tok_k10=1741 acc_k10=1 tok 2945/2419 acc 1/1 elapsed=13454s
+[latency] 55/100 P=1.08s C=1.08s R=1.08s J_full=56.82s J_ours=34.34s J_k10=108.80s tok_k10=4173 acc_k10=1 tok 2182/1319 acc 1/1 elapsed=13659s
+[latency] 56/100 P=1.12s C=1.14s R=1.14s J_full=86.94s J_ours=8.53s J_k10=66.89s tok_k10=2563 acc_k10=1 tok 3333/326 acc 0/0 elapsed=13825s
+[latency] 57/100 P=1.07s C=1.08s R=1.08s J_full=42.50s J_ours=25.14s J_k10=213.15s tok_k10=8192 acc_k10=1 tok 1631/960 acc 1/1 elapsed=14110s
+[latency] 58/100 P=1.07s C=1.08s R=1.08s J_full=68.59s J_ours=24.08s J_k10=29.83s tok_k10=1142 acc_k10=0 tok 2626/924 acc 0/0 elapsed=14237s
+[latency] 59/100 P=1.08s C=1.08s R=1.08s J_full=213.19s J_ours=212.30s J_k10=207.61s tok_k10=7939 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=14874s
+[latency] 60/100 P=1.09s C=1.10s R=1.10s J_full=28.99s J_ours=40.31s J_k10=42.67s tok_k10=1632 acc_k10=1 tok 1101/1544 acc 1/1 elapsed=14990s
+[latency] 61/100 P=1.08s C=1.08s R=1.08s J_full=28.25s J_ours=11.06s J_k10=16.53s tok_k10=632 acc_k10=1 tok 1079/419 acc 1/1 elapsed=15050s
+[latency] 62/100 P=1.08s C=1.09s R=1.08s J_full=22.29s J_ours=25.29s J_k10=27.41s tok_k10=1057 acc_k10=1 tok 854/973 acc 1/1 elapsed=15129s
+[latency] 63/100 P=1.07s C=1.08s R=1.07s J_full=17.88s J_ours=16.34s J_k10=20.97s tok_k10=806 acc_k10=1 tok 688/627 acc 1/1 elapsed=15189s
+[latency] 64/100 P=1.10s C=1.12s R=1.12s J_full=213.59s J_ours=41.14s J_k10=42.63s tok_k10=1630 acc_k10=1 tok 8192/1586 acc 0/1 elapsed=15491s
+[latency] 65/100 P=1.09s C=1.08s R=1.09s J_full=33.92s J_ours=12.71s J_k10=39.67s tok_k10=1520 acc_k10=0 tok 1299/487 acc 0/0 elapsed=15581s
+[latency] 66/100 P=1.07s C=1.08s R=1.08s J_full=213.91s J_ours=215.21s J_k10=213.84s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/1 elapsed=16228s
+[latency] 67/100 P=1.07s C=1.07s R=1.06s J_full=21.79s J_ours=21.15s J_k10=14.50s tok_k10=555 acc_k10=1 tok 838/810 acc 1/1 elapsed=16290s
+[latency] 68/100 P=1.09s C=1.09s R=1.10s J_full=46.44s J_ours=14.35s J_k10=37.22s tok_k10=1420 acc_k10=0 tok 1783/549 acc 0/0 elapsed=16392s
+[latency] 69/100 P=1.08s C=1.08s R=1.09s J_full=17.48s J_ours=34.87s J_k10=15.83s tok_k10=607 acc_k10=1 tok 668/1331 acc 1/1 elapsed=16464s
+[latency] 70/100 P=1.10s C=1.11s R=1.10s J_full=93.55s J_ours=52.39s J_k10=34.94s tok_k10=1336 acc_k10=1 tok 3568/1990 acc 1/1 elapsed=16649s
+[latency] 71/100 P=1.08s C=1.08s R=1.08s J_full=16.15s J_ours=16.19s J_k10=14.02s tok_k10=539 acc_k10=0 tok 620/620 acc 0/0 elapsed=16700s
+[latency] 72/100 P=1.26s C=1.36s R=1.41s J_full=213.26s J_ours=213.32s J_k10=214.83s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=17347s
+[latency] 73/100 P=1.08s C=1.09s R=1.09s J_full=26.37s J_ours=12.84s J_k10=18.46s tok_k10=706 acc_k10=1 tok 1005/491 acc 1/0 elapsed=17409s
+[latency] 74/100 P=1.08s C=1.08s R=1.08s J_full=15.01s J_ours=7.64s J_k10=11.28s tok_k10=431 acc_k10=1 tok 575/291 acc 1/1 elapsed=17447s
+[latency] 75/100 P=1.08s C=1.08s R=1.08s J_full=140.76s J_ours=55.29s J_k10=114.19s tok_k10=4380 acc_k10=1 tok 5381/2121 acc 0/0 elapsed=17761s
+[latency] 76/100 P=1.07s C=1.09s R=1.07s J_full=84.21s J_ours=79.97s J_k10=146.60s tok_k10=5618 acc_k10=0 tok 3229/3054 acc 0/0 elapsed=18076s
+[latency] 77/100 P=1.08s C=1.08s R=1.08s J_full=35.16s J_ours=12.88s J_k10=47.03s tok_k10=1798 acc_k10=1 tok 1345/491 acc 1/0 elapsed=18176s
+[latency] 78/100 P=1.08s C=1.09s R=1.09s J_full=108.40s J_ours=117.25s J_k10=98.51s tok_k10=3772 acc_k10=0 tok 4155/4493 acc 0/0 elapsed=18504s
+[latency] 79/100 P=1.08s C=1.08s R=1.08s J_full=123.11s J_ours=143.99s J_k10=80.29s tok_k10=3075 acc_k10=1 tok 4709/5518 acc 0/0 elapsed=18855s
+[latency] 80/100 P=1.10s C=1.11s R=1.11s J_full=128.84s J_ours=33.76s J_k10=86.29s tok_k10=3291 acc_k10=0 tok 4941/1291 acc 0/0 elapsed=19109s
+[latency] 81/100 P=1.09s C=1.09s R=1.09s J_full=107.45s J_ours=89.86s J_k10=119.99s tok_k10=4595 acc_k10=1 tok 4087/3417 acc 1/1 elapsed=19430s
+[latency] 82/100 P=1.08s C=1.08s R=1.08s J_full=83.94s J_ours=103.60s J_k10=130.66s tok_k10=4995 acc_k10=0 tok 3210/3979 acc 0/0 elapsed=19752s
+[latency] 83/100 P=1.09s C=1.10s R=1.09s J_full=214.87s J_ours=198.51s J_k10=216.23s tok_k10=8192 acc_k10=0 tok 8192/7541 acc 1/1 elapsed=20386s
+[latency] 84/100 P=1.10s C=1.11s R=1.11s J_full=50.08s J_ours=67.56s J_k10=117.93s tok_k10=4423 acc_k10=0 tok 1897/2558 acc 0/0 elapsed=20626s
+[latency] 85/100 P=1.10s C=1.11s R=1.11s J_full=171.22s J_ours=48.02s J_k10=96.26s tok_k10=3634 acc_k10=0 tok 6453/1812 acc 0/0 elapsed=20946s
+[latency] 86/100 P=1.10s C=1.11s R=1.11s J_full=96.64s J_ours=50.42s J_k10=119.78s tok_k10=4510 acc_k10=0 tok 3634/1898 acc 0/0 elapsed=21217s
+[latency] 87/100 P=1.09s C=1.10s R=1.09s J_full=71.21s J_ours=60.19s J_k10=80.74s tok_k10=3063 acc_k10=1 tok 2699/2285 acc 0/0 elapsed=21433s
+[latency] 88/100 P=1.09s C=1.09s R=1.09s J_full=106.27s J_ours=103.15s J_k10=100.96s tok_k10=3849 acc_k10=0 tok 4027/3954 acc 0/0 elapsed=21748s
+[latency] 89/100 P=1.09s C=1.09s R=1.10s J_full=93.03s J_ours=28.06s J_k10=103.02s tok_k10=3904 acc_k10=0 tok 3529/1065 acc 0/0 elapsed=21976s
+[latency] 90/100 P=1.11s C=1.12s R=1.12s J_full=130.98s J_ours=105.76s J_k10=70.89s tok_k10=2690 acc_k10=0 tok 4964/4013 acc 0/0 elapsed=22288s
+[latency] 91/100 P=1.09s C=1.09s R=1.09s J_full=143.29s J_ours=64.76s J_k10=88.37s tok_k10=3363 acc_k10=0 tok 5460/2466 acc 0/0 elapsed=22589s
+[latency] 92/100 P=1.09s C=1.10s R=1.10s J_full=100.16s J_ours=160.85s J_k10=146.13s tok_k10=5548 acc_k10=0 tok 3805/6085 acc 1/0 elapsed=23000s
+[latency] 93/100 P=1.09s C=1.09s R=1.08s J_full=50.80s J_ours=22.07s J_k10=30.64s tok_k10=1169 acc_k10=0 tok 1938/841 acc 1/0 elapsed=23108s
+[latency] 94/100 P=1.09s C=1.09s R=1.09s J_full=67.71s J_ours=167.24s J_k10=170.45s tok_k10=6461 acc_k10=1 tok 2565/6293 acc 0/0 elapsed=23518s
+[latency] 95/100 P=1.09s C=1.09s R=1.09s J_full=207.09s J_ours=131.76s J_k10=170.28s tok_k10=6427 acc_k10=0 tok 7872/4990 acc 1/0 elapsed=24031s
+[latency] 96/100 P=1.09s C=1.10s R=1.10s J_full=92.08s J_ours=70.33s J_k10=60.80s tok_k10=2301 acc_k10=1 tok 3493/2660 acc 1/1 elapsed=24258s
+[latency] 97/100 P=1.09s C=1.10s R=1.09s J_full=155.64s J_ours=159.23s J_k10=169.92s tok_k10=6451 acc_k10=0 tok 5927/6035 acc 0/1 elapsed=24747s
+[latency] 98/100 P=1.10s C=1.10s R=1.11s J_full=39.18s J_ours=95.07s J_k10=106.03s tok_k10=4011 acc_k10=1 tok 1483/3621 acc 0/1 elapsed=24992s
+[latency] 99/100 P=1.09s C=1.09s R=1.09s J_full=152.28s J_ours=62.50s J_k10=106.92s tok_k10=4043 acc_k10=1 tok 5759/2367 acc 0/0 elapsed=25318s
+[latency] 100/100 P=1.09s C=1.09s R=1.09s J_full=95.48s J_ours=46.23s J_k10=217.38s tok_k10=8192 acc_k10=1 tok 3625/1756 acc 1/1 elapsed=25681s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.09    1.09    1.09   0.009   93.94   97.21  3599.8   0.520
+ours            1.09    1.09    1.09   0.009   69.95   73.23  2679.9   0.440
+k10             0.30    0.30    0.31   0.000   88.72   89.63  3398.3   0.620
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -23.987 [-33.719,-14.247] n=100
+  ours_minus_latentmas_e2e_s       -23.978 [-33.710,-14.238] n=100
+  ours_minus_latentmas_tokens      -919.930 [-1292.229,-545.648] n=100
+  ours_minus_latentmas_correct     -0.080 [-0.180,+0.010] n=100
+  k10_minus_latentmas_judger_s     -5.222 [-14.612,+4.001] n=100
+  k10_minus_latentmas_e2e_s        -7.581 [-16.972,+1.636] n=100
+  k10_minus_latentmas_tokens       -201.530 [-560.829,+150.468] n=100
+  k10_minus_latentmas_correct      +0.100 [+0.020,+0.190] n=100
+  ours_minus_k10_judger_s          -18.765 [-27.798,-10.190] n=100
+  ours_minus_k10_e2e_s             -16.397 [-25.434,-7.825] n=100
+  ours_minus_k10_tokens            -718.400 [-1063.475,-388.489] n=100
+  ours_minus_k10_correct           -0.180 [-0.270,-0.090] n=100
+
+[done] artifacts/exp_latency_mem/arr_gpqa_n100_b128_s123/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK gpqa_n100_b128_s123 Tue Aug 25 22:38:41 UTC 2026
+[arr] START gsm8k_n100_b64_s7 Tue Aug 25 22:38:41 UTC 2026
+[load] Qwen/Qwen3-14B task=gsm8k n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  2.57it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.35it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:02,  2.36it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.43it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.63it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.75it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.72it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.36it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  2.82it/s]
+[compress] evict budget=64 sink=4 importance=key_norm
+[latency] 1/100 P=1.68s C=1.05s R=1.02s J_full=7.17s J_ours=6.96s J_k10=6.40s tok_k10=263 acc_k10=1 tok 292/287 acc 1/1 elapsed=25s
+[latency] 2/100 P=1.02s C=1.01s R=1.03s J_full=6.03s J_ours=7.42s J_k10=3.33s tok_k10=138 acc_k10=1 tok 248/304 acc 1/1 elapsed=46s
+[latency] 3/100 P=1.00s C=1.01s R=1.01s J_full=19.07s J_ours=22.56s J_k10=21.62s tok_k10=882 acc_k10=1 tok 781/921 acc 1/1 elapsed=113s
+[latency] 4/100 P=1.02s C=1.02s R=1.01s J_full=6.65s J_ours=7.30s J_k10=9.60s tok_k10=391 acc_k10=1 tok 272/299 acc 1/1 elapsed=140s
+[latency] 5/100 P=1.02s C=1.03s R=1.01s J_full=15.30s J_ours=13.68s J_k10=19.25s tok_k10=783 acc_k10=1 tok 626/558 acc 1/1 elapsed=193s
+[latency] 6/100 P=1.02s C=1.02s R=1.01s J_full=14.72s J_ours=16.51s J_k10=16.31s tok_k10=671 acc_k10=1 tok 601/676 acc 1/1 elapsed=244s
+[latency] 7/100 P=1.01s C=1.01s R=1.01s J_full=7.79s J_ours=4.82s J_k10=9.53s tok_k10=390 acc_k10=1 tok 320/196 acc 1/1 elapsed=270s
+[latency] 8/100 P=1.01s C=1.02s R=1.01s J_full=49.84s J_ours=23.57s J_k10=41.97s tok_k10=1716 acc_k10=1 tok 2048/964 acc 1/1 elapsed=389s
+[latency] 9/100 P=1.01s C=1.03s R=1.02s J_full=26.92s J_ours=24.91s J_k10=26.71s tok_k10=1087 acc_k10=1 tok 1093/1016 acc 1/1 elapsed=472s
+[latency] 10/100 P=1.02s C=1.02s R=1.01s J_full=10.84s J_ours=12.29s J_k10=9.13s tok_k10=373 acc_k10=1 tok 444/501 acc 1/1 elapsed=508s
+[latency] 11/100 P=1.01s C=1.01s R=1.00s J_full=9.56s J_ours=8.59s J_k10=9.59s tok_k10=389 acc_k10=1 tok 393/350 acc 1/1 elapsed=540s
+[latency] 12/100 P=1.01s C=1.02s R=1.02s J_full=16.22s J_ours=10.59s J_k10=17.82s tok_k10=727 acc_k10=1 tok 645/430 acc 1/1 elapsed=588s
+[latency] 13/100 P=1.01s C=1.02s R=1.01s J_full=32.94s J_ours=19.20s J_k10=29.78s tok_k10=1224 acc_k10=1 tok 1349/783 acc 1/0 elapsed=674s
+[latency] 14/100 P=1.01s C=1.02s R=1.00s J_full=30.09s J_ours=26.50s J_k10=31.28s tok_k10=1284 acc_k10=1 tok 1229/1082 acc 1/1 elapsed=766s
+[latency] 15/100 P=1.01s C=1.03s R=1.02s J_full=13.27s J_ours=12.45s J_k10=7.88s tok_k10=322 acc_k10=0 tok 540/506 acc 1/1 elapsed=803s
+[latency] 16/100 P=1.01s C=1.02s R=1.02s J_full=11.06s J_ours=19.42s J_k10=13.26s tok_k10=540 acc_k10=1 tok 450/791 acc 1/1 elapsed=851s
+[latency] 17/100 P=1.02s C=1.02s R=1.02s J_full=10.53s J_ours=14.21s J_k10=6.59s tok_k10=268 acc_k10=1 tok 429/576 acc 1/1 elapsed=886s
+[latency] 18/100 P=1.01s C=1.02s R=1.02s J_full=13.66s J_ours=15.27s J_k10=14.15s tok_k10=578 acc_k10=1 tok 556/620 acc 1/1 elapsed=933s
+[latency] 19/100 P=1.02s C=1.02s R=1.03s J_full=13.22s J_ours=6.57s J_k10=9.88s tok_k10=403 acc_k10=1 tok 536/266 acc 1/1 elapsed=967s
+[latency] 20/100 P=1.01s C=1.02s R=1.01s J_full=15.43s J_ours=13.72s J_k10=16.71s tok_k10=678 acc_k10=1 tok 629/557 acc 1/1 elapsed=1016s
+[latency] 21/100 P=1.02s C=1.02s R=1.01s J_full=26.10s J_ours=14.56s J_k10=24.90s tok_k10=1017 acc_k10=1 tok 1059/595 acc 1/1 elapsed=1086s
+[latency] 22/100 P=1.02s C=1.02s R=1.02s J_full=14.63s J_ours=8.50s J_k10=11.75s tok_k10=478 acc_k10=1 tok 597/344 acc 1/1 elapsed=1125s
+[latency] 23/100 P=1.01s C=1.02s R=1.02s J_full=5.60s J_ours=11.24s J_k10=8.34s tok_k10=340 acc_k10=1 tok 228/457 acc 1/1 elapsed=1154s
+[latency] 24/100 P=1.02s C=1.07s R=1.02s J_full=10.83s J_ours=8.07s J_k10=9.42s tok_k10=385 acc_k10=1 tok 442/326 acc 1/1 elapsed=1186s
+[latency] 25/100 P=1.02s C=1.02s R=1.02s J_full=14.38s J_ours=15.87s J_k10=11.91s tok_k10=490 acc_k10=1 tok 577/650 acc 0/1 elapsed=1232s
+[latency] 26/100 P=1.00s C=1.01s R=1.00s J_full=8.57s J_ours=10.93s J_k10=9.55s tok_k10=389 acc_k10=1 tok 353/446 acc 1/1 elapsed=1265s
+[latency] 27/100 P=1.01s C=1.02s R=1.01s J_full=16.82s J_ours=15.99s J_k10=19.84s tok_k10=809 acc_k10=1 tok 691/653 acc 1/1 elapsed=1322s
+[latency] 28/100 P=1.01s C=1.02s R=1.02s J_full=11.81s J_ours=12.56s J_k10=10.69s tok_k10=436 acc_k10=1 tok 481/509 acc 1/1 elapsed=1360s
+[latency] 29/100 P=1.02s C=1.02s R=1.02s J_full=9.70s J_ours=6.90s J_k10=10.23s tok_k10=420 acc_k10=1 tok 395/279 acc 1/1 elapsed=1391s
+[latency] 30/100 P=1.00s C=1.01s R=1.00s J_full=9.06s J_ours=9.78s J_k10=12.21s tok_k10=488 acc_k10=1 tok 372/397 acc 1/1 elapsed=1426s
+[latency] 31/100 P=1.01s C=1.02s R=1.02s J_full=15.65s J_ours=7.89s J_k10=13.12s tok_k10=536 acc_k10=1 tok 637/320 acc 1/1 elapsed=1467s
+[latency] 32/100 P=1.01s C=1.01s R=1.01s J_full=12.95s J_ours=12.25s J_k10=15.81s tok_k10=643 acc_k10=1 tok 531/499 acc 1/1 elapsed=1512s
+[latency] 33/100 P=1.02s C=1.02s R=1.01s J_full=7.72s J_ours=7.68s J_k10=10.26s tok_k10=418 acc_k10=1 tok 315/312 acc 1/1 elapsed=1541s
+[latency] 34/100 P=1.02s C=1.03s R=1.02s J_full=11.48s J_ours=11.42s J_k10=14.57s tok_k10=595 acc_k10=1 tok 467/464 acc 1/1 elapsed=1583s
+[latency] 35/100 P=1.01s C=1.01s R=1.01s J_full=10.72s J_ours=5.64s J_k10=8.37s tok_k10=340 acc_k10=1 tok 438/228 acc 1/1 elapsed=1611s
+[latency] 36/100 P=1.01s C=1.01s R=1.01s J_full=9.69s J_ours=8.19s J_k10=10.66s tok_k10=435 acc_k10=1 tok 396/333 acc 1/1 elapsed=1644s
+[latency] 37/100 P=1.02s C=1.02s R=1.02s J_full=8.30s J_ours=5.25s J_k10=8.10s tok_k10=329 acc_k10=1 tok 339/213 acc 1/1 elapsed=1669s
+[latency] 38/100 P=1.01s C=1.02s R=1.02s J_full=30.92s J_ours=34.79s J_k10=40.31s tok_k10=1646 acc_k10=0 tok 1260/1416 acc 1/0 elapsed=1779s
+[latency] 39/100 P=1.02s C=1.01s R=1.01s J_full=12.90s J_ours=7.71s J_k10=37.73s tok_k10=1532 acc_k10=1 tok 526/312 acc 1/1 elapsed=1841s
+[latency] 40/100 P=1.02s C=1.03s R=1.02s J_full=18.20s J_ours=10.80s J_k10=21.15s tok_k10=862 acc_k10=1 tok 740/438 acc 1/1 elapsed=1895s
+[latency] 41/100 P=1.02s C=1.02s R=1.01s J_full=6.77s J_ours=10.84s J_k10=12.94s tok_k10=531 acc_k10=1 tok 276/433 acc 1/1 elapsed=1930s
+[latency] 42/100 P=1.01s C=1.01s R=1.01s J_full=23.86s J_ours=21.63s J_k10=37.68s tok_k10=1536 acc_k10=1 tok 979/881 acc 1/1 elapsed=2017s
+[latency] 43/100 P=1.01s C=1.02s R=1.01s J_full=8.89s J_ours=7.92s J_k10=9.02s tok_k10=369 acc_k10=1 tok 364/321 acc 1/1 elapsed=2047s
+[latency] 44/100 P=1.01s C=1.02s R=1.01s J_full=23.16s J_ours=12.87s J_k10=18.47s tok_k10=753 acc_k10=1 tok 946/524 acc 1/1 elapsed=2105s
+[latency] 45/100 P=1.00s C=1.01s R=1.01s J_full=14.03s J_ours=16.15s J_k10=12.49s tok_k10=513 acc_k10=1 tok 573/659 acc 1/1 elapsed=2152s
+[latency] 46/100 P=1.01s C=1.03s R=1.01s J_full=15.30s J_ours=22.50s J_k10=18.33s tok_k10=750 acc_k10=1 tok 625/918 acc 1/1 elapsed=2212s
+[latency] 47/100 P=1.01s C=1.02s R=1.02s J_full=10.90s J_ours=15.52s J_k10=12.28s tok_k10=499 acc_k10=1 tok 445/632 acc 1/1 elapsed=2254s
+[latency] 48/100 P=1.01s C=1.02s R=1.01s J_full=8.01s J_ours=13.82s J_k10=18.75s tok_k10=766 acc_k10=1 tok 328/562 acc 1/1 elapsed=2299s
+[latency] 49/100 P=1.02s C=1.02s R=1.01s J_full=11.30s J_ours=9.25s J_k10=10.29s tok_k10=420 acc_k10=1 tok 460/375 acc 1/1 elapsed=2333s
+[latency] 50/100 P=1.01s C=1.01s R=1.01s J_full=10.75s J_ours=7.54s J_k10=13.72s tok_k10=559 acc_k10=1 tok 440/306 acc 1/1 elapsed=2369s
+[latency] 51/100 P=1.01s C=1.02s R=1.01s J_full=13.90s J_ours=10.05s J_k10=13.77s tok_k10=551 acc_k10=1 tok 568/405 acc 1/1 elapsed=2411s
+[latency] 52/100 P=1.01s C=1.01s R=1.01s J_full=9.97s J_ours=7.58s J_k10=10.63s tok_k10=435 acc_k10=1 tok 408/309 acc 1/1 elapsed=2443s
+[latency] 53/100 P=1.01s C=1.02s R=1.02s J_full=8.15s J_ours=9.12s J_k10=9.83s tok_k10=401 acc_k10=1 tok 332/370 acc 1/1 elapsed=2474s
+[latency] 54/100 P=1.01s C=1.03s R=1.01s J_full=16.29s J_ours=18.09s J_k10=15.90s tok_k10=653 acc_k10=1 tok 664/738 acc 1/1 elapsed=2528s
+[latency] 55/100 P=1.01s C=1.02s R=1.01s J_full=9.77s J_ours=9.10s J_k10=7.71s tok_k10=314 acc_k10=1 tok 398/370 acc 1/1 elapsed=2559s
+[latency] 56/100 P=1.01s C=1.02s R=1.01s J_full=5.41s J_ours=3.10s J_k10=6.50s tok_k10=265 acc_k10=1 tok 221/125 acc 1/1 elapsed=2578s
+[latency] 57/100 P=1.01s C=1.01s R=1.02s J_full=7.01s J_ours=5.99s J_k10=9.44s tok_k10=385 acc_k10=1 tok 284/243 acc 1/1 elapsed=2604s
+[latency] 58/100 P=1.01s C=1.01s R=1.01s J_full=13.08s J_ours=19.12s J_k10=9.88s tok_k10=403 acc_k10=1 tok 533/781 acc 1/1 elapsed=2650s
+[latency] 59/100 P=1.01s C=1.02s R=1.01s J_full=16.42s J_ours=18.66s J_k10=47.73s tok_k10=1943 acc_k10=0 tok 670/761 acc 0/1 elapsed=2737s
+[latency] 60/100 P=1.02s C=1.02s R=1.01s J_full=9.84s J_ours=9.56s J_k10=10.20s tok_k10=418 acc_k10=1 tok 402/389 acc 1/1 elapsed=2770s
+[latency] 61/100 P=1.02s C=1.02s R=1.01s J_full=12.16s J_ours=13.15s J_k10=17.46s tok_k10=710 acc_k10=1 tok 500/535 acc 1/1 elapsed=2817s
+[latency] 62/100 P=1.01s C=1.02s R=1.01s J_full=8.08s J_ours=6.59s J_k10=7.02s tok_k10=287 acc_k10=1 tok 330/267 acc 1/1 elapsed=2842s
+[latency] 63/100 P=1.01s C=1.02s R=1.01s J_full=50.23s J_ours=50.36s J_k10=50.12s tok_k10=2048 acc_k10=0 tok 2048/2048 acc 0/0 elapsed=2997s
+[latency] 64/100 P=1.01s C=1.02s R=1.01s J_full=19.16s J_ours=20.20s J_k10=21.01s tok_k10=854 acc_k10=1 tok 779/822 acc 1/1 elapsed=3061s
+[latency] 65/100 P=1.02s C=1.02s R=1.02s J_full=23.36s J_ours=6.32s J_k10=6.82s tok_k10=278 acc_k10=1 tok 950/256 acc 1/1 elapsed=3102s
+[latency] 66/100 P=1.02s C=1.02s R=1.02s J_full=7.20s J_ours=5.68s J_k10=7.87s tok_k10=325 acc_k10=1 tok 293/230 acc 1/1 elapsed=3126s
+[latency] 67/100 P=1.01s C=1.02s R=1.02s J_full=15.39s J_ours=8.98s J_k10=15.09s tok_k10=612 acc_k10=1 tok 630/365 acc 1/1 elapsed=3170s
+[latency] 68/100 P=1.02s C=1.01s R=1.01s J_full=12.12s J_ours=8.21s J_k10=12.87s tok_k10=525 acc_k10=1 tok 497/334 acc 1/1 elapsed=3207s
+[latency] 69/100 P=1.02s C=1.02s R=1.01s J_full=9.20s J_ours=9.19s J_k10=8.76s tok_k10=355 acc_k10=1 tok 375/374 acc 1/1 elapsed=3238s
+[latency] 70/100 P=1.05s C=1.05s R=1.04s J_full=10.52s J_ours=10.38s J_k10=7.39s tok_k10=302 acc_k10=1 tok 425/424 acc 1/1 elapsed=3270s
+[latency] 71/100 P=1.01s C=1.02s R=1.01s J_full=18.75s J_ours=11.61s J_k10=17.97s tok_k10=732 acc_k10=1 tok 764/472 acc 1/1 elapsed=3322s
+[latency] 72/100 P=1.01s C=1.02s R=1.01s J_full=6.91s J_ours=8.31s J_k10=8.04s tok_k10=326 acc_k10=1 tok 281/336 acc 1/1 elapsed=3349s
+[latency] 73/100 P=1.01s C=1.02s R=1.01s J_full=13.36s J_ours=12.01s J_k10=14.20s tok_k10=581 acc_k10=1 tok 548/487 acc 1/1 elapsed=3393s
+[latency] 74/100 P=1.01s C=1.02s R=1.01s J_full=12.42s J_ours=13.22s J_k10=12.40s tok_k10=503 acc_k10=1 tok 507/536 acc 1/1 elapsed=3435s
+[latency] 75/100 P=1.02s C=1.02s R=1.02s J_full=17.18s J_ours=17.11s J_k10=23.27s tok_k10=947 acc_k10=1 tok 702/696 acc 1/1 elapsed=3496s
+[latency] 76/100 P=1.01s C=1.04s R=1.03s J_full=9.83s J_ours=17.18s J_k10=16.46s tok_k10=667 acc_k10=1 tok 397/695 acc 1/1 elapsed=3544s
+[latency] 77/100 P=1.02s C=1.02s R=1.02s J_full=17.27s J_ours=15.97s J_k10=25.44s tok_k10=1032 acc_k10=1 tok 700/646 acc 1/1 elapsed=3606s
+[latency] 78/100 P=1.02s C=1.02s R=1.01s J_full=7.93s J_ours=8.34s J_k10=7.88s tok_k10=320 acc_k10=1 tok 322/338 acc 1/1 elapsed=3634s
+[latency] 79/100 P=1.01s C=1.02s R=1.01s J_full=28.90s J_ours=21.07s J_k10=21.32s tok_k10=867 acc_k10=1 tok 1181/856 acc 1/1 elapsed=3710s
+[latency] 80/100 P=1.02s C=1.02s R=1.01s J_full=5.89s J_ours=8.46s J_k10=5.82s tok_k10=236 acc_k10=1 tok 240/342 acc 1/1 elapsed=3734s
+[latency] 81/100 P=1.02s C=1.02s R=1.01s J_full=8.04s J_ours=11.34s J_k10=11.36s tok_k10=461 acc_k10=1 tok 327/461 acc 1/1 elapsed=3768s
+[latency] 82/100 P=1.01s C=1.02s R=1.01s J_full=10.53s J_ours=11.38s J_k10=14.07s tok_k10=573 acc_k10=1 tok 431/463 acc 1/1 elapsed=3808s
+[latency] 83/100 P=1.01s C=1.02s R=1.01s J_full=16.58s J_ours=6.53s J_k10=14.99s tok_k10=612 acc_k10=1 tok 677/265 acc 1/1 elapsed=3850s
+[latency] 84/100 P=1.01s C=1.02s R=1.02s J_full=10.66s J_ours=9.31s J_k10=10.78s tok_k10=439 acc_k10=1 tok 434/378 acc 1/1 elapsed=3885s
+[latency] 85/100 P=1.01s C=1.02s R=1.02s J_full=9.32s J_ours=14.61s J_k10=9.32s tok_k10=386 acc_k10=1 tok 380/597 acc 1/1 elapsed=3922s
+[latency] 86/100 P=1.00s C=1.01s R=1.02s J_full=26.78s J_ours=11.57s J_k10=19.12s tok_k10=779 acc_k10=1 tok 1105/475 acc 1/1 elapsed=3983s
+[latency] 87/100 P=1.02s C=1.03s R=1.02s J_full=14.16s J_ours=15.47s J_k10=22.94s tok_k10=932 acc_k10=1 tok 576/628 acc 1/1 elapsed=4040s
+[latency] 88/100 P=1.01s C=1.02s R=1.02s J_full=46.85s J_ours=19.43s J_k10=36.04s tok_k10=1478 acc_k10=1 tok 1914/792 acc 1/1 elapsed=4146s
+[latency] 89/100 P=1.01s C=1.02s R=1.01s J_full=9.32s J_ours=10.84s J_k10=9.37s tok_k10=382 acc_k10=1 tok 380/439 acc 1/1 elapsed=4179s
+[latency] 90/100 P=1.01s C=1.02s R=1.01s J_full=17.83s J_ours=6.49s J_k10=13.54s tok_k10=550 acc_k10=1 tok 724/263 acc 1/1 elapsed=4221s
+[latency] 91/100 P=1.02s C=1.02s R=1.02s J_full=9.64s J_ours=11.57s J_k10=11.30s tok_k10=459 acc_k10=1 tok 388/468 acc 1/1 elapsed=4258s
+[latency] 92/100 P=1.01s C=1.02s R=1.02s J_full=10.56s J_ours=6.83s J_k10=13.68s tok_k10=558 acc_k10=1 tok 424/273 acc 1/1 elapsed=4292s
+[latency] 93/100 P=1.01s C=1.01s R=1.01s J_full=12.93s J_ours=11.57s J_k10=8.06s tok_k10=328 acc_k10=1 tok 528/468 acc 1/1 elapsed=4329s
+[latency] 94/100 P=1.02s C=1.02s R=1.01s J_full=37.10s J_ours=18.07s J_k10=44.55s tok_k10=1814 acc_k10=0 tok 1513/733 acc 0/0 elapsed=4433s
+[latency] 95/100 P=1.02s C=1.02s R=1.02s J_full=15.18s J_ours=12.74s J_k10=21.47s tok_k10=873 acc_k10=1 tok 617/518 acc 1/1 elapsed=4486s
+[latency] 96/100 P=1.02s C=1.02s R=1.02s J_full=13.65s J_ours=11.36s J_k10=14.64s tok_k10=593 acc_k10=1 tok 555/460 acc 1/1 elapsed=4529s
+[latency] 97/100 P=1.01s C=1.02s R=1.02s J_full=8.86s J_ours=8.21s J_k10=8.97s tok_k10=366 acc_k10=1 tok 360/332 acc 1/1 elapsed=4559s
+[latency] 98/100 P=1.01s C=1.02s R=1.02s J_full=10.92s J_ours=18.00s J_k10=10.81s tok_k10=439 acc_k10=1 tok 442/732 acc 1/1 elapsed=4603s
+[latency] 99/100 P=1.01s C=1.03s R=1.02s J_full=21.62s J_ours=50.61s J_k10=16.73s tok_k10=681 acc_k10=1 tok 881/2048 acc 1/0 elapsed=4696s
+[latency] 100/100 P=1.02s C=1.02s R=1.02s J_full=19.66s J_ours=8.65s J_k10=12.50s tok_k10=508 acc_k10=1 tok 800/350 acc 1/1 elapsed=4741s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.02    1.02    1.01   0.008   14.75   17.81   601.7   0.960
+ours            1.02    1.02    1.01   0.008   13.08   16.14   531.8   0.950
+k10             0.27    0.28    0.28   0.000   15.67   16.50   638.8   0.950
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -1.672 [-2.964,-0.293] n=100
+  ours_minus_latentmas_e2e_s       -1.664 [-2.957,-0.285] n=100
+  ours_minus_latentmas_tokens      -69.880 [-122.494,-13.644] n=100
+  ours_minus_latentmas_correct     -0.010 [-0.060,+0.030] n=100
+  k10_minus_latentmas_judger_s     +0.915 [-0.167,+2.093] n=100
+  k10_minus_latentmas_e2e_s        -1.306 [-2.399,-0.124] n=100
+  k10_minus_latentmas_tokens       +37.110 [-7.157,+84.472] n=100
+  k10_minus_latentmas_correct      -0.010 [-0.050,+0.020] n=100
+  ours_minus_k10_judger_s          -2.588 [-4.042,-1.126] n=100
+  ours_minus_k10_e2e_s             -0.359 [-1.813,+1.105] n=100
+  ours_minus_k10_tokens            -106.990 [-166.026,-47.777] n=100
+  ours_minus_k10_correct           +0.000 [-0.040,+0.040] n=100
+
+[done] artifacts/exp_latency_mem/arr_gsm8k_n100_b64_s7/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK gsm8k_n100_b64_s7 Tue Aug 25 23:59:03 UTC 2026
+[arr] START math_n100_b128_s7 Tue Aug 25 23:59:03 UTC 2026
+[load] Qwen/Qwen3-14B task=math n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.25it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:01,  3.22it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:01,  3.14it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.08it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.18it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  3.34it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.45it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  4.16it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.55it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/100 P=1.66s C=0.99s R=0.97s J_full=21.03s J_ours=14.42s J_k10=21.96s tok_k10=951 acc_k10=1 tok 910/628 acc 1/1 elapsed=62s
+[latency] 2/100 P=1.01s C=1.00s R=0.96s J_full=47.99s J_ours=31.50s J_k10=40.17s tok_k10=1732 acc_k10=1 tok 2080/1361 acc 1/1 elapsed=185s
+[latency] 3/100 P=0.96s C=0.97s R=0.96s J_full=22.23s J_ours=23.68s J_k10=22.88s tok_k10=994 acc_k10=1 tok 960/1022 acc 1/1 elapsed=258s
+[latency] 4/100 P=0.97s C=0.98s R=0.97s J_full=10.76s J_ours=18.55s J_k10=18.85s tok_k10=813 acc_k10=1 tok 464/792 acc 1/1 elapsed=310s
+[latency] 5/100 P=0.98s C=0.98s R=0.98s J_full=21.72s J_ours=19.91s J_k10=17.20s tok_k10=740 acc_k10=1 tok 934/857 acc 1/1 elapsed=372s
+[latency] 6/100 P=0.96s C=0.97s R=0.97s J_full=9.73s J_ours=10.88s J_k10=9.44s tok_k10=406 acc_k10=1 tok 419/466 acc 1/1 elapsed=406s
+[latency] 7/100 P=0.97s C=0.98s R=0.97s J_full=19.92s J_ours=21.58s J_k10=36.11s tok_k10=1556 acc_k10=1 tok 853/925 acc 1/1 elapsed=487s
+[latency] 8/100 P=0.97s C=0.98s R=0.97s J_full=44.25s J_ours=29.14s J_k10=45.81s tok_k10=1956 acc_k10=1 tok 1894/1246 acc 1/1 elapsed=610s
+[latency] 9/100 P=0.97s C=0.96s R=0.97s J_full=17.70s J_ours=15.57s J_k10=11.97s tok_k10=515 acc_k10=1 tok 763/667 acc 1/1 elapsed=659s
+[latency] 10/100 P=0.97s C=0.98s R=0.98s J_full=95.35s J_ours=95.60s J_k10=97.11s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=951s
+[latency] 11/100 P=0.96s C=0.97s R=0.97s J_full=44.16s J_ours=23.30s J_k10=34.54s tok_k10=1495 acc_k10=1 tok 1872/1001 acc 1/1 elapsed=1057s
+[latency] 12/100 P=0.96s C=1.07s R=1.00s J_full=79.04s J_ours=96.74s J_k10=96.75s tok_k10=4096 acc_k10=0 tok 3286/4096 acc 1/0 elapsed=1333s
+[latency] 13/100 P=0.98s C=0.97s R=0.99s J_full=39.96s J_ours=35.85s J_k10=37.97s tok_k10=1590 acc_k10=1 tok 1667/1484 acc 1/1 elapsed=1451s
+[latency] 14/100 P=0.97s C=1.07s R=0.98s J_full=12.04s J_ours=8.43s J_k10=12.65s tok_k10=519 acc_k10=1 tok 504/338 acc 1/1 elapsed=1488s
+[latency] 15/100 P=0.96s C=0.97s R=0.96s J_full=37.97s J_ours=24.26s J_k10=37.19s tok_k10=1570 acc_k10=1 tok 1570/1013 acc 1/1 elapsed=1591s
+[latency] 16/100 P=1.06s C=1.00s R=0.99s J_full=66.52s J_ours=41.40s J_k10=50.39s tok_k10=2117 acc_k10=1 tok 2813/1752 acc 1/1 elapsed=1753s
+[latency] 17/100 P=0.98s C=0.97s R=1.01s J_full=25.61s J_ours=21.03s J_k10=24.93s tok_k10=1040 acc_k10=1 tok 1068/882 acc 1/1 elapsed=1829s
+[latency] 18/100 P=0.97s C=0.98s R=0.98s J_full=73.52s J_ours=67.45s J_k10=38.63s tok_k10=1653 acc_k10=1 tok 3062/2831 acc 1/1 elapsed=2012s
+[latency] 19/100 P=0.97s C=0.97s R=1.03s J_full=98.79s J_ours=97.97s J_k10=97.39s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=2310s
+[latency] 20/100 P=0.96s C=0.97s R=1.04s J_full=57.52s J_ours=51.06s J_k10=53.65s tok_k10=2199 acc_k10=1 tok 2377/2126 acc 1/1 elapsed=2476s
+[latency] 21/100 P=1.02s C=1.05s R=1.13s J_full=10.58s J_ours=12.01s J_k10=9.72s tok_k10=405 acc_k10=1 tok 449/488 acc 1/1 elapsed=2512s
+[latency] 22/100 P=0.98s C=0.99s R=1.00s J_full=79.67s J_ours=79.93s J_k10=54.93s tok_k10=2268 acc_k10=1 tok 3291/3366 acc 1/1 elapsed=2731s
+[latency] 23/100 P=1.00s C=1.01s R=1.01s J_full=28.60s J_ours=28.07s J_k10=26.44s tok_k10=1137 acc_k10=1 tok 1178/1198 acc 1/1 elapsed=2817s
+[latency] 24/100 P=0.97s C=0.97s R=0.97s J_full=23.46s J_ours=21.98s J_k10=24.53s tok_k10=1026 acc_k10=0 tok 985/905 acc 0/0 elapsed=2891s
+[latency] 25/100 P=0.97s C=0.98s R=0.97s J_full=26.15s J_ours=27.42s J_k10=22.91s tok_k10=950 acc_k10=1 tok 1119/1133 acc 1/1 elapsed=2971s
+[latency] 26/100 P=1.01s C=0.98s R=0.97s J_full=55.24s J_ours=46.66s J_k10=48.97s tok_k10=2070 acc_k10=0 tok 2287/1921 acc 0/0 elapsed=3126s
+[latency] 27/100 P=1.00s C=1.01s R=1.00s J_full=97.89s J_ours=26.39s J_k10=96.76s tok_k10=4096 acc_k10=0 tok 4096/1121 acc 0/0 elapsed=3351s
+[latency] 28/100 P=0.97s C=0.98s R=0.97s J_full=17.71s J_ours=8.48s J_k10=16.46s tok_k10=702 acc_k10=1 tok 732/356 acc 1/1 elapsed=3397s
+[latency] 29/100 P=0.97s C=0.98s R=0.97s J_full=17.84s J_ours=12.52s J_k10=12.88s tok_k10=532 acc_k10=1 tok 746/515 acc 1/1 elapsed=3444s
+[latency] 30/100 P=0.97s C=0.98s R=0.97s J_full=14.34s J_ours=9.87s J_k10=13.95s tok_k10=599 acc_k10=1 tok 608/407 acc 1/1 elapsed=3486s
+[latency] 31/100 P=0.96s C=0.98s R=1.01s J_full=18.74s J_ours=17.63s J_k10=15.51s tok_k10=654 acc_k10=1 tok 793/752 acc 1/1 elapsed=3542s
+[latency] 32/100 P=1.01s C=1.00s R=1.00s J_full=13.25s J_ours=11.14s J_k10=13.50s tok_k10=574 acc_k10=1 tok 546/466 acc 1/1 elapsed=3584s
+[latency] 33/100 P=0.98s C=0.99s R=0.97s J_full=97.94s J_ours=96.83s J_k10=95.87s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=3878s
+[latency] 34/100 P=0.97s C=0.97s R=0.97s J_full=28.83s J_ours=16.40s J_k10=29.26s tok_k10=1227 acc_k10=1 tok 1234/700 acc 1/1 elapsed=3956s
+[latency] 35/100 P=0.96s C=0.97s R=0.97s J_full=28.10s J_ours=23.34s J_k10=28.02s tok_k10=1154 acc_k10=1 tok 1166/967 acc 1/0 elapsed=4039s
+[latency] 36/100 P=0.98s C=1.00s R=1.00s J_full=24.08s J_ours=15.34s J_k10=29.12s tok_k10=1218 acc_k10=1 tok 994/656 acc 1/1 elapsed=4112s
+[latency] 37/100 P=0.97s C=0.97s R=0.97s J_full=46.83s J_ours=31.50s J_k10=43.86s tok_k10=1815 acc_k10=0 tok 1988/1323 acc 0/0 elapsed=4238s
+[latency] 38/100 P=1.00s C=1.01s R=1.00s J_full=13.42s J_ours=9.80s J_k10=10.96s tok_k10=453 acc_k10=1 tok 555/401 acc 1/1 elapsed=4276s
+[latency] 39/100 P=0.98s C=1.01s R=1.01s J_full=14.39s J_ours=14.45s J_k10=11.32s tok_k10=465 acc_k10=1 tok 592/609 acc 1/1 elapsed=4320s
+[latency] 40/100 P=0.97s C=0.98s R=1.00s J_full=19.31s J_ours=27.12s J_k10=21.76s tok_k10=932 acc_k10=1 tok 819/1156 acc 1/1 elapsed=4392s
+[latency] 41/100 P=0.96s C=0.97s R=0.96s J_full=8.50s J_ours=8.48s J_k10=8.60s tok_k10=368 acc_k10=1 tok 363/362 acc 1/1 elapsed=4421s
+[latency] 42/100 P=0.97s C=0.98s R=0.97s J_full=57.89s J_ours=23.80s J_k10=82.06s tok_k10=3464 acc_k10=1 tok 2437/1003 acc 1/1 elapsed=4588s
+[latency] 43/100 P=0.97s C=0.97s R=0.98s J_full=12.10s J_ours=9.92s J_k10=13.19s tok_k10=563 acc_k10=1 tok 518/423 acc 1/1 elapsed=4627s
+[latency] 44/100 P=0.97s C=0.97s R=0.96s J_full=97.68s J_ours=97.30s J_k10=96.59s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=4923s
+[latency] 45/100 P=0.97s C=0.97s R=0.97s J_full=17.08s J_ours=14.70s J_k10=21.99s tok_k10=929 acc_k10=1 tok 732/620 acc 1/1 elapsed=4980s
+[latency] 46/100 P=0.96s C=0.97s R=0.96s J_full=13.41s J_ours=21.87s J_k10=20.27s tok_k10=837 acc_k10=1 tok 573/929 acc 1/1 elapsed=5040s
+[latency] 47/100 P=0.98s C=0.97s R=0.97s J_full=50.34s J_ours=56.08s J_k10=51.76s tok_k10=2210 acc_k10=1 tok 2119/2400 acc 1/1 elapsed=5201s
+[latency] 48/100 P=0.96s C=0.97s R=0.96s J_full=14.33s J_ours=20.01s J_k10=15.17s tok_k10=633 acc_k10=1 tok 612/829 acc 1/1 elapsed=5255s
+[latency] 49/100 P=0.96s C=0.97s R=0.97s J_full=14.86s J_ours=11.45s J_k10=10.16s tok_k10=438 acc_k10=1 tok 620/469 acc 1/1 elapsed=5295s
+[latency] 50/100 P=0.96s C=0.97s R=0.97s J_full=11.79s J_ours=12.50s J_k10=11.80s tok_k10=504 acc_k10=1 tok 504/534 acc 1/1 elapsed=5335s
+[latency] 51/100 P=0.97s C=0.98s R=0.97s J_full=39.14s J_ours=36.19s J_k10=66.86s tok_k10=2826 acc_k10=1 tok 1682/1565 acc 1/1 elapsed=5481s
+[latency] 52/100 P=0.99s C=0.98s R=0.97s J_full=34.60s J_ours=33.29s J_k10=26.77s tok_k10=1118 acc_k10=1 tok 1446/1380 acc 1/1 elapsed=5579s
+[latency] 53/100 P=0.95s C=0.96s R=0.95s J_full=15.69s J_ours=24.19s J_k10=15.48s tok_k10=652 acc_k10=1 tok 660/1013 acc 1/1 elapsed=5638s
+[latency] 54/100 P=0.95s C=0.96s R=0.96s J_full=16.31s J_ours=14.77s J_k10=12.98s tok_k10=555 acc_k10=1 tok 684/623 acc 1/1 elapsed=5686s
+[latency] 55/100 P=0.96s C=0.97s R=0.97s J_full=14.58s J_ours=12.09s J_k10=11.77s tok_k10=484 acc_k10=1 tok 620/516 acc 1/1 elapsed=5728s
+[latency] 56/100 P=0.95s C=0.96s R=0.96s J_full=19.55s J_ours=21.32s J_k10=18.78s tok_k10=785 acc_k10=1 tok 816/893 acc 1/1 elapsed=5791s
+[latency] 57/100 P=0.96s C=0.97s R=0.97s J_full=10.59s J_ours=17.19s J_k10=10.28s tok_k10=438 acc_k10=1 tok 450/737 acc 1/1 elapsed=5833s
+[latency] 58/100 P=0.97s C=0.98s R=0.97s J_full=16.14s J_ours=10.74s J_k10=14.23s tok_k10=593 acc_k10=1 tok 680/443 acc 1/1 elapsed=5878s
+[latency] 59/100 P=0.96s C=0.97s R=0.98s J_full=18.25s J_ours=14.64s J_k10=16.10s tok_k10=692 acc_k10=1 tok 763/608 acc 1/1 elapsed=5931s
+[latency] 60/100 P=0.96s C=0.97s R=0.97s J_full=17.23s J_ours=4.83s J_k10=16.58s tok_k10=685 acc_k10=1 tok 697/195 acc 1/1 elapsed=5973s
+[latency] 61/100 P=0.97s C=0.97s R=0.97s J_full=97.66s J_ours=97.27s J_k10=52.96s tok_k10=2215 acc_k10=1 tok 4096/4096 acc 0/0 elapsed=6225s
+[latency] 62/100 P=1.02s C=0.98s R=0.97s J_full=41.44s J_ours=27.32s J_k10=39.12s tok_k10=1636 acc_k10=1 tok 1732/1153 acc 1/1 elapsed=6336s
+[latency] 63/100 P=1.02s C=1.04s R=1.03s J_full=53.98s J_ours=51.24s J_k10=60.09s tok_k10=2576 acc_k10=1 tok 2260/2169 acc 1/1 elapsed=6506s
+[latency] 64/100 P=0.96s C=0.97s R=0.97s J_full=34.88s J_ours=52.92s J_k10=44.19s tok_k10=1865 acc_k10=1 tok 1494/2240 acc 1/1 elapsed=6641s
+[latency] 65/100 P=0.97s C=0.97s R=0.96s J_full=81.16s J_ours=95.96s J_k10=97.75s tok_k10=4096 acc_k10=0 tok 3425/4014 acc 1/0 elapsed=6920s
+[latency] 66/100 P=0.96s C=1.04s R=0.99s J_full=8.32s J_ours=17.96s J_k10=11.82s tok_k10=463 acc_k10=1 tok 356/697 acc 1/1 elapsed=6962s
+[latency] 67/100 P=1.07s C=1.09s R=1.07s J_full=21.69s J_ours=19.29s J_k10=16.00s tok_k10=624 acc_k10=1 tok 846/752 acc 1/1 elapsed=7023s
+[latency] 68/100 P=1.07s C=1.07s R=1.07s J_full=25.31s J_ours=16.84s J_k10=21.29s tok_k10=834 acc_k10=1 tok 990/656 acc 1/1 elapsed=7091s
+[latency] 69/100 P=1.05s C=1.05s R=1.04s J_full=44.51s J_ours=21.79s J_k10=48.73s tok_k10=1932 acc_k10=1 tok 1739/867 acc 1/1 elapsed=7210s
+[latency] 70/100 P=1.04s C=1.04s R=1.03s J_full=24.23s J_ours=24.91s J_k10=36.39s tok_k10=1440 acc_k10=1 tok 942/984 acc 1/1 elapsed=7299s
+[latency] 71/100 P=1.03s C=1.04s R=1.04s J_full=15.22s J_ours=24.13s J_k10=13.37s tok_k10=537 acc_k10=1 tok 602/954 acc 1/1 elapsed=7356s
+[latency] 72/100 P=1.03s C=1.04s R=1.04s J_full=67.17s J_ours=8.60s J_k10=97.07s tok_k10=3804 acc_k10=0 tok 2681/316 acc 0/0 elapsed=7533s
+[latency] 73/100 P=1.03s C=1.10s R=1.09s J_full=18.84s J_ours=14.99s J_k10=15.05s tok_k10=592 acc_k10=1 tok 750/582 acc 1/1 elapsed=7586s
+[latency] 74/100 P=1.03s C=1.03s R=1.03s J_full=15.04s J_ours=17.15s J_k10=18.74s tok_k10=752 acc_k10=1 tok 602/681 acc 1/1 elapsed=7641s
+[latency] 75/100 P=1.02s C=1.04s R=1.03s J_full=24.13s J_ours=17.97s J_k10=20.00s tok_k10=801 acc_k10=1 tok 968/704 acc 1/1 elapsed=7707s
+[latency] 76/100 P=1.04s C=1.05s R=1.04s J_full=28.44s J_ours=14.58s J_k10=26.85s tok_k10=1064 acc_k10=1 tok 1133/579 acc 1/1 elapsed=7781s
+[latency] 77/100 P=1.04s C=1.04s R=1.04s J_full=21.21s J_ours=25.67s J_k10=24.82s tok_k10=987 acc_k10=1 tok 842/1019 acc 1/1 elapsed=7856s
+[latency] 78/100 P=1.02s C=1.12s R=1.10s J_full=12.64s J_ours=12.46s J_k10=13.36s tok_k10=513 acc_k10=1 tok 503/483 acc 1/1 elapsed=7899s
+[latency] 79/100 P=1.09s C=1.03s R=1.03s J_full=54.01s J_ours=50.97s J_k10=57.26s tok_k10=2273 acc_k10=1 tok 2128/2026 acc 1/1 elapsed=8065s
+[latency] 80/100 P=1.03s C=1.04s R=1.04s J_full=10.26s J_ours=12.20s J_k10=11.84s tok_k10=452 acc_k10=1 tok 407/484 acc 1/1 elapsed=8103s
+[latency] 81/100 P=1.03s C=1.03s R=1.03s J_full=104.02s J_ours=103.19s J_k10=103.89s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=8418s
+[latency] 82/100 P=1.03s C=1.04s R=1.03s J_full=22.21s J_ours=20.37s J_k10=20.38s tok_k10=809 acc_k10=1 tok 869/814 acc 1/1 elapsed=8485s
+[latency] 83/100 P=1.03s C=1.03s R=1.04s J_full=85.47s J_ours=44.40s J_k10=103.44s tok_k10=4096 acc_k10=0 tok 3388/1758 acc 1/1 elapsed=8723s
+[latency] 84/100 P=1.03s C=1.05s R=1.05s J_full=27.75s J_ours=45.97s J_k10=23.75s tok_k10=925 acc_k10=1 tok 1088/1809 acc 1/1 elapsed=8824s
+[latency] 85/100 P=1.03s C=1.03s R=1.04s J_full=46.54s J_ours=28.74s J_k10=33.38s tok_k10=1317 acc_k10=1 tok 1829/1147 acc 1/1 elapsed=8937s
+[latency] 86/100 P=1.03s C=1.03s R=1.03s J_full=19.53s J_ours=17.86s J_k10=19.24s tok_k10=766 acc_k10=1 tok 764/688 acc 1/1 elapsed=8997s
+[latency] 87/100 P=1.03s C=1.04s R=1.03s J_full=10.36s J_ours=11.81s J_k10=10.42s tok_k10=413 acc_k10=1 tok 417/473 acc 1/1 elapsed=9034s
+[latency] 88/100 P=1.09s C=1.10s R=1.04s J_full=28.59s J_ours=29.03s J_k10=27.16s tok_k10=1071 acc_k10=1 tok 1136/1137 acc 1/1 elapsed=9123s
+[latency] 89/100 P=1.04s C=1.05s R=1.04s J_full=104.26s J_ours=103.77s J_k10=102.48s tok_k10=4015 acc_k10=1 tok 4096/4096 acc 0/0 elapsed=9437s
+[latency] 90/100 P=1.03s C=1.04s R=1.03s J_full=30.25s J_ours=27.93s J_k10=28.21s tok_k10=1121 acc_k10=1 tok 1197/1113 acc 1/1 elapsed=9528s
+[latency] 91/100 P=1.04s C=1.05s R=1.05s J_full=7.83s J_ours=12.06s J_k10=12.19s tok_k10=479 acc_k10=1 tok 310/480 acc 1/1 elapsed=9564s
+[latency] 92/100 P=1.06s C=1.07s R=1.05s J_full=14.47s J_ours=8.57s J_k10=17.03s tok_k10=716 acc_k10=1 tok 591/366 acc 1/1 elapsed=9608s
+[latency] 93/100 P=0.97s C=0.98s R=1.02s J_full=33.58s J_ours=17.73s J_k10=47.17s tok_k10=1812 acc_k10=1 tok 1392/753 acc 1/0 elapsed=9710s
+[latency] 94/100 P=1.09s C=1.08s R=1.07s J_full=25.98s J_ours=17.41s J_k10=28.34s tok_k10=1087 acc_k10=1 tok 1002/667 acc 1/1 elapsed=9786s
+[latency] 95/100 P=1.11s C=1.10s R=1.17s J_full=107.20s J_ours=106.09s J_k10=105.31s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=10109s
+[latency] 96/100 P=1.07s C=1.07s R=1.06s J_full=26.26s J_ours=19.59s J_k10=28.11s tok_k10=1098 acc_k10=1 tok 1016/757 acc 1/1 elapsed=10187s
+[latency] 97/100 P=1.07s C=1.06s R=1.05s J_full=105.42s J_ours=105.78s J_k10=105.37s tok_k10=4096 acc_k10=0 tok 4096/4096 acc 0/0 elapsed=10508s
+[latency] 98/100 P=1.08s C=1.09s R=1.07s J_full=22.76s J_ours=15.44s J_k10=11.86s tok_k10=460 acc_k10=1 tok 881/595 acc 1/1 elapsed=10562s
+[latency] 99/100 P=1.07s C=1.08s R=1.06s J_full=11.96s J_ours=11.47s J_k10=7.61s tok_k10=296 acc_k10=1 tok 472/445 acc 1/1 elapsed=10597s
+[latency] 100/100 P=1.07s C=1.07s R=1.05s J_full=44.90s J_ours=61.58s J_k10=35.70s tok_k10=1391 acc_k10=0 tok 1751/2386 acc 0/0 elapsed=10743s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.01    1.01    1.00   0.008   36.02   39.04  1480.2   0.850
+ours            1.01    1.01    1.00   0.008   31.84   34.86  1310.8   0.810
+k10             0.27    0.28    0.28   0.000   35.71   36.54  1469.9   0.840
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -4.181 [-6.841,-1.813] n=100
+  ours_minus_latentmas_e2e_s       -4.173 [-6.833,-1.804] n=100
+  ours_minus_latentmas_tokens      -169.360 [-278.807,-73.007] n=100
+  ours_minus_latentmas_correct     -0.040 [-0.080,-0.010] n=100
+  k10_minus_latentmas_judger_s     -0.303 [-2.163,+1.374] n=100
+  k10_minus_latentmas_e2e_s        -2.495 [-4.350,-0.814] n=100
+  k10_minus_latentmas_tokens       -10.240 [-86.105,+58.582] n=100
+  k10_minus_latentmas_correct      -0.010 [-0.050,+0.030] n=100
+  ours_minus_k10_judger_s          -3.879 [-7.368,-0.705] n=100
+  ours_minus_k10_e2e_s             -1.678 [-5.177,+1.488] n=100
+  ours_minus_k10_tokens            -159.120 [-300.183,-30.668] n=100
+  ours_minus_k10_correct           -0.030 [-0.080,+0.010] n=100
+
+[done] artifacts/exp_latency_mem/arr_math_n100_b128_s7/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK math_n100_b128_s7 Wed Aug 26 02:59:34 UTC 2026
+[arr] START gpqa_n100_b128_s7 Wed Aug 26 02:59:34 UTC 2026
+[load] Qwen/Qwen3-14B task=gpqa n=100 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  2.75it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.71it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.76it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.00it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.86it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.86it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.05it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.67it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.14it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/100 P=1.67s C=1.02s R=0.99s J_full=93.39s J_ours=62.12s J_k10=110.27s tok_k10=4697 acc_k10=0 tok 3975/2669 acc 0/0 elapsed=270s
+[latency] 2/100 P=0.98s C=0.98s R=0.98s J_full=17.32s J_ours=34.49s J_k10=35.22s tok_k10=1496 acc_k10=1 tok 735/1466 acc 1/1 elapsed=361s
+[latency] 3/100 P=0.97s C=0.98s R=0.98s J_full=37.65s J_ours=70.72s J_k10=33.17s tok_k10=1425 acc_k10=1 tok 1582/3023 acc 1/1 elapsed=506s
+[latency] 4/100 P=0.98s C=0.98s R=0.98s J_full=61.62s J_ours=65.16s J_k10=63.75s tok_k10=2708 acc_k10=1 tok 2636/2781 acc 1/1 elapsed=701s
+[latency] 5/100 P=0.97s C=0.97s R=0.97s J_full=152.13s J_ours=191.61s J_k10=116.09s tok_k10=4922 acc_k10=1 tok 6482/8192 acc 1/1 elapsed=1164s
+[latency] 6/100 P=0.98s C=0.97s R=0.97s J_full=125.50s J_ours=44.15s J_k10=191.61s tok_k10=8192 acc_k10=0 tok 5329/1884 acc 1/1 elapsed=1529s
+[latency] 7/100 P=0.99s C=1.01s R=1.00s J_full=149.28s J_ours=79.70s J_k10=127.27s tok_k10=5391 acc_k10=0 tok 6353/3407 acc 0/0 elapsed=1890s
+[latency] 8/100 P=0.97s C=0.97s R=0.97s J_full=116.51s J_ours=35.15s J_k10=75.52s tok_k10=3235 acc_k10=0 tok 4949/1510 acc 0/0 elapsed=2120s
+[latency] 9/100 P=0.96s C=0.97s R=0.97s J_full=90.59s J_ours=67.74s J_k10=74.74s tok_k10=3185 acc_k10=1 tok 3831/2878 acc 1/0 elapsed=2357s
+[latency] 10/100 P=0.97s C=0.97s R=0.97s J_full=109.88s J_ours=16.04s J_k10=74.33s tok_k10=3159 acc_k10=0 tok 4670/684 acc 0/0 elapsed=2561s
+[latency] 11/100 P=0.98s C=1.00s R=0.99s J_full=54.11s J_ours=17.80s J_k10=94.96s tok_k10=4041 acc_k10=0 tok 2299/760 acc 0/0 elapsed=2732s
+[latency] 12/100 P=0.98s C=0.98s R=0.96s J_full=14.64s J_ours=17.07s J_k10=24.59s tok_k10=1052 acc_k10=0 tok 624/728 acc 0/0 elapsed=2792s
+[latency] 13/100 P=0.96s C=0.98s R=0.99s J_full=192.44s J_ours=66.73s J_k10=88.35s tok_k10=3745 acc_k10=1 tok 8192/2855 acc 0/1 elapsed=3143s
+[latency] 14/100 P=0.98s C=0.99s R=1.00s J_full=32.05s J_ours=30.67s J_k10=33.95s tok_k10=1450 acc_k10=1 tok 1356/1311 acc 1/1 elapsed=3244s
+[latency] 15/100 P=0.97s C=0.98s R=0.97s J_full=29.80s J_ours=27.98s J_k10=21.39s tok_k10=915 acc_k10=1 tok 1275/1198 acc 0/0 elapsed=3327s
+[latency] 16/100 P=0.97s C=0.98s R=0.97s J_full=173.21s J_ours=93.43s J_k10=133.22s tok_k10=5684 acc_k10=1 tok 7374/3971 acc 1/0 elapsed=3730s
+[latency] 17/100 P=0.97s C=0.98s R=0.98s J_full=79.95s J_ours=43.83s J_k10=125.81s tok_k10=5382 acc_k10=0 tok 3420/1884 acc 0/0 elapsed=3984s
+[latency] 18/100 P=0.96s C=0.97s R=0.97s J_full=66.49s J_ours=40.38s J_k10=33.78s tok_k10=1456 acc_k10=1 tok 2835/1730 acc 1/1 elapsed=4128s
+[latency] 19/100 P=0.97s C=0.96s R=0.96s J_full=106.59s J_ours=77.92s J_k10=96.67s tok_k10=4123 acc_k10=1 tok 4556/3344 acc 1/1 elapsed=4413s
+[latency] 20/100 P=0.97s C=0.97s R=0.98s J_full=52.24s J_ours=31.57s J_k10=107.37s tok_k10=4571 acc_k10=1 tok 2212/1344 acc 1/1 elapsed=4608s
+[latency] 21/100 P=0.97s C=0.99s R=0.98s J_full=103.78s J_ours=92.99s J_k10=54.81s tok_k10=2330 acc_k10=1 tok 4415/3952 acc 1/1 elapsed=4863s
+[latency] 22/100 P=0.98s C=0.97s R=0.97s J_full=192.24s J_ours=185.41s J_k10=199.88s tok_k10=8192 acc_k10=0 tok 8192/7597 acc 0/1 elapsed=5444s
+[latency] 23/100 P=1.02s C=1.03s R=1.03s J_full=132.52s J_ours=77.33s J_k10=60.12s tok_k10=2466 acc_k10=1 tok 5433/3170 acc 0/0 elapsed=5718s
+[latency] 24/100 P=1.01s C=1.02s R=1.03s J_full=67.11s J_ours=128.78s J_k10=68.97s tok_k10=2794 acc_k10=1 tok 2602/5097 acc 1/1 elapsed=5987s
+[latency] 25/100 P=1.03s C=1.03s R=1.04s J_full=203.05s J_ours=154.31s J_k10=181.52s tok_k10=7259 acc_k10=0 tok 8192/6227 acc 0/0 elapsed=6530s
+[latency] 26/100 P=1.02s C=1.02s R=1.04s J_full=55.51s J_ours=117.17s J_k10=63.17s tok_k10=2505 acc_k10=1 tok 2246/4711 acc 1/1 elapsed=6770s
+[latency] 27/100 P=1.11s C=1.09s R=1.15s J_full=125.77s J_ours=26.27s J_k10=165.99s tok_k10=6796 acc_k10=1 tok 5063/1079 acc 1/1 elapsed=7092s
+[latency] 28/100 P=1.02s C=1.02s R=1.02s J_full=42.55s J_ours=16.48s J_k10=30.48s tok_k10=1254 acc_k10=1 tok 1742/671 acc 1/1 elapsed=7185s
+[latency] 29/100 P=1.01s C=1.01s R=1.01s J_full=149.71s J_ours=47.35s J_k10=200.75s tok_k10=8192 acc_k10=0 tok 6112/1924 acc 0/0 elapsed=7587s
+[latency] 30/100 P=1.01s C=1.01s R=1.02s J_full=43.37s J_ours=42.13s J_k10=38.67s tok_k10=1580 acc_k10=1 tok 1773/1717 acc 1/1 elapsed=7715s
+[latency] 31/100 P=1.02s C=1.02s R=1.02s J_full=181.59s J_ours=65.95s J_k10=175.25s tok_k10=7193 acc_k10=0 tok 7453/2705 acc 0/0 elapsed=8142s
+[latency] 32/100 P=1.03s C=1.09s R=1.02s J_full=87.46s J_ours=33.18s J_k10=49.56s tok_k10=2000 acc_k10=0 tok 3517/1331 acc 0/0 elapsed=8316s
+[latency] 33/100 P=1.02s C=1.03s R=1.03s J_full=84.12s J_ours=69.62s J_k10=78.11s tok_k10=3135 acc_k10=1 tok 3407/2831 acc 1/1 elapsed=8552s
+[latency] 34/100 P=1.02s C=1.04s R=1.02s J_full=32.96s J_ours=52.44s J_k10=28.37s tok_k10=1144 acc_k10=1 tok 1329/2124 acc 1/1 elapsed=8670s
+[latency] 35/100 P=1.03s C=1.03s R=1.02s J_full=45.30s J_ours=8.08s J_k10=29.36s tok_k10=1182 acc_k10=0 tok 1824/328 acc 0/0 elapsed=8756s
+[latency] 36/100 P=1.02s C=1.03s R=1.04s J_full=76.80s J_ours=37.87s J_k10=121.19s tok_k10=4936 acc_k10=1 tok 3116/1529 acc 1/1 elapsed=8996s
+[latency] 37/100 P=1.07s C=1.09s R=1.10s J_full=26.30s J_ours=17.92s J_k10=136.90s tok_k10=5422 acc_k10=1 tok 1037/724 acc 1/1 elapsed=9181s
+[latency] 38/100 P=1.06s C=1.04s R=1.02s J_full=58.92s J_ours=45.14s J_k10=33.22s tok_k10=1296 acc_k10=1 tok 2253/1757 acc 1/1 elapsed=9323s
+[latency] 39/100 P=1.01s C=1.02s R=1.02s J_full=40.05s J_ours=76.52s J_k10=23.80s tok_k10=972 acc_k10=0 tok 1637/3135 acc 0/0 elapsed=9467s
+[latency] 40/100 P=1.01s C=1.02s R=1.02s J_full=25.88s J_ours=49.93s J_k10=29.08s tok_k10=1187 acc_k10=1 tok 1061/2040 acc 1/1 elapsed=9576s
+[latency] 41/100 P=1.03s C=1.04s R=1.05s J_full=59.36s J_ours=127.22s J_k10=68.59s tok_k10=2777 acc_k10=1 tok 2396/5131 acc 1/1 elapsed=9835s
+[latency] 42/100 P=1.03s C=1.04s R=1.04s J_full=179.77s J_ours=9.36s J_k10=83.91s tok_k10=3403 acc_k10=1 tok 7150/380 acc 1/1 elapsed=10112s
+[latency] 43/100 P=0.99s C=1.00s R=1.00s J_full=83.73s J_ours=53.75s J_k10=77.83s tok_k10=3188 acc_k10=0 tok 3435/2202 acc 0/0 elapsed=10331s
+[latency] 44/100 P=1.02s C=1.02s R=1.04s J_full=16.66s J_ours=26.70s J_k10=18.04s tok_k10=749 acc_k10=0 tok 684/1104 acc 0/0 elapsed=10397s
+[latency] 45/100 P=1.01s C=1.01s R=1.01s J_full=54.64s J_ours=42.87s J_k10=37.11s tok_k10=1521 acc_k10=1 tok 2256/1763 acc 1/1 elapsed=10535s
+[latency] 46/100 P=1.01s C=1.01s R=1.01s J_full=86.99s J_ours=112.16s J_k10=66.77s tok_k10=2729 acc_k10=1 tok 3560/4611 acc 1/1 elapsed=10805s
+[latency] 47/100 P=1.02s C=1.03s R=1.02s J_full=103.52s J_ours=11.13s J_k10=41.24s tok_k10=1696 acc_k10=1 tok 4256/455 acc 1/1 elapsed=10965s
+[latency] 48/100 P=1.01s C=1.02s R=1.02s J_full=16.19s J_ours=20.11s J_k10=32.53s tok_k10=1337 acc_k10=1 tok 664/826 acc 1/1 elapsed=11037s
+[latency] 49/100 P=1.03s C=1.02s R=1.03s J_full=46.82s J_ours=15.70s J_k10=15.90s tok_k10=657 acc_k10=1 tok 1923/645 acc 1/1 elapsed=11120s
+[latency] 50/100 P=1.02s C=1.02s R=1.02s J_full=38.88s J_ours=42.60s J_k10=15.55s tok_k10=639 acc_k10=1 tok 1599/1743 acc 1/1 elapsed=11221s
+[latency] 51/100 P=1.00s C=1.01s R=1.03s J_full=141.39s J_ours=70.00s J_k10=100.56s tok_k10=4082 acc_k10=1 tok 5795/2851 acc 1/1 elapsed=11536s
+[latency] 52/100 P=1.06s C=1.08s R=1.08s J_full=70.74s J_ours=15.08s J_k10=41.45s tok_k10=1766 acc_k10=1 tok 2969/638 acc 1/0 elapsed=11668s
+[latency] 53/100 P=0.98s C=0.98s R=0.98s J_full=109.18s J_ours=154.57s J_k10=85.98s tok_k10=3653 acc_k10=0 tok 4628/6554 acc 0/0 elapsed=12021s
+[latency] 54/100 P=0.97s C=0.98s R=0.98s J_full=36.72s J_ours=23.76s J_k10=44.05s tok_k10=1868 acc_k10=1 tok 1556/1008 acc 1/1 elapsed=12130s
+[latency] 55/100 P=0.98s C=0.98s R=0.98s J_full=58.20s J_ours=38.90s J_k10=48.96s tok_k10=2068 acc_k10=1 tok 2461/1648 acc 1/1 elapsed=12279s
+[latency] 56/100 P=1.02s C=1.04s R=1.04s J_full=42.03s J_ours=20.14s J_k10=86.75s tok_k10=3661 acc_k10=1 tok 1773/849 acc 1/0 elapsed=12432s
+[latency] 57/100 P=0.98s C=0.99s R=0.98s J_full=174.08s J_ours=30.36s J_k10=179.20s tok_k10=7593 acc_k10=1 tok 7399/1286 acc 1/1 elapsed=12820s
+[latency] 58/100 P=0.97s C=0.98s R=0.98s J_full=21.17s J_ours=32.06s J_k10=10.92s tok_k10=462 acc_k10=1 tok 899/1358 acc 1/1 elapsed=12888s
+[latency] 59/100 P=0.98s C=0.98s R=0.98s J_full=193.47s J_ours=193.88s J_k10=185.39s tok_k10=7827 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=13464s
+[latency] 60/100 P=0.99s C=1.00s R=1.00s J_full=25.21s J_ours=52.01s J_k10=31.88s tok_k10=1344 acc_k10=1 tok 1069/2203 acc 1/1 elapsed=13577s
+[latency] 61/100 P=0.98s C=0.98s R=0.97s J_full=8.58s J_ours=13.12s J_k10=14.31s tok_k10=605 acc_k10=1 tok 362/554 acc 1/1 elapsed=13617s
+[latency] 62/100 P=0.97s C=0.99s R=0.97s J_full=35.61s J_ours=11.91s J_k10=44.03s tok_k10=1864 acc_k10=1 tok 1504/502 acc 1/1 elapsed=13712s
+[latency] 63/100 P=0.99s C=1.00s R=0.98s J_full=24.21s J_ours=14.80s J_k10=15.86s tok_k10=676 acc_k10=1 tok 1021/624 acc 1/1 elapsed=13771s
+[latency] 64/100 P=1.00s C=1.02s R=1.02s J_full=47.42s J_ours=193.69s J_k10=61.42s tok_k10=2585 acc_k10=1 tok 2006/8192 acc 1/0 elapsed=14078s
+[latency] 65/100 P=0.98s C=0.98s R=0.99s J_full=42.65s J_ours=26.31s J_k10=36.76s tok_k10=1549 acc_k10=0 tok 1795/1109 acc 0/0 elapsed=14187s
+[latency] 66/100 P=0.98s C=0.99s R=0.98s J_full=192.97s J_ours=192.34s J_k10=192.74s tok_k10=8192 acc_k10=1 tok 8192/8136 acc 1/0 elapsed=14769s
+[latency] 67/100 P=0.97s C=0.98s R=0.97s J_full=14.74s J_ours=16.35s J_k10=15.92s tok_k10=677 acc_k10=1 tok 623/694 acc 1/1 elapsed=14820s
+[latency] 68/100 P=0.99s C=0.99s R=1.00s J_full=47.04s J_ours=15.34s J_k10=66.26s tok_k10=2796 acc_k10=0 tok 1989/646 acc 0/1 elapsed=14952s
+[latency] 69/100 P=0.98s C=0.98s R=0.99s J_full=17.42s J_ours=34.91s J_k10=14.52s tok_k10=613 acc_k10=1 tok 735/1477 acc 1/1 elapsed=15023s
+[latency] 70/100 P=0.99s C=1.01s R=1.00s J_full=66.33s J_ours=23.19s J_k10=99.52s tok_k10=4215 acc_k10=1 tok 2803/980 acc 1/1 elapsed=15216s
+[latency] 71/100 P=0.98s C=0.98s R=0.97s J_full=15.78s J_ours=12.71s J_k10=14.87s tok_k10=629 acc_k10=0 tok 669/539 acc 0/0 elapsed=15263s
+[latency] 72/100 P=1.16s C=1.26s R=1.31s J_full=193.52s J_ours=193.84s J_k10=193.77s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=15849s
+[latency] 73/100 P=0.98s C=0.98s R=0.98s J_full=29.34s J_ours=26.01s J_k10=17.26s tok_k10=731 acc_k10=1 tok 1242/1105 acc 1/1 elapsed=15926s
+[latency] 74/100 P=0.97s C=0.98s R=0.98s J_full=8.73s J_ours=8.51s J_k10=8.85s tok_k10=375 acc_k10=1 tok 370/360 acc 1/1 elapsed=15956s
+[latency] 75/100 P=0.97s C=0.97s R=0.97s J_full=121.61s J_ours=32.22s J_k10=136.74s tok_k10=5812 acc_k10=0 tok 5162/1377 acc 0/0 elapsed=16250s
+[latency] 76/100 P=0.97s C=0.99s R=0.97s J_full=122.79s J_ours=81.01s J_k10=95.68s tok_k10=4046 acc_k10=0 tok 5206/3434 acc 0/0 elapsed=16553s
+[latency] 77/100 P=0.98s C=0.98s R=0.98s J_full=29.18s J_ours=13.20s J_k10=46.05s tok_k10=1951 acc_k10=1 tok 1241/559 acc 1/0 elapsed=16645s
+[latency] 78/100 P=0.98s C=0.99s R=0.99s J_full=131.19s J_ours=99.37s J_k10=118.11s tok_k10=4996 acc_k10=0 tok 5572/4210 acc 0/0 elapsed=16998s
+[latency] 79/100 P=0.98s C=0.98s R=0.98s J_full=116.36s J_ours=110.94s J_k10=144.54s tok_k10=6117 acc_k10=0 tok 4919/4715 acc 1/1 elapsed=17373s
+[latency] 80/100 P=1.00s C=1.01s R=1.01s J_full=135.11s J_ours=44.16s J_k10=92.72s tok_k10=3917 acc_k10=0 tok 5715/1867 acc 0/0 elapsed=17649s
+[latency] 81/100 P=0.98s C=0.98s R=0.99s J_full=85.46s J_ours=21.42s J_k10=121.97s tok_k10=5161 acc_k10=0 tok 3617/904 acc 0/0 elapsed=17882s
+[latency] 82/100 P=0.98s C=0.98s R=0.98s J_full=92.48s J_ours=125.00s J_k10=84.59s tok_k10=3583 acc_k10=0 tok 3913/5310 acc 0/0 elapsed=18188s
+[latency] 83/100 P=0.98s C=0.99s R=0.98s J_full=169.34s J_ours=175.40s J_k10=193.47s tok_k10=8192 acc_k10=0 tok 7161/7424 acc 1/1 elapsed=18730s
+[latency] 84/100 P=0.98s C=0.98s R=0.98s J_full=73.87s J_ours=53.29s J_k10=93.26s tok_k10=3949 acc_k10=0 tok 3146/2261 acc 0/0 elapsed=18954s
+[latency] 85/100 P=0.98s C=0.99s R=0.99s J_full=127.54s J_ours=19.52s J_k10=147.59s tok_k10=6238 acc_k10=0 tok 5404/827 acc 0/0 elapsed=19252s
+[latency] 86/100 P=0.98s C=0.99s R=0.99s J_full=105.00s J_ours=12.75s J_k10=147.90s tok_k10=6270 acc_k10=0 tok 4444/538 acc 0/0 elapsed=19522s
+[latency] 87/100 P=0.98s C=0.98s R=0.97s J_full=106.33s J_ours=49.98s J_k10=58.54s tok_k10=2483 acc_k10=0 tok 4499/2126 acc 0/0 elapsed=19741s
+[latency] 88/100 P=0.97s C=0.97s R=0.97s J_full=72.97s J_ours=58.34s J_k10=75.89s tok_k10=3233 acc_k10=0 tok 3098/2479 acc 0/1 elapsed=19951s
+[latency] 89/100 P=0.98s C=0.98s R=0.98s J_full=49.17s J_ours=10.55s J_k10=75.91s tok_k10=3223 acc_k10=0 tok 2078/446 acc 0/0 elapsed=20091s
+[latency] 90/100 P=0.99s C=1.00s R=1.00s J_full=137.17s J_ours=18.60s J_k10=112.73s tok_k10=4791 acc_k10=0 tok 5811/785 acc 0/1 elapsed=20363s
+[latency] 91/100 P=0.97s C=0.97s R=0.97s J_full=141.17s J_ours=97.84s J_k10=121.22s tok_k10=5138 acc_k10=1 tok 6010/4155 acc 0/0 elapsed=20727s
+[latency] 92/100 P=0.98s C=0.99s R=0.98s J_full=43.95s J_ours=86.53s J_k10=51.89s tok_k10=2204 acc_k10=1 tok 1856/3669 acc 1/1 elapsed=20913s
+[latency] 93/100 P=0.98s C=0.97s R=0.96s J_full=26.27s J_ours=12.03s J_k10=15.48s tok_k10=658 acc_k10=0 tok 1116/510 acc 1/0 elapsed=20971s
+[latency] 94/100 P=0.99s C=0.98s R=0.98s J_full=51.40s J_ours=129.65s J_k10=73.40s tok_k10=3124 acc_k10=1 tok 2172/5485 acc 1/0 elapsed=21229s
+[latency] 95/100 P=0.98s C=0.98s R=0.98s J_full=192.59s J_ours=108.27s J_k10=193.39s tok_k10=8192 acc_k10=0 tok 8192/4602 acc 0/0 elapsed=21727s
+[latency] 96/100 P=0.98s C=0.98s R=0.98s J_full=95.22s J_ours=64.68s J_k10=30.03s tok_k10=1266 acc_k10=1 tok 4015/2738 acc 0/1 elapsed=21921s
+[latency] 97/100 P=0.97s C=0.98s R=0.97s J_full=79.60s J_ours=116.53s J_k10=137.66s tok_k10=5839 acc_k10=1 tok 3373/4929 acc 0/1 elapsed=22258s
+[latency] 98/100 P=0.99s C=0.99s R=0.99s J_full=41.03s J_ours=37.46s J_k10=78.55s tok_k10=3340 acc_k10=0 tok 1737/1584 acc 0/0 elapsed=22419s
+[latency] 99/100 P=0.97s C=0.98s R=0.97s J_full=93.06s J_ours=86.11s J_k10=109.09s tok_k10=4616 acc_k10=0 tok 3952/3650 acc 1/0 elapsed=22711s
+[latency] 100/100 P=0.98s C=0.98s R=0.98s J_full=57.07s J_ours=13.88s J_k10=65.81s tok_k10=2755 acc_k10=1 tok 2418/589 acc 1/1 elapsed=22852s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.00    1.00    1.00   0.009   83.30   86.31  3490.8   0.570
+ours            1.00    1.00    1.00   0.009   60.13   63.14  2520.0   0.540
+k10             0.27    0.28    0.28   0.000   81.22   82.06  3404.8   0.590
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -23.172 [-33.017,-13.325] n=100
+  ours_minus_latentmas_e2e_s       -23.163 [-33.008,-13.316] n=100
+  ours_minus_latentmas_tokens      -970.850 [-1384.031,-564.065] n=100
+  ours_minus_latentmas_correct     -0.030 [-0.110,+0.050] n=100
+  k10_minus_latentmas_judger_s     -2.082 [-8.299,+4.407] n=100
+  k10_minus_latentmas_e2e_s        -4.249 [-10.463,+2.249] n=100
+  k10_minus_latentmas_tokens       -86.060 [-344.770,+184.123] n=100
+  k10_minus_latentmas_correct      +0.020 [-0.050,+0.080] n=100
+  ours_minus_k10_judger_s          -21.090 [-31.715,-10.635] n=100
+  ours_minus_k10_e2e_s             -18.914 [-29.530,-8.461] n=100
+  ours_minus_k10_tokens            -884.790 [-1331.030,-448.963] n=100
+  ours_minus_k10_correct           -0.050 [-0.140,+0.040] n=100
+
+[done] artifacts/exp_latency_mem/arr_gpqa_n100_b128_s7/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK gpqa_n100_b128_s7 Wed Aug 26 09:21:55 UTC 2026
+[arr] START aime24_b128_s42 Wed Aug 26 09:21:55 UTC 2026
+[load] Qwen/Qwen3-14B task=aime2024 n=30 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.06it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:01,  3.33it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:01,  3.40it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.43it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.45it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  3.48it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.48it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  4.23it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.69it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/30 P=1.69s C=1.04s R=1.02s J_full=59.29s J_ours=54.83s J_k10=56.44s tok_k10=2333 acc_k10=1 tok 2444/2267 acc 1/1 elapsed=175s
+[latency] 2/30 P=1.01s C=1.02s R=1.01s J_full=201.66s J_ours=199.52s J_k10=199.73s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/1 elapsed=780s
+[latency] 3/30 P=1.02s C=1.12s R=1.13s J_full=216.26s J_ours=225.01s J_k10=225.30s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=1451s
+[latency] 4/30 P=1.14s C=1.16s R=1.15s J_full=226.03s J_ours=224.63s J_k10=224.14s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=2130s
+[latency] 5/30 P=1.15s C=1.14s R=1.14s J_full=195.41s J_ours=83.61s J_k10=152.20s tok_k10=5576 acc_k10=0 tok 7153/3082 acc 1/0 elapsed=2566s
+[latency] 6/30 P=1.14s C=1.15s R=1.15s J_full=225.51s J_ours=166.48s J_k10=152.92s tok_k10=5579 acc_k10=1 tok 8192/6075 acc 0/1 elapsed=3115s
+[latency] 7/30 P=1.16s C=1.18s R=1.14s J_full=201.27s J_ours=219.15s J_k10=125.75s tok_k10=4622 acc_k10=1 tok 7337/8035 acc 1/1 elapsed=3666s
+[latency] 8/30 P=1.14s C=1.13s R=1.13s J_full=147.82s J_ours=27.90s J_k10=115.32s tok_k10=4389 acc_k10=0 tok 5589/1058 acc 0/0 elapsed=3961s
+[latency] 9/30 P=1.09s C=1.10s R=1.08s J_full=129.55s J_ours=91.06s J_k10=130.98s tok_k10=4933 acc_k10=1 tok 4948/3499 acc 1/1 elapsed=4317s
+[latency] 10/30 P=1.09s C=1.10s R=1.09s J_full=63.65s J_ours=85.42s J_k10=69.40s tok_k10=2700 acc_k10=1 tok 2404/3424 acc 1/1 elapsed=4539s
+[latency] 11/30 P=1.09s C=1.10s R=1.09s J_full=107.93s J_ours=184.52s J_k10=153.51s tok_k10=5823 acc_k10=1 tok 4080/6957 acc 1/1 elapsed=4989s
+[latency] 12/30 P=1.10s C=1.11s R=1.09s J_full=89.97s J_ours=124.18s J_k10=67.83s tok_k10=2575 acc_k10=1 tok 3409/4722 acc 1/1 elapsed=5276s
+[latency] 13/30 P=1.10s C=1.10s R=1.09s J_full=55.91s J_ours=77.96s J_k10=71.62s tok_k10=2706 acc_k10=1 tok 2122/2947 acc 1/1 elapsed=5485s
+[latency] 14/30 P=1.09s C=1.10s R=1.09s J_full=217.14s J_ours=216.05s J_k10=218.84s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=6142s
+[latency] 15/30 P=1.14s C=1.14s R=1.15s J_full=217.79s J_ours=216.92s J_k10=156.91s tok_k10=5957 acc_k10=1 tok 7972/8192 acc 1/0 elapsed=6738s
+[latency] 16/30 P=1.09s C=1.10s R=1.08s J_full=141.95s J_ours=122.29s J_k10=126.89s tok_k10=4813 acc_k10=0 tok 5393/4634 acc 0/0 elapsed=7133s
+[latency] 17/30 P=1.09s C=1.09s R=1.10s J_full=135.24s J_ours=213.76s J_k10=167.09s tok_k10=6532 acc_k10=0 tok 5153/8192 acc 0/0 elapsed=7653s
+[latency] 18/30 P=1.09s C=1.09s R=1.09s J_full=214.89s J_ours=214.64s J_k10=215.17s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=8302s
+[latency] 19/30 P=1.09s C=1.10s R=1.10s J_full=215.02s J_ours=200.55s J_k10=181.15s tok_k10=6903 acc_k10=0 tok 8192/7639 acc 0/0 elapsed=8903s
+[latency] 20/30 P=1.09s C=1.09s R=1.09s J_full=108.63s J_ours=132.61s J_k10=194.07s tok_k10=7404 acc_k10=1 tok 4123/5055 acc 1/1 elapsed=9342s
+[latency] 21/30 P=1.08s C=1.10s R=1.08s J_full=214.98s J_ours=214.78s J_k10=216.09s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=9992s
+[latency] 22/30 P=1.15s C=1.19s R=1.14s J_full=214.67s J_ours=216.46s J_k10=216.26s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=10644s
+[latency] 23/30 P=1.08s C=1.09s R=1.09s J_full=218.72s J_ours=115.32s J_k10=214.90s tok_k10=8192 acc_k10=1 tok 8192/4417 acc 0/1 elapsed=11197s
+[latency] 24/30 P=1.09s C=1.10s R=1.10s J_full=142.64s J_ours=209.74s J_k10=120.43s tok_k10=4556 acc_k10=0 tok 5389/7958 acc 0/0 elapsed=11674s
+[latency] 25/30 P=1.09s C=1.10s R=1.09s J_full=130.62s J_ours=131.77s J_k10=67.22s tok_k10=2542 acc_k10=0 tok 4959/4991 acc 0/0 elapsed=12008s
+[latency] 26/30 P=1.10s C=1.09s R=1.09s J_full=140.22s J_ours=11.58s J_k10=82.07s tok_k10=3095 acc_k10=0 tok 5303/440 acc 0/0 elapsed=12246s
+[latency] 27/30 P=1.19s C=1.19s R=1.11s J_full=74.92s J_ours=41.96s J_k10=77.64s tok_k10=2942 acc_k10=0 tok 2826/1578 acc 0/0 elapsed=12445s
+[latency] 28/30 P=1.08s C=1.09s R=1.09s J_full=188.57s J_ours=215.50s J_k10=216.14s tok_k10=8192 acc_k10=0 tok 7175/8192 acc 1/0 elapsed=13070s
+[latency] 29/30 P=1.11s C=1.12s R=1.11s J_full=215.96s J_ours=215.47s J_k10=215.42s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=13721s
+[latency] 30/30 P=1.09s C=1.10s R=1.09s J_full=218.07s J_ours=217.62s J_k10=158.78s tok_k10=6028 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=14319s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.12    1.11    1.10   0.010  164.34  167.68  6202.8   0.367
+ours            1.12    1.11    1.10   0.010  155.71  159.05  5902.7   0.367
+k10             0.29    0.30    0.30   0.000  153.01  153.90  5797.6   0.367
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -8.633 [-28.731,+8.961] n=30
+  ours_minus_latentmas_e2e_s       -8.623 [-28.721,+8.971] n=30
+  ours_minus_latentmas_tokens      -300.033 [-1064.679,+361.002] n=30
+  ours_minus_latentmas_correct     +0.000 [-0.167,+0.167] n=30
+  k10_minus_latentmas_judger_s     -11.337 [-23.556,+1.228] n=30
+  k10_minus_latentmas_e2e_s        -13.774 [-25.980,-1.189] n=30
+  k10_minus_latentmas_tokens       -405.167 [-856.312,+63.051] n=30
+  k10_minus_latentmas_correct      +0.000 [-0.133,+0.133] n=30
+  ours_minus_k10_judger_s          +2.704 [-15.826,+19.552] n=30
+  ours_minus_k10_e2e_s             +5.150 [-13.393,+21.999] n=30
+  ours_minus_k10_tokens            +105.133 [-594.340,+735.162] n=30
+  ours_minus_k10_correct           +0.000 [-0.100,+0.100] n=30
+
+[done] artifacts/exp_latency_mem/arr_aime24_b128_s42/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK aime24_b128_s42 Wed Aug 26 13:22:00 UTC 2026
+[arr] START aime25_b128_s42 Wed Aug 26 13:22:00 UTC 2026
+Generating train split:   0%|          | 0/30 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 30/30 [00:00<00:00, 4014.20 examples/s]
+[load] Qwen/Qwen3-14B task=aime2025 n=30 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.02it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.98it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.90it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.93it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  3.00it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  3.00it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.09it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.77it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.25it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/30 P=1.64s C=1.00s R=0.98s J_full=42.75s J_ours=39.94s J_k10=36.77s tok_k10=1576 acc_k10=1 tok 1847/1724 acc 1/1 elapsed=124s
+[latency] 2/30 P=0.98s C=0.98s R=0.98s J_full=191.99s J_ours=191.35s J_k10=191.29s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=702s
+[latency] 3/30 P=0.98s C=0.98s R=0.97s J_full=53.87s J_ours=76.46s J_k10=57.15s tok_k10=2451 acc_k10=1 tok 2305/3278 acc 1/1 elapsed=894s
+[latency] 4/30 P=0.98s C=0.99s R=0.97s J_full=79.22s J_ours=71.29s J_k10=77.75s tok_k10=3328 acc_k10=1 tok 3394/3047 acc 1/1 elapsed=1126s
+[latency] 5/30 P=0.97s C=0.98s R=0.97s J_full=191.95s J_ours=131.34s J_k10=154.86s tok_k10=6634 acc_k10=0 tok 8192/5592 acc 0/1 elapsed=1608s
+[latency] 6/30 P=0.97s C=0.98s R=0.97s J_full=49.78s J_ours=60.01s J_k10=73.20s tok_k10=3120 acc_k10=1 tok 2129/2557 acc 1/1 elapsed=1794s
+[latency] 7/30 P=0.98s C=0.98s R=0.98s J_full=191.31s J_ours=88.09s J_k10=191.36s tok_k10=8192 acc_k10=0 tok 8192/3764 acc 0/0 elapsed=2269s
+[latency] 8/30 P=0.97s C=0.97s R=0.97s J_full=88.03s J_ours=47.79s J_k10=74.20s tok_k10=3176 acc_k10=1 tok 3767/2041 acc 1/1 elapsed=2483s
+[latency] 9/30 P=0.97s C=0.98s R=0.98s J_full=191.41s J_ours=191.16s J_k10=190.42s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=3059s
+[latency] 10/30 P=0.97s C=0.97s R=0.98s J_full=190.33s J_ours=189.66s J_k10=190.52s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=3633s
+[latency] 11/30 P=0.97s C=0.98s R=0.98s J_full=189.67s J_ours=190.28s J_k10=189.73s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=4207s
+[latency] 12/30 P=0.96s C=0.96s R=0.96s J_full=189.65s J_ours=189.20s J_k10=189.76s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=4779s
+[latency] 13/30 P=0.98s C=0.97s R=0.96s J_full=190.64s J_ours=16.83s J_k10=190.30s tok_k10=8192 acc_k10=0 tok 8192/718 acc 0/0 elapsed=5181s
+[latency] 14/30 P=0.96s C=0.96s R=0.97s J_full=189.23s J_ours=189.62s J_k10=189.72s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 1/0 elapsed=5753s
+[latency] 15/30 P=0.96s C=0.96s R=0.95s J_full=189.59s J_ours=189.62s J_k10=189.03s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=6325s
+[latency] 16/30 P=0.95s C=0.96s R=0.95s J_full=70.79s J_ours=79.00s J_k10=91.77s tok_k10=3970 acc_k10=1 tok 3087/3427 acc 1/1 elapsed=6570s
+[latency] 17/30 P=0.96s C=0.96s R=0.97s J_full=57.33s J_ours=50.34s J_k10=39.21s tok_k10=1701 acc_k10=1 tok 2467/2160 acc 1/1 elapsed=6721s
+[latency] 18/30 P=0.97s C=0.99s R=0.98s J_full=190.01s J_ours=190.69s J_k10=190.34s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=7296s
+[latency] 19/30 P=0.96s C=0.96s R=0.97s J_full=102.26s J_ours=142.56s J_k10=69.54s tok_k10=3004 acc_k10=1 tok 4394/6134 acc 1/1 elapsed=7614s
+[latency] 20/30 P=0.98s C=1.00s R=1.00s J_full=188.76s J_ours=65.26s J_k10=189.65s tok_k10=8192 acc_k10=0 tok 8192/2822 acc 0/0 elapsed=8061s
+[latency] 21/30 P=1.00s C=1.01s R=1.01s J_full=190.75s J_ours=52.75s J_k10=189.89s tok_k10=8192 acc_k10=0 tok 8192/2279 acc 0/0 elapsed=8499s
+[latency] 22/30 P=0.97s C=0.97s R=0.96s J_full=190.55s J_ours=149.35s J_k10=141.44s tok_k10=6096 acc_k10=0 tok 8192/6400 acc 0/0 elapsed=8984s
+[latency] 23/30 P=0.97s C=0.98s R=0.98s J_full=189.72s J_ours=190.50s J_k10=190.37s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=9558s
+[latency] 24/30 P=0.96s C=0.98s R=0.98s J_full=110.65s J_ours=119.36s J_k10=110.66s tok_k10=4761 acc_k10=1 tok 4752/5141 acc 1/1 elapsed=9902s
+[latency] 25/30 P=0.97s C=0.97s R=0.96s J_full=190.22s J_ours=190.55s J_k10=174.60s tok_k10=7500 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=10462s
+[latency] 26/30 P=0.95s C=0.96s R=0.95s J_full=162.08s J_ours=190.82s J_k10=164.43s tok_k10=7091 acc_k10=0 tok 6941/8192 acc 0/0 elapsed=10982s
+[latency] 27/30 P=0.98s C=0.99s R=0.98s J_full=143.38s J_ours=190.62s J_k10=190.38s tok_k10=8192 acc_k10=0 tok 6106/8192 acc 1/0 elapsed=11511s
+[latency] 28/30 P=0.97s C=0.98s R=0.97s J_full=190.10s J_ours=190.23s J_k10=191.31s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=12086s
+[latency] 29/30 P=0.97s C=0.98s R=0.96s J_full=202.03s J_ours=192.04s J_k10=190.77s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=12675s
+[latency] 30/30 P=0.97s C=0.97s R=0.96s J_full=192.11s J_ours=190.48s J_k10=190.14s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=13251s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       0.99    0.98    0.97   0.009  153.00  155.94  6561.2   0.367
+ours            0.99    0.98    0.97   0.009  134.91  137.86  5798.8   0.333
+k10             0.26    0.27    0.27   0.000  150.02  150.82  6455.7   0.333
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -18.098 [-38.367,-1.533] n=30
+  ours_minus_latentmas_e2e_s       -18.089 [-38.358,-1.520] n=30
+  ours_minus_latentmas_tokens      -762.433 [-1628.675,-55.513] n=30
+  ours_minus_latentmas_correct     -0.033 [-0.133,+0.067] n=30
+  k10_minus_latentmas_judger_s     -2.985 [-9.274,+2.936] n=30
+  k10_minus_latentmas_e2e_s        -5.121 [-11.414,+0.812] n=30
+  k10_minus_latentmas_tokens       -105.500 [-371.598,+151.012] n=30
+  k10_minus_latentmas_correct      -0.033 [-0.133,+0.067] n=30
+  ours_minus_k10_judger_s          -15.113 [-34.862,+0.457] n=30
+  ours_minus_k10_e2e_s             -12.967 [-32.751,+2.605] n=30
+  ours_minus_k10_tokens            -656.933 [-1506.739,+13.607] n=30
+  ours_minus_k10_correct           +0.000 [-0.100,+0.100] n=30
+
+[done] artifacts/exp_latency_mem/arr_aime25_b128_s42/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK aime25_b128_s42 Wed Aug 26 17:04:16 UTC 2026
+[arr] START aime24_b128_s123 Wed Aug 26 17:04:16 UTC 2026
+[load] Qwen/Qwen3-14B task=aime2024 n=30 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.11it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:01,  3.19it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:01,  3.08it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.11it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.13it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  3.24it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.28it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.95it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.44it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/30 P=1.64s C=0.98s R=0.96s J_full=65.41s J_ours=66.70s J_k10=58.13s tok_k10=2547 acc_k10=1 tok 2863/2927 acc 1/1 elapsed=195s
+[latency] 2/30 P=0.96s C=0.96s R=0.95s J_full=186.36s J_ours=186.24s J_k10=175.53s tok_k10=7701 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=747s
+[latency] 3/30 P=0.96s C=0.96s R=0.95s J_full=186.82s J_ours=186.59s J_k10=188.61s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=1312s
+[latency] 4/30 P=0.95s C=0.95s R=0.94s J_full=186.90s J_ours=186.09s J_k10=186.83s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=1876s
+[latency] 5/30 P=0.96s C=0.96s R=0.96s J_full=188.16s J_ours=165.93s J_k10=187.99s tok_k10=8192 acc_k10=0 tok 8192/7267 acc 0/0 elapsed=2421s
+[latency] 6/30 P=0.95s C=0.96s R=0.96s J_full=117.14s J_ours=137.19s J_k10=186.76s tok_k10=8192 acc_k10=0 tok 5110/6011 acc 1/0 elapsed=2866s
+[latency] 7/30 P=0.96s C=0.97s R=0.96s J_full=96.24s J_ours=128.86s J_k10=133.94s tok_k10=5875 acc_k10=1 tok 4211/5632 acc 1/1 elapsed=3229s
+[latency] 8/30 P=0.96s C=0.96s R=0.96s J_full=163.61s J_ours=94.33s J_k10=128.14s tok_k10=5592 acc_k10=0 tok 7157/4138 acc 0/0 elapsed=3619s
+[latency] 9/30 P=0.95s C=0.96s R=0.95s J_full=111.95s J_ours=119.30s J_k10=121.51s tok_k10=5296 acc_k10=1 tok 4894/5203 acc 1/1 elapsed=3975s
+[latency] 10/30 P=0.95s C=0.95s R=0.95s J_full=63.60s J_ours=62.71s J_k10=51.71s tok_k10=2253 acc_k10=1 tok 2769/2735 acc 1/1 elapsed=4157s
+[latency] 11/30 P=0.94s C=0.95s R=0.94s J_full=187.46s J_ours=187.29s J_k10=187.50s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=4723s
+[latency] 12/30 P=0.96s C=0.96s R=0.94s J_full=76.83s J_ours=67.21s J_k10=81.46s tok_k10=3561 acc_k10=1 tok 3349/2941 acc 1/1 elapsed=4952s
+[latency] 13/30 P=0.95s C=0.95s R=0.95s J_full=60.28s J_ours=39.00s J_k10=49.13s tok_k10=2136 acc_k10=1 tok 2633/1702 acc 1/1 elapsed=5104s
+[latency] 14/30 P=0.96s C=0.96s R=0.96s J_full=188.52s J_ours=187.78s J_k10=187.71s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=5672s
+[latency] 15/30 P=0.95s C=0.95s R=0.96s J_full=156.61s J_ours=37.73s J_k10=172.64s tok_k10=7536 acc_k10=1 tok 6844/1654 acc 1/0 elapsed=6042s
+[latency] 16/30 P=0.95s C=0.96s R=0.94s J_full=99.47s J_ours=37.97s J_k10=119.44s tok_k10=5211 acc_k10=0 tok 4315/1652 acc 0/0 elapsed=6303s
+[latency] 17/30 P=0.95s C=0.96s R=0.96s J_full=138.31s J_ours=114.23s J_k10=124.63s tok_k10=5421 acc_k10=1 tok 6032/4993 acc 1/1 elapsed=6684s
+[latency] 18/30 P=0.95s C=0.96s R=0.95s J_full=188.08s J_ours=187.41s J_k10=187.59s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=7250s
+[latency] 19/30 P=0.95s C=0.97s R=0.97s J_full=157.53s J_ours=159.76s J_k10=187.92s tok_k10=8192 acc_k10=0 tok 6866/6943 acc 0/0 elapsed=7759s
+[latency] 20/30 P=0.95s C=0.95s R=0.95s J_full=127.02s J_ours=161.60s J_k10=85.88s tok_k10=3755 acc_k10=1 tok 5519/7063 acc 1/1 elapsed=8137s
+[latency] 21/30 P=0.94s C=0.96s R=0.95s J_full=187.77s J_ours=187.02s J_k10=197.08s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=8713s
+[latency] 22/30 P=1.02s C=0.99s R=1.04s J_full=191.01s J_ours=189.60s J_k10=190.20s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=9288s
+[latency] 23/30 P=0.96s C=0.96s R=0.96s J_full=191.08s J_ours=188.83s J_k10=135.16s tok_k10=5853 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=9806s
+[latency] 24/30 P=0.95s C=0.96s R=0.96s J_full=137.96s J_ours=189.06s J_k10=122.23s tok_k10=5269 acc_k10=0 tok 5952/8192 acc 0/0 elapsed=10259s
+[latency] 25/30 P=0.96s C=0.96s R=0.95s J_full=79.01s J_ours=75.55s J_k10=75.58s tok_k10=3281 acc_k10=0 tok 3336/3227 acc 0/0 elapsed=10493s
+[latency] 26/30 P=0.98s C=1.00s R=0.98s J_full=189.84s J_ours=168.80s J_k10=70.73s tok_k10=3065 acc_k10=0 tok 8192/7316 acc 0/0 elapsed=10926s
+[latency] 27/30 P=0.98s C=1.00s R=0.97s J_full=49.86s J_ours=71.17s J_k10=70.55s tok_k10=3040 acc_k10=0 tok 2152/3083 acc 0/0 elapsed=11122s
+[latency] 28/30 P=0.96s C=0.96s R=0.96s J_full=152.64s J_ours=190.69s J_k10=160.95s tok_k10=6899 acc_k10=1 tok 6559/8192 acc 1/0 elapsed=11630s
+[latency] 29/30 P=0.98s C=0.99s R=0.98s J_full=190.05s J_ours=189.10s J_k10=190.90s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=12203s
+[latency] 30/30 P=0.98s C=1.00s R=1.01s J_full=176.41s J_ours=76.93s J_k10=190.98s tok_k10=8192 acc_k10=0 tok 7630/3307 acc 0/0 elapsed=12652s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       0.98    0.97    0.96   0.009  143.06  145.97  6216.5   0.367
+ours            0.98    0.97    0.96   0.009  134.69  137.61  5869.9   0.267
+k10             0.26    0.26    0.26   0.000  140.25  141.03  6086.5   0.400
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -8.375 [-22.134,+3.775] n=30
+  ours_minus_latentmas_e2e_s       -8.366 [-22.126,+3.786] n=30
+  ours_minus_latentmas_tokens      -346.567 [-947.475,+182.991] n=30
+  ours_minus_latentmas_correct     -0.100 [-0.200,+0.000] n=30
+  k10_minus_latentmas_judger_s     -2.817 [-14.738,+7.980] n=30
+  k10_minus_latentmas_e2e_s        -4.940 [-16.855,+5.847] n=30
+  k10_minus_latentmas_tokens       -130.000 [-641.688,+335.062] n=30
+  k10_minus_latentmas_correct      +0.033 [-0.067,+0.167] n=30
+  ours_minus_k10_judger_s          -5.558 [-23.545,+10.778] n=30
+  ours_minus_k10_e2e_s             -3.427 [-21.432,+12.913] n=30
+  ours_minus_k10_tokens            -216.567 [-1001.359,+483.708] n=30
+  ours_minus_k10_correct           -0.133 [-0.267,-0.033] n=30
+
+[done] artifacts/exp_latency_mem/arr_aime24_b128_s123/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK aime24_b128_s123 Wed Aug 26 20:36:39 UTC 2026
+[arr] START aime25_b128_s123 Wed Aug 26 20:36:39 UTC 2026
+[load] Qwen/Qwen3-14B task=aime2025 n=30 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.03it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:01,  3.12it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:01,  3.17it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.23it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.30it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  3.36it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.29it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  4.01it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.50it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/30 P=1.64s C=1.01s R=0.98s J_full=33.83s J_ours=31.13s J_k10=35.27s tok_k10=1493 acc_k10=1 tok 1430/1317 acc 1/1 elapsed=105s
+[latency] 2/30 P=0.98s C=0.98s R=0.98s J_full=192.00s J_ours=194.81s J_k10=193.87s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=689s
+[latency] 3/30 P=0.98s C=0.98s R=0.97s J_full=57.93s J_ours=98.92s J_k10=125.83s tok_k10=5340 acc_k10=1 tok 2466/4188 acc 1/1 elapsed=976s
+[latency] 4/30 P=0.98s C=0.99s R=0.98s J_full=131.89s J_ours=93.10s J_k10=146.44s tok_k10=6224 acc_k10=1 tok 5609/3953 acc 1/1 elapsed=1351s
+[latency] 5/30 P=0.97s C=0.98s R=0.97s J_full=192.51s J_ours=193.63s J_k10=166.37s tok_k10=7087 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=1907s
+[latency] 6/30 P=0.98s C=0.98s R=0.97s J_full=48.63s J_ours=43.16s J_k10=45.12s tok_k10=1890 acc_k10=1 tok 2069/1822 acc 1/1 elapsed=2048s
+[latency] 7/30 P=1.00s C=0.99s R=0.99s J_full=196.05s J_ours=194.47s J_k10=193.55s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=2636s
+[latency] 8/30 P=0.98s C=0.98s R=0.98s J_full=90.95s J_ours=109.18s J_k10=80.50s tok_k10=3411 acc_k10=1 tok 3849/4547 acc 1/1 elapsed=2920s
+[latency] 9/30 P=0.98s C=0.98s R=0.99s J_full=193.34s J_ours=192.84s J_k10=192.88s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=3503s
+[latency] 10/30 P=0.99s C=0.99s R=0.98s J_full=194.03s J_ours=193.13s J_k10=192.61s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=4086s
+[latency] 11/30 P=0.98s C=0.98s R=0.99s J_full=193.05s J_ours=194.36s J_k10=194.06s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=4672s
+[latency] 12/30 P=0.98s C=0.99s R=0.98s J_full=193.66s J_ours=193.73s J_k10=193.83s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=5257s
+[latency] 13/30 P=0.98s C=0.98s R=0.98s J_full=193.76s J_ours=193.52s J_k10=192.43s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=5840s
+[latency] 14/30 P=0.97s C=0.97s R=0.98s J_full=193.77s J_ours=193.14s J_k10=193.11s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=6424s
+[latency] 15/30 P=0.99s C=0.98s R=0.97s J_full=193.19s J_ours=193.77s J_k10=193.64s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=7008s
+[latency] 16/30 P=0.97s C=0.98s R=0.97s J_full=69.66s J_ours=92.68s J_k10=58.55s tok_k10=2490 acc_k10=1 tok 2962/3928 acc 1/1 elapsed=7233s
+[latency] 17/30 P=0.97s C=0.98s R=0.97s J_full=47.72s J_ours=43.27s J_k10=52.83s tok_k10=2245 acc_k10=1 tok 2031/1830 acc 1/1 elapsed=7380s
+[latency] 18/30 P=0.98s C=1.00s R=1.03s J_full=193.63s J_ours=193.44s J_k10=194.03s tok_k10=8192 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=7965s
+[latency] 19/30 P=0.98s C=0.98s R=0.99s J_full=82.93s J_ours=129.04s J_k10=104.91s tok_k10=4444 acc_k10=1 tok 3512/5457 acc 1/1 elapsed=8286s
+[latency] 20/30 P=1.00s C=1.02s R=1.02s J_full=192.88s J_ours=192.70s J_k10=192.82s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=8869s
+[latency] 21/30 P=1.01s C=1.03s R=1.03s J_full=193.11s J_ours=193.08s J_k10=134.27s tok_k10=5646 acc_k10=1 tok 8192/8192 acc 0/0 elapsed=9393s
+[latency] 22/30 P=1.03s C=0.99s R=0.97s J_full=193.73s J_ours=131.98s J_k10=119.61s tok_k10=5065 acc_k10=1 tok 8192/5569 acc 0/0 elapsed=9842s
+[latency] 23/30 P=0.99s C=1.04s R=1.05s J_full=192.81s J_ours=192.78s J_k10=192.75s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=10424s
+[latency] 24/30 P=0.98s C=1.02s R=0.97s J_full=126.09s J_ours=128.32s J_k10=119.87s tok_k10=5075 acc_k10=1 tok 5327/5439 acc 1/1 elapsed=10803s
+[latency] 25/30 P=0.98s C=0.98s R=0.98s J_full=193.18s J_ours=96.25s J_k10=193.95s tok_k10=8192 acc_k10=0 tok 8192/4078 acc 0/0 elapsed=11290s
+[latency] 26/30 P=1.03s C=0.98s R=0.97s J_full=133.66s J_ours=118.76s J_k10=193.80s tok_k10=8192 acc_k10=0 tok 5630/5017 acc 0/0 elapsed=11740s
+[latency] 27/30 P=0.99s C=1.00s R=0.99s J_full=190.21s J_ours=193.89s J_k10=175.37s tok_k10=7440 acc_k10=1 tok 8006/8192 acc 1/0 elapsed=12303s
+[latency] 28/30 P=1.00s C=1.03s R=1.02s J_full=194.45s J_ours=194.47s J_k10=193.45s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=12889s
+[latency] 29/30 P=0.97s C=0.98s R=0.96s J_full=193.76s J_ours=193.15s J_k10=192.73s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=13473s
+[latency] 30/30 P=0.98s C=0.99s R=0.98s J_full=194.27s J_ours=194.30s J_k10=192.65s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=14058s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.01    0.99    0.99   0.009  156.36  159.34  6618.0   0.333
+ours            1.01    0.99    0.99   0.009  153.37  156.36  6486.7   0.300
+k10             0.27    0.27    0.27   0.000  155.04  155.85  6570.5   0.467
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -2.989 [-12.121,+5.755] n=30
+  ours_minus_latentmas_e2e_s       -2.980 [-12.113,+5.763] n=30
+  ours_minus_latentmas_tokens      -131.267 [-517.319,+241.090] n=30
+  ours_minus_latentmas_correct     -0.033 [-0.100,+0.000] n=30
+  k10_minus_latentmas_judger_s     -1.319 [-9.595,+7.785] n=30
+  k10_minus_latentmas_e2e_s        -3.491 [-11.778,+5.632] n=30
+  k10_minus_latentmas_tokens       -47.500 [-398.938,+336.917] n=30
+  k10_minus_latentmas_correct      +0.133 [+0.033,+0.267] n=30
+  ours_minus_k10_judger_s          -1.670 [-12.791,+8.406] n=30
+  ours_minus_k10_e2e_s             +0.511 [-10.632,+10.559] n=30
+  ours_minus_k10_tokens            -83.767 [-552.798,+342.406] n=30
+  ours_minus_k10_correct           -0.167 [-0.300,-0.033] n=30
+
+[done] artifacts/exp_latency_mem/arr_aime25_b128_s123/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK aime25_b128_s123 Thu Aug 27 00:32:22 UTC 2026
+[arr] START aime24_b128_s7 Thu Aug 27 00:32:22 UTC 2026
+[load] Qwen/Qwen3-14B task=aime2024 n=30 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.11it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:01,  3.14it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:01,  3.12it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.18it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.23it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  3.25it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  3.31it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.99it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.48it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/30 P=1.65s C=1.00s R=0.97s J_full=63.72s J_ours=36.60s J_k10=72.23s tok_k10=3089 acc_k10=1 tok 2725/1541 acc 1/1 elapsed=177s
+[latency] 2/30 P=0.97s C=0.97s R=0.96s J_full=191.50s J_ours=191.37s J_k10=191.48s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=755s
+[latency] 3/30 P=1.03s C=1.01s R=0.96s J_full=192.47s J_ours=191.39s J_k10=190.92s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=1334s
+[latency] 4/30 P=0.97s C=0.98s R=0.96s J_full=191.98s J_ours=191.72s J_k10=191.66s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=1913s
+[latency] 5/30 P=1.00s C=0.97s R=0.96s J_full=156.13s J_ours=192.72s J_k10=192.10s tok_k10=8192 acc_k10=0 tok 6654/8192 acc 1/0 elapsed=2458s
+[latency] 6/30 P=0.97s C=0.97s R=0.97s J_full=109.00s J_ours=192.64s J_k10=151.23s tok_k10=6457 acc_k10=1 tok 4674/8192 acc 1/1 elapsed=2914s
+[latency] 7/30 P=0.96s C=0.97s R=0.96s J_full=118.75s J_ours=190.56s J_k10=128.15s tok_k10=5483 acc_k10=1 tok 5104/8192 acc 1/0 elapsed=3355s
+[latency] 8/30 P=0.97s C=0.97s R=0.97s J_full=193.26s J_ours=125.01s J_k10=181.30s tok_k10=7733 acc_k10=0 tok 8192/5333 acc 0/0 elapsed=3859s
+[latency] 9/30 P=0.96s C=0.96s R=0.96s J_full=102.95s J_ours=86.07s J_k10=191.89s tok_k10=8192 acc_k10=0 tok 4396/3672 acc 1/1 elapsed=4243s
+[latency] 10/30 P=0.97s C=0.98s R=0.97s J_full=57.89s J_ours=61.84s J_k10=64.88s tok_k10=2778 acc_k10=1 tok 2461/2671 acc 1/1 elapsed=4432s
+[latency] 11/30 P=0.96s C=0.97s R=0.97s J_full=191.19s J_ours=20.26s J_k10=190.09s tok_k10=8141 acc_k10=1 tok 8192/869 acc 0/0 elapsed=4837s
+[latency] 12/30 P=0.97s C=0.97s R=0.96s J_full=81.28s J_ours=59.31s J_k10=86.30s tok_k10=3687 acc_k10=1 tok 3484/2521 acc 1/1 elapsed=5067s
+[latency] 13/30 P=0.97s C=0.98s R=0.97s J_full=78.85s J_ours=52.80s J_k10=61.28s tok_k10=2620 acc_k10=1 tok 3373/2268 acc 1/1 elapsed=5264s
+[latency] 14/30 P=0.97s C=0.97s R=0.97s J_full=192.43s J_ours=191.35s J_k10=192.71s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=5844s
+[latency] 15/30 P=0.97s C=0.97s R=0.97s J_full=193.11s J_ours=142.67s J_k10=169.71s tok_k10=7289 acc_k10=1 tok 8192/6104 acc 0/1 elapsed=6353s
+[latency] 16/30 P=0.97s C=0.97s R=0.96s J_full=85.88s J_ours=107.81s J_k10=111.58s tok_k10=4782 acc_k10=0 tok 3671/4611 acc 0/0 elapsed=6662s
+[latency] 17/30 P=0.97s C=0.97s R=0.97s J_full=151.64s J_ours=177.80s J_k10=98.42s tok_k10=4226 acc_k10=1 tok 6475/7618 acc 1/1 elapsed=7094s
+[latency] 18/30 P=0.97s C=0.98s R=0.97s J_full=191.50s J_ours=191.08s J_k10=191.64s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=7672s
+[latency] 19/30 P=0.97s C=0.98s R=0.98s J_full=191.87s J_ours=135.42s J_k10=102.72s tok_k10=4394 acc_k10=0 tok 8192/5786 acc 0/0 elapsed=8106s
+[latency] 20/30 P=0.97s C=0.98s R=0.97s J_full=142.83s J_ours=112.73s J_k10=148.24s tok_k10=6313 acc_k10=1 tok 6062/4814 acc 1/1 elapsed=8513s
+[latency] 21/30 P=0.97s C=0.98s R=0.97s J_full=191.97s J_ours=192.34s J_k10=192.22s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=9094s
+[latency] 22/30 P=0.97s C=0.97s R=0.98s J_full=191.94s J_ours=192.12s J_k10=192.11s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=9674s
+[latency] 23/30 P=0.97s C=0.97s R=0.97s J_full=118.76s J_ours=192.48s J_k10=191.92s tok_k10=8192 acc_k10=0 tok 5069/8192 acc 1/0 elapsed=10180s
+[latency] 24/30 P=0.97s C=0.98s R=0.97s J_full=140.29s J_ours=192.69s J_k10=165.03s tok_k10=7025 acc_k10=0 tok 5955/8192 acc 0/0 elapsed=10682s
+[latency] 25/30 P=0.98s C=0.98s R=0.97s J_full=75.19s J_ours=97.17s J_k10=64.11s tok_k10=2742 acc_k10=0 tok 3209/4155 acc 0/0 elapsed=10922s
+[latency] 26/30 P=0.97s C=0.97s R=0.96s J_full=92.24s J_ours=158.83s J_k10=192.13s tok_k10=8192 acc_k10=0 tok 3934/6796 acc 0/0 elapsed=11369s
+[latency] 27/30 P=0.97s C=0.98s R=0.97s J_full=72.86s J_ours=72.74s J_k10=69.15s tok_k10=2951 acc_k10=0 tok 3105/3116 acc 0/0 elapsed=11588s
+[latency] 28/30 P=0.97s C=0.97s R=0.97s J_full=192.18s J_ours=153.88s J_k10=179.54s tok_k10=7672 acc_k10=1 tok 8192/6550 acc 0/1 elapsed=12117s
+[latency] 29/30 P=0.99s C=1.00s R=0.99s J_full=191.98s J_ours=192.31s J_k10=191.68s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=12697s
+[latency] 30/30 P=0.97s C=0.98s R=0.97s J_full=184.57s J_ours=155.89s J_k10=192.38s tok_k10=8192 acc_k10=0 tok 7866/6629 acc 0/0 elapsed=13234s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       1.00    0.98    0.97   0.009  144.34  147.28  6157.1   0.367
+ours            1.00    0.98    0.97   0.009  141.72  144.67  6051.7   0.333
+k10             0.26    0.27    0.27   0.000  151.29  152.09  6462.6   0.367
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -2.620 [-21.323,+13.676] n=30
+  ours_minus_latentmas_e2e_s       -2.611 [-21.314,+13.684] n=30
+  ours_minus_latentmas_tokens      -105.433 [-906.893,+586.869] n=30
+  ours_minus_latentmas_correct     -0.033 [-0.167,+0.100] n=30
+  k10_minus_latentmas_judger_s     +6.953 [-5.303,+20.109] n=30
+  k10_minus_latentmas_e2e_s        +4.811 [-7.450,+17.925] n=30
+  k10_minus_latentmas_tokens       +305.500 [-211.415,+865.581] n=30
+  k10_minus_latentmas_correct      +0.000 [-0.167,+0.167] n=30
+  ours_minus_k10_judger_s          -9.573 [-27.464,+5.341] n=30
+  ours_minus_k10_e2e_s             -7.422 [-25.335,+7.483] n=30
+  ours_minus_k10_tokens            -410.933 [-1172.804,+227.538] n=30
+  ours_minus_k10_correct           -0.033 [-0.167,+0.067] n=30
+
+[done] artifacts/exp_latency_mem/arr_aime24_b128_s7/report.json
+EXP_LATENCY_MEM_DONE
+[arr] OK aime24_b128_s7 Thu Aug 27 04:14:20 UTC 2026
+[arr] START aime25_b128_s7 Thu Aug 27 04:14:20 UTC 2026
+[load] Qwen/Qwen3-14B task=aime2025 n=30 k=40 temp=0.6 top_p=0.95
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  2.96it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.95it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.90it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.89it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.92it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.96it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.99it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.63it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.17it/s]
+[compress] evict budget=128 sink=4 importance=key_norm
+[latency] 1/30 P=1.61s C=0.99s R=0.96s J_full=38.54s J_ours=45.08s J_k10=39.53s tok_k10=1730 acc_k10=1 tok 1697/1983 acc 1/1 elapsed=128s
+[latency] 2/30 P=0.96s C=0.96s R=0.96s J_full=186.77s J_ours=188.22s J_k10=188.53s tok_k10=8192 acc_k10=0 tok 8130/8192 acc 1/1 elapsed=695s
+[latency] 3/30 P=0.97s C=0.97s R=0.96s J_full=72.74s J_ours=125.47s J_k10=82.80s tok_k10=3606 acc_k10=1 tok 3157/5473 acc 1/1 elapsed=979s
+[latency] 4/30 P=0.95s C=0.97s R=0.95s J_full=96.68s J_ours=67.01s J_k10=82.54s tok_k10=3599 acc_k10=1 tok 4213/2923 acc 1/1 elapsed=1229s
+[latency] 5/30 P=0.96s C=0.96s R=0.96s J_full=144.58s J_ours=189.02s J_k10=156.12s tok_k10=6776 acc_k10=1 tok 6285/8192 acc 1/0 elapsed=1723s
+[latency] 6/30 P=0.96s C=0.96s R=0.95s J_full=51.06s J_ours=76.07s J_k10=65.15s tok_k10=2810 acc_k10=1 tok 2235/3220 acc 1/1 elapsed=1919s
+[latency] 7/30 P=0.96s C=0.96s R=0.96s J_full=193.63s J_ours=190.39s J_k10=193.33s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=2500s
+[latency] 8/30 P=0.95s C=0.96s R=0.96s J_full=74.28s J_ours=76.03s J_k10=87.24s tok_k10=3782 acc_k10=1 tok 3175/3241 acc 1/1 elapsed=2741s
+[latency] 9/30 P=0.96s C=0.96s R=0.96s J_full=190.40s J_ours=192.32s J_k10=190.09s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=3318s
+[latency] 10/30 P=0.97s C=0.97s R=0.96s J_full=192.54s J_ours=188.73s J_k10=189.16s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=3892s
+[latency] 11/30 P=0.96s C=0.96s R=0.97s J_full=188.72s J_ours=189.28s J_k10=189.28s tok_k10=8192 acc_k10=0 tok 8192/8192 acc 0/0 elapsed=4463s

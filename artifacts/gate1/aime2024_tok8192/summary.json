@@ -21,9 +21,15 @@
       "k": 0,
       "n": 30,
       "accuracy": 0.5333333333333333,
-      "accuracy_ci": [0.36666666666666664, 0.7],
+      "accuracy_ci": [
+        0.36666666666666664,
+        0.7
+      ],
       "mean_latency_sec": 177.52735654506833,
-      "latency_ci": [163.72638869221322, 190.5281074663562],
+      "latency_ci": [
+        163.72638869221322,
+        190.5281074663562
+      ],
       "mean_output_tokens": 7236.666666666667,
       "latent_forwards": 3,
       "n_failures": 0,
@@ -34,9 +40,15 @@
       "k": 10,
       "n": 30,
       "accuracy": 0.6666666666666666,
-      "accuracy_ci": [0.5, 0.8333333333333334],
+      "accuracy_ci": [
+        0.5,
+        0.8333333333333334
+      ],
       "mean_latency_sec": 146.18820443227887,
-      "latency_ci": [128.50378709478926, 163.91809548607094],
+      "latency_ci": [
+        128.50378709478926,
+        163.91809548607094
+      ],
       "mean_output_tokens": 5926.8,
       "latent_forwards": 33,
       "n_failures": 0,
@@ -47,9 +59,15 @@
       "k": 40,
       "n": 30,
       "accuracy": 0.5,
-      "accuracy_ci": [0.3333333333333333, 0.6666666666666666],
+      "accuracy_ci": [
+        0.3333333333333333,
+        0.6666666666666666
+      ],
       "mean_latency_sec": 159.0324589561671,
-      "latency_ci": [141.11862299454864, 175.05807162563315],
+      "latency_ci": [
+        141.11862299454864,
+        175.05807162563315
+      ],
       "mean_output_tokens": 6400.766666666666,
       "latent_forwards": 123,
       "n_failures": 0,
@@ -57,9 +75,42 @@
       "peak_gpu_mem_gb": 29.2322678565979
     }
   ],
+  "paired_vs_max_k": {
+    "0": {
+      "mean_diff": -0.03333333333333333,
+      "ci_lo": -0.2,
+      "ci_hi": 0.13333333333333333,
+      "credible_positive": false,
+      "credible_negative": false
+    },
+    "10": {
+      "mean_diff": -0.16666666666666666,
+      "ci_lo": -0.3333333333333333,
+      "ci_hi": -0.03333333333333333,
+      "credible_positive": false,
+      "credible_negative": true
+    }
+  },
   "budget_suggestion": {
     "k_full": 10,
     "k_small": 0,
+    "candidates": [
+      {
+        "k_small": 0,
+        "k_full": 10,
+        "paired_acc_diff_full_minus_small": {
+          "mean_diff": 0.13333333333333333,
+          "ci_lo": 0.03333333333333333,
+          "ci_hi": 0.26666666666666666,
+          "credible_positive": true,
+          "credible_negative": false
+        },
+        "latency_reduction": -0.2143753816150551,
+        "credible_accuracy_loss": true,
+        "meaningful_latency_reduction": false,
+        "selected": false
+      }
+    ],
     "recommendation": {
       "k_small": 0,
       "k_full": 10,

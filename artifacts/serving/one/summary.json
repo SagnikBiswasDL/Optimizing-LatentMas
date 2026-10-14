@@ -1,0 +1,20 @@
+{
+  "n_rows": 1,
+  "n_error": 1,
+  "n_warmup": 0,
+  "n_steady": 0,
+  "errors": [
+    "ValueError: not enough values to unpack (expected 3, got 2)"
+  ],
+  "output_tokens_total": 0,
+  "output_tokens_mean": null,
+  "e2e_s_mean": null,
+  "e2e_s_min": null,
+  "e2e_s_max": null,
+  "requests_per_s": null,
+  "output_tokens_per_s": null,
+  "e2e_s_p95": null,
+  "p95_note": "omitted; fewer than 20 steady requests",
+  "load_s": 49.93009926751256,
+  "effective_prefix_caching": false
+}

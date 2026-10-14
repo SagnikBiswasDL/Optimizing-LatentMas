@@ -1,0 +1,10 @@
+=== pareto_ladder started Wed Aug 12 16:26:30 UTC 2026 ===
+GPU 0: NVIDIA H200 (UUID: GPU-1fd0cd65-d341-1af6-7266-2be5b6d275c5)
+torch 2.8.0+cu128 tf 4.57.1 cuda True
+[pareto] START gsm8k_s123 budgets=16,32,64,128 judger=768 batch=16 Wed Aug 12 16:26:33 UTC 2026
+[pareto] DONE gsm8k_s123 Wed Aug 12 16:43:08 UTC 2026
+[pareto] START math_s123 budgets=16,32,64,128 judger=2048 batch=12 Wed Aug 12 16:43:08 UTC 2026
+[pareto] DONE math_s123 Wed Aug 12 17:34:51 UTC 2026
+[pareto] START medqa_s123 budgets=16,32,64,128 judger=1024 batch=12 Wed Aug 12 17:34:51 UTC 2026
+[pareto] DONE medqa_s123 Wed Aug 12 18:02:10 UTC 2026
+=== PARETO_LADDER_DONE Wed Aug 12 18:02:10 UTC 2026 — STOP THE POD ===

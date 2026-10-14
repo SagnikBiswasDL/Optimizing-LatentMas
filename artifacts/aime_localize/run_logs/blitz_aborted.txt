@@ -1,0 +1,47 @@
+[localize] PY=/workspace/venv/bin/python
+[localize] ROOT_DIR=/root/latentmas-baseline/artifacts/aime_localize TAPE_DIR=/root/aime_localize_tapes PERSIST_DIR=/workspace/aime_localize_results
+[localize] restored 6 prior rows from /workspace/aime_localize_results
+[localize] autotune: 143166MB GPU -> DECODE_BS=16
+[localize] blitz n=30 bs=16 arms=real,none,real_seal40,real_seal60 budget=60min
+[localize] --mode collect --task aime2024 --n 30 --indices 0-29 --judger_budget 8192 Tue Sep 22 21:35:37 UTC 2026
+[load] Qwen/Qwen3-14B device=cuda
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.10it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.99it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.88it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  2.87it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:01,  2.76it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.85it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:02<00:00,  2.90it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.56it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:02<00:00,  3.11it/s]
+[collect] idx=0 pos=770 mb=120.3 up=1.61s spans=[{'role': 'planner', 'start': 0, 'end': 234}, {'role': 'critic', 'start': 234, 'end': 509}, {'role': 'refiner', 'start': 509, 'end': 770}]
+[collect] idx=1 pos=692 mb=108.1 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 208}, {'role': 'critic', 'start': 208, 'end': 457}, {'role': 'refiner', 'start': 457, 'end': 692}]
+[collect] idx=2 pos=599 mb=93.6 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 177}, {'role': 'critic', 'start': 177, 'end': 395}, {'role': 'refiner', 'start': 395, 'end': 599}]
+[collect] idx=3 pos=614 mb=95.9 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 182}, {'role': 'critic', 'start': 182, 'end': 405}, {'role': 'refiner', 'start': 405, 'end': 614}]
+[collect] idx=4 pos=566 mb=88.4 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 166}, {'role': 'critic', 'start': 166, 'end': 373}, {'role': 'refiner', 'start': 373, 'end': 566}]
+[collect] idx=5 pos=827 mb=129.2 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 253}, {'role': 'critic', 'start': 253, 'end': 547}, {'role': 'refiner', 'start': 547, 'end': 827}]
+[collect] idx=6 pos=662 mb=103.4 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 198}, {'role': 'critic', 'start': 198, 'end': 437}, {'role': 'refiner', 'start': 437, 'end': 662}]
+[collect] idx=7 pos=521 mb=81.4 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 151}, {'role': 'critic', 'start': 151, 'end': 343}, {'role': 'refiner', 'start': 343, 'end': 521}]
+[collect] idx=8 pos=665 mb=103.9 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 199}, {'role': 'critic', 'start': 199, 'end': 439}, {'role': 'refiner', 'start': 439, 'end': 665}]
+[collect] idx=9 pos=743 mb=116.1 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 225}, {'role': 'critic', 'start': 225, 'end': 491}, {'role': 'refiner', 'start': 491, 'end': 743}]
+[collect] idx=10 pos=602 mb=94.1 up=0.85s spans=[{'role': 'planner', 'start': 0, 'end': 178}, {'role': 'critic', 'start': 178, 'end': 397}, {'role': 'refiner', 'start': 397, 'end': 602}]
+[collect] idx=11 pos=533 mb=83.3 up=0.85s spans=[{'role': 'planner', 'start': 0, 'end': 155}, {'role': 'critic', 'start': 155, 'end': 351}, {'role': 'refiner', 'start': 351, 'end': 533}]
+[collect] idx=12 pos=515 mb=80.5 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 149}, {'role': 'critic', 'start': 149, 'end': 339}, {'role': 'refiner', 'start': 339, 'end': 515}]
+[collect] idx=13 pos=653 mb=102.0 up=0.93s spans=[{'role': 'planner', 'start': 0, 'end': 195}, {'role': 'critic', 'start': 195, 'end': 431}, {'role': 'refiner', 'start': 431, 'end': 653}]
+[collect] idx=14 pos=623 mb=97.3 up=0.85s spans=[{'role': 'planner', 'start': 0, 'end': 185}, {'role': 'critic', 'start': 185, 'end': 411}, {'role': 'refiner', 'start': 411, 'end': 623}]
+[collect] idx=15 pos=707 mb=110.5 up=0.85s spans=[{'role': 'planner', 'start': 0, 'end': 213}, {'role': 'critic', 'start': 213, 'end': 467}, {'role': 'refiner', 'start': 467, 'end': 707}]
+[collect] idx=16 pos=530 mb=82.8 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 154}, {'role': 'critic', 'start': 154, 'end': 349}, {'role': 'refiner', 'start': 349, 'end': 530}]
+[collect] idx=17 pos=629 mb=98.3 up=0.89s spans=[{'role': 'planner', 'start': 0, 'end': 187}, {'role': 'critic', 'start': 187, 'end': 415}, {'role': 'refiner', 'start': 415, 'end': 629}]
+[collect] idx=18 pos=962 mb=150.3 up=0.90s spans=[{'role': 'planner', 'start': 0, 'end': 298}, {'role': 'critic', 'start': 298, 'end': 637}, {'role': 'refiner', 'start': 637, 'end': 962}]
+[collect] idx=19 pos=551 mb=86.1 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 161}, {'role': 'critic', 'start': 161, 'end': 363}, {'role': 'refiner', 'start': 363, 'end': 551}]
+[collect] idx=20 pos=812 mb=126.9 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 248}, {'role': 'critic', 'start': 248, 'end': 537}, {'role': 'refiner', 'start': 537, 'end': 812}]
+[collect] idx=21 pos=908 mb=141.9 up=0.88s spans=[{'role': 'planner', 'start': 0, 'end': 280}, {'role': 'critic', 'start': 280, 'end': 601}, {'role': 'refiner', 'start': 601, 'end': 908}]
+[collect] idx=22 pos=599 mb=93.6 up=0.85s spans=[{'role': 'planner', 'start': 0, 'end': 177}, {'role': 'critic', 'start': 177, 'end': 395}, {'role': 'refiner', 'start': 395, 'end': 599}]
+[collect] idx=23 pos=788 mb=123.1 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 240}, {'role': 'critic', 'start': 240, 'end': 521}, {'role': 'refiner', 'start': 521, 'end': 788}]
+[collect] idx=24 pos=803 mb=125.5 up=0.86s spans=[{'role': 'planner', 'start': 0, 'end': 245}, {'role': 'critic', 'start': 245, 'end': 531}, {'role': 'refiner', 'start': 531, 'end': 803}]
+[collect] idx=25 pos=557 mb=87.0 up=0.85s spans=[{'role': 'planner', 'start': 0, 'end': 163}, {'role': 'critic', 'start': 163, 'end': 367}, {'role': 'refiner', 'start': 367, 'end': 557}]
+[collect] idx=26 pos=554 mb=86.6 up=0.85s spans=[{'role': 'planner', 'start': 0, 'end': 162}, {'role': 'critic', 'start': 162, 'end': 365}, {'role': 'refiner', 'start': 365, 'end': 554}]
+[collect] idx=27 pos=584 mb=91.2 up=0.85s spans=[{'role': 'planner', 'start': 0, 'end': 172}, {'role': 'critic', 'start': 172, 'end': 385}, {'role': 'refiner', 'start': 385, 'end': 584}]
+[collect] idx=28 pos=1550 mb=242.2 up=0.91s spans=[{'role': 'planner', 'start': 0, 'end': 494}, {'role': 'critic', 'start': 494, 'end': 1029}, {'role': 'refiner', 'start': 1029, 'end': 1550}]
+[collect] idx=29 pos=674 mb=105.3 up=0.87s spans=[{'role': 'planner', 'start': 0, 'end': 202}, {'role': 'critic', 'start': 202, 'end': 445}, {'role': 'refiner', 'start': 445, 'end': 674}]
+[localize] OK Tue Sep 22 21:37:20 UTC 2026
+[localize] --mode views --task aime2024 --judger_budget 8192 --view_arms real --decode_bs 16 --method_tag bs16 --view_indices 0,1,2,4,10,18 Tue Sep 22 21:37:20 UTC 2026
+[views] scoped to 6 tapes: [0, 1, 2, 4, 10, 18]
+[load] Qwen/Qwen3-14B device=cuda
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 124.09it/s]
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.

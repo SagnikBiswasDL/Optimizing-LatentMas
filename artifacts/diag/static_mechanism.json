@@ -1,0 +1,213 @@
+{
+  "header": {
+    "device": "NVIDIA H200",
+    "bandwidth_tbs": 4.8,
+    "kv_kb_per_token": 160.0,
+    "attn": "sdpa",
+    "torch": "2.8.0+cu128"
+  },
+  "runs": [
+    {
+      "max_cache_len": null,
+      "cache": "dynamic",
+      "prefix_len": 900,
+      "true_len_end": 1300,
+      "tokens": 400,
+      "wall_s": 9.5,
+      "tok_per_s_wall": 42.11,
+      "step_ms_first8": [
+        90.361,
+        24.543,
+        23.316,
+        22.521,
+        22.442,
+        22.525,
+        22.524,
+        22.552
+      ],
+      "step_ms_median": 22.523,
+      "step_ms_p10": 22.4,
+      "step_ms_p90": 22.772,
+      "step_ms_deciles": [
+        22.551,
+        22.53,
+        22.548,
+        22.488,
+        22.463,
+        22.489,
+        22.508,
+        22.512,
+        22.519,
+        22.624
+      ],
+      "ramp_ratio": 1.003,
+      "compile_delta": {},
+      "name": "dynamic, short"
+    },
+    {
+      "max_cache_len": 9216,
+      "cache": "static",
+      "prefix_len": 900,
+      "true_len_end": 1300,
+      "tokens": 400,
+      "wall_s": 44.303,
+      "tok_per_s_wall": 9.03,
+      "step_ms_first8": [
+        31072.979,
+        244.326,
+        30.157,
+        29.869,
+        29.637,
+        29.698,
+        29.459,
+        29.689
+      ],
+      "step_ms_median": 29.469,
+      "step_ms_p10": 29.316,
+      "step_ms_p90": 29.63,
+      "step_ms_deciles": [
+        29.496,
+        29.477,
+        29.448,
+        29.467,
+        29.419,
+        29.47,
+        29.445,
+        29.519,
+        29.49,
+        29.437
+      ],
+      "ramp_ratio": 0.998,
+      "compile_delta": {
+        "inductor": 2701,
+        "aten_mm_info": 282,
+        "aot_autograd": 4,
+        "frames": 2,
+        "stats": 3192
+      },
+      "name": "static 9216, short"
+    },
+    {
+      "max_cache_len": 16384,
+      "cache": "static",
+      "prefix_len": 900,
+      "true_len_end": 1300,
+      "tokens": 400,
+      "wall_s": 70.9,
+      "tok_per_s_wall": 5.64,
+      "step_ms_first8": [
+        52535.952,
+        887.232,
+        44.202,
+        43.814,
+        43.423,
+        43.494,
+        43.319,
+        43.504
+      ],
+      "step_ms_median": 43.488,
+      "step_ms_p10": 43.321,
+      "step_ms_p90": 43.718,
+      "step_ms_deciles": [
+        43.457,
+        43.511,
+        43.535,
+        43.462,
+        43.435,
+        43.5,
+        43.532,
+        43.458,
+        43.542,
+        43.571
+      ],
+      "ramp_ratio": 1.003,
+      "compile_delta": {
+        "aot_autograd": 4,
+        "inductor": 2673,
+        "aten_mm_info": 282,
+        "frames": 2,
+        "stats": 3352
+      },
+      "name": "static 16384, short"
+    },
+    {
+      "max_cache_len": null,
+      "cache": "dynamic",
+      "prefix_len": 900,
+      "true_len_end": 7900,
+      "tokens": 7000,
+      "wall_s": 163.428,
+      "tok_per_s_wall": 42.83,
+      "step_ms_first8": [
+        25.015,
+        23.524,
+        24.072,
+        23.52,
+        24.031,
+        23.416,
+        23.154,
+        23.722
+      ],
+      "step_ms_median": 23.123,
+      "step_ms_p10": 22.885,
+      "step_ms_p90": 23.747,
+      "step_ms_deciles": [
+        23.51,
+        23.122,
+        23.138,
+        23.082,
+        23.215,
+        23.127,
+        23.217,
+        23.085,
+        22.95,
+        22.984
+      ],
+      "ramp_ratio": 0.978,
+      "compile_delta": {},
+      "name": "dynamic, long"
+    },
+    {
+      "max_cache_len": 9216,
+      "cache": "static",
+      "prefix_len": 900,
+      "true_len_end": 7900,
+      "tokens": 7000,
+      "wall_s": 234.968,
+      "tok_per_s_wall": 29.79,
+      "step_ms_first8": [
+        28507.979,
+        850.916,
+        30.517,
+        30.02,
+        29.716,
+        29.995,
+        29.636,
+        29.775
+      ],
+      "step_ms_median": 29.305,
+      "step_ms_p10": 29.113,
+      "step_ms_p90": 29.716,
+      "step_ms_deciles": [
+        29.673,
+        29.617,
+        29.313,
+        29.317,
+        29.301,
+        29.291,
+        29.279,
+        29.208,
+        29.234,
+        29.225
+      ],
+      "ramp_ratio": 0.985,
+      "compile_delta": {
+        "aot_autograd": 4,
+        "inductor": 2552,
+        "frames": 2,
+        "stats": 3352
+      },
+      "name": "static 9216, long (fills its allocation)"
+    }
+  ]
+}

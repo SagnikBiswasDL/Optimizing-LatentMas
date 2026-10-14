@@ -1,0 +1,30 @@
+[smoke] k=4 n=2 judger_budget=64
+[load] Qwen/Qwen3-14B task=gsm8k n=2 k=4
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:00, 17.30it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:00<00:00, 14.93it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:00<00:00, 14.30it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:00<00:00, 16.34it/s]
+[compress] evict budget=16 sink=4 importance=key_norm
+[memory] building one donor upstream cache...
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[memory] latentmas B=1 peak=27.89GB relay_batch=85.2MB decode=0.20s (4.91 it/s)
+[memory] latentmas B=2 peak=28.15GB relay_batch=170.3MB decode=0.21s (9.53 it/s)
+[memory] latentmas B=4 peak=28.65GB relay_batch=340.6MB decode=0.23s (17.23 it/s)
+[memory] ours B=1 peak=27.69GB relay_batch=2.5MB decode=0.19s (5.23 it/s)
+[memory] ours B=2 peak=27.75GB relay_batch=5.0MB decode=0.20s (10.05 it/s)
+[memory] ours B=4 peak=27.87GB relay_batch=10.0MB decode=0.21s (18.76 it/s)
+[latency] 1/2 P=0.12s C=0.13s R=0.12s J_full=1.43s J_ours=1.44s tok 64/64 acc 0/0 elapsed=3s
+[latency] 2/2 P=0.13s C=0.13s R=0.14s J_full=1.48s J_ours=1.47s tok 64/64 acc 0/0 elapsed=7s
+
+=== PER-AGENT LATENCY (mean) ===
+method             P       C       R    comp  Judger     e2e     tok     acc
+latentmas       0.12    0.13    0.13   0.006    1.46    1.84    64.0   0.000
+ours            0.12    0.13    0.13   0.006    1.45    1.84    64.0   0.000
+
+=== PAIRED (ours - latentmas) ===
+  ours_minus_latentmas_judger_s    -0.004 [-0.013,+0.004] n=2
+  ours_minus_latentmas_e2e_s       +0.002 [-0.007,+0.011] n=2
+  ours_minus_latentmas_tokens      +0.000 [+0.000,+0.000] n=2
+  ours_minus_latentmas_correct     +0.000 [+0.000,+0.000] n=2
+
+[done] artifacts/exp_latency_mem/smoke/report.json
+EXP_LATENCY_MEM_DONE
+EXIT:0

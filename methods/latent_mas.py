@@ -1,3 +1,4 @@
+import time
 from typing import Dict, List, Optional, Tuple
 
 from . import default_agents, agents_from_spec
@@ -350,6 +351,147 @@ class LatentMASMethod:
             results.append(res)
         return results
     
+    def _sync_devices(self) -> None:
+        if not torch.cuda.is_available():
+            return
+        for index in range(torch.cuda.device_count()):
+            torch.cuda.synchronize(index)
+
+    def _stage(self, name: str):
+        """Time one serial stage. No-op unless the caller set ``stage_log``.
+
+        Synchronization is correct while Hugging Face preparation and vLLM
+        generation do not overlap. An overlapped pipeline must not use this.
+        """
+        outer = self
+
+        class _Span:
+            def __enter__(self):
+                self.enabled = getattr(outer, "stage_log", None) is not None
+                if self.enabled:
+                    outer._sync_devices()
+                    self.t0 = time.perf_counter()
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                if self.enabled:
+                    outer._sync_devices()
+                    outer.stage_log.append({
+                        "stage": name,
+                        "seconds": time.perf_counter() - self.t0,
+                        "error": None if exc_type is None else exc_type.__name__,
+                    })
+                return False
+
+        return _Span()
+
+    def _vllm_request_stats(self, outputs) -> List[Dict]:
+        stats = []
+        for out in outputs:
+            choice = out.outputs[0]
+            metrics = getattr(out, "metrics", None)
+            metric_dict = None
+            if metrics is not None:
+                metric_dict = {
+                    key: getattr(metrics, key)
+                    for key in (
+                        "arrival_time",
+                        "first_scheduled_time",
+                        "first_token_time",
+                        "last_token_time",
+                        "finished_time",
+                        "queued_time",
+                    )
+                    if hasattr(metrics, key)
+                }
+            stats.append({
+                "output_tokens": len(getattr(choice, "token_ids", []) or []),
+                "finish_reason": getattr(choice, "finish_reason", None),
+                "num_cached_tokens": getattr(out, "num_cached_tokens", None),
+                "metrics": metric_dict,
+            })
+        return stats
+
+    def _run_judger_repaired(self, judger_prompts: List[str], batch_size: int):
+        """Judger embeddings with padding removed and the batch dimension kept.
+
+        This is a baseline repair, not a speed optimization. Batch size 1
+        cannot run the original ``squeeze(0)`` path. A padded batch otherwise
+        sends pad rows and float32 zeros that a lone request does not.
+        """
+        from serving.embed_assembly import assemble_repaired, left_insert_lengths
+
+        assert "Qwen" in self.args.model_name or "qwen" in self.args.model_name, "latent_embedding_position is only supported for Qwen models currently."
+
+        past_per_item = []
+        for i in range(batch_size):
+            parts = self._repaired_parts[i]
+            if not parts:
+                raise RuntimeError("repaired assembly has no latent embeddings")
+            past_per_item.append(torch.cat(parts, dim=0))
+
+        with self._stage("judger_tokenize_embed"):
+            encoded = self.model.tokenizer(
+                judger_prompts,
+                return_tensors="pt",
+                padding=True,
+                add_special_tokens=False,
+            )
+            judger_ids = encoded["input_ids"].to(self.model.HF_device)
+            judger_mask = encoded["attention_mask"].to(self.model.HF_device)
+            curr_prompt_emb = self.model.embedding_layer(judger_ids)
+            insert_lengths = left_insert_lengths(self.model.tokenizer, judger_prompts)
+            insert_lengths_no_special = left_insert_lengths(
+                self.model.tokenizer, judger_prompts, add_special_tokens=False,
+            )
+            # The original slice clamps. An extra special token must not raise.
+            valid_lengths = [int(judger_mask[i].sum().item()) for i in range(batch_size)]
+            insert_used = [min(n, valid) for n, valid in zip(insert_lengths, valid_lengths)]
+
+        with self._stage("judger_assemble_transfer"):
+            rows = assemble_repaired(
+                curr_prompt_emb, judger_mask, past_per_item, insert_used,
+            )
+            rows = [row.to(self.vllm_device) for row in rows]
+            self._last_prompt_embeds = rows
+            prompt_embeds_list = [{"prompt_embeds": row} for row in rows]
+            self._pending_embeds = prompt_embeds_list
+
+        if getattr(self, "_stop_before_vllm", False):
+            return [""] * batch_size
+
+        with self._stage("vllm_generate"):
+            outputs = self.model.vllm_engine.generate(
+                prompt_embeds_list,
+                self.sampling_params,
+            )
+        self._last_vllm_stats = self._vllm_request_stats(outputs)
+        self._last_embed_meta = {
+            "assembly": "repaired",
+            "prompt_lengths": [int(row.shape[0]) for row in rows],
+            "embed_dtype": str(rows[0].dtype),
+            "insert_lengths": insert_lengths,
+            "insert_lengths_used": insert_used,
+            "insert_lengths_no_special": insert_lengths_no_special,
+            "valid_prompt_lengths": valid_lengths,
+        }
+        return [out.outputs[0].text.strip() for out in outputs]
+
+    def prepare_prompt_embeds(self, items: List[Dict]):
+        """Latent agents plus Judger embedding assembly, without vLLM decode.
+
+        Used to overlap preparation of a later request with vLLM answering
+        an earlier one. The embeddings match ``run_batch_vllm`` in repaired mode.
+        """
+        if getattr(self.args, "embed_assembly", "original") != "repaired":
+            raise RuntimeError("prepare_prompt_embeds requires embed_assembly=repaired")
+        self._stop_before_vllm = True
+        try:
+            self.run_batch_vllm(items)
+            return list(self._pending_embeds)
+        finally:
+            self._stop_before_vllm = False
+
     def run_batch_vllm(self, items: List[Dict]) -> List[Dict]:
         if len(items) > self.generate_bs:
             raise ValueError("Batch size exceeds configured generate_bs")
@@ -358,6 +500,11 @@ class LatentMASMethod:
         past_kv: Optional[Tuple] = None
         agent_traces: List[List[Dict]] = [[] for _ in range(batch_size)]
         final_texts = ["" for _ in range(batch_size)]
+        self._last_vllm_stats = None
+        self._last_embed_meta = None
+        self._last_prompt_embeds = None
+        assembly = getattr(self.args, "embed_assembly", "original")
+        self._repaired_parts = [[] for _ in range(batch_size)] if assembly == "repaired" else None
 
         embedding_record = []
         for agent in self.agents:
@@ -372,10 +519,11 @@ class LatentMASMethod:
                     build_agent_message_hierarchical_latent_mas(role=agent.role, question=item["question"], context="", method=self.method_name, args=self.args)
                     for item in items
                 ]
-                
-            prompts, input_ids, attention_mask, tokens_batch = self.model.prepare_chat_batch(
-                batch_messages, add_generation_prompt=True
-            )
+
+            with self._stage(f"prepare_{agent.role}"):
+                prompts, input_ids, attention_mask, tokens_batch = self.model.prepare_chat_batch(
+                    batch_messages, add_generation_prompt=True
+                )
 
             if agent.role != "judger":
                 prev_past_len = _past_length(past_kv)
@@ -387,25 +535,27 @@ class LatentMASMethod:
                 else: 
                     wrapped_prompts = prompts
 
-                wrapped_encoded = self.model.tokenizer(
-                    wrapped_prompts,
-                    return_tensors="pt",
-                    padding=True,
-                    add_special_tokens=False,
-                )
-                wrapped_ids = wrapped_encoded["input_ids"].to(self.model.HF_device)
-                wrapped_mask = wrapped_encoded["attention_mask"].to(self.model.HF_device)
-                wrapped_tokens_batch: List[List[str]] = []
-                for ids_row, mask_row in zip(wrapped_ids, wrapped_mask):
-                    active_ids = ids_row[mask_row.bool()].tolist()
-                    wrapped_tokens_batch.append(self.model.tokenizer.convert_ids_to_tokens(active_ids))
+                with self._stage(f"tokenize_{agent.role}"):
+                    wrapped_encoded = self.model.tokenizer(
+                        wrapped_prompts,
+                        return_tensors="pt",
+                        padding=True,
+                        add_special_tokens=False,
+                    )
+                    wrapped_ids = wrapped_encoded["input_ids"].to(self.model.HF_device)
+                    wrapped_mask = wrapped_encoded["attention_mask"].to(self.model.HF_device)
+                    wrapped_tokens_batch: List[List[str]] = []
+                    for ids_row, mask_row in zip(wrapped_ids, wrapped_mask):
+                        active_ids = ids_row[mask_row.bool()].tolist()
+                        wrapped_tokens_batch.append(self.model.tokenizer.convert_ids_to_tokens(active_ids))
 
-                past_kv, previous_hidden_embedding = self.model.generate_latent_batch_hidden_state(
-                    wrapped_ids,
-                    attention_mask=wrapped_mask,
-                    latent_steps=role_steps,
-                    past_key_values=past_kv,
-                )
+                with self._stage(f"latent_{agent.role}"):
+                    past_kv, previous_hidden_embedding = self.model.generate_latent_batch_hidden_state(
+                        wrapped_ids,
+                        attention_mask=wrapped_mask,
+                        latent_steps=role_steps,
+                        past_key_values=past_kv,
+                    )
                 if self.sequential_info_only or self.latent_only:
                     new_past_len = _past_length(past_kv)
                     tokens_added = new_past_len - prev_past_len
@@ -422,7 +572,22 @@ class LatentMASMethod:
 
                 if self.sequential_info_only or self.latent_only:
                     embedding_record = embedding_record[-1:]
-                
+
+                if self._repaired_parts is not None:
+                    if self.latent_only:
+                        parts = [
+                            previous_hidden_embedding[i].contiguous()
+                            for i in range(batch_size)
+                        ]
+                    else:
+                        from serving.embed_assembly import valid_agent_embeds
+                        parts = valid_agent_embeds(previous_hidden_embedding, wrapped_mask)
+                    for i, part in enumerate(parts):
+                        self._repaired_parts[i].append(part)
+                    if self.sequential_info_only or self.latent_only:
+                        for i in range(batch_size):
+                            self._repaired_parts[i] = self._repaired_parts[i][-1:]
+
                 for idx in range(batch_size):
                     mask = wrapped_mask[idx].bool()
                     trimmed_ids = wrapped_ids[idx][mask].to("cpu").tolist()
@@ -438,76 +603,68 @@ class LatentMASMethod:
                         }
                     )
             else:
-                
-                # A stack of [B, L_i, H]
-                past_embedding = torch.cat(embedding_record, dim=1).to(self.vllm_device)
-                
                 if self.args.think:
                     judger_prompts = [f"{prompt}<think>" for prompt in prompts]
-                else: 
+                else:
                     judger_prompts = prompts
-                
-                judger_encoded = self.model.tokenizer(
-                    judger_prompts,
-                    return_tensors="pt",
-                    padding=True,
-                    add_special_tokens=False,
-                ) 
-                judger_encoded = judger_encoded["input_ids"].to(self.model.HF_device)
-                # Get current prompt embedding
-                curr_prompt_emb = self.model.embedding_layer(judger_encoded).squeeze(0).to(self.vllm_device)
-                
-                # assert Qwen model
-                assert "Qwen" in self.args.model_name or "qwen" in self.args.model_name, "latent_embedding_position is only supported for Qwen models currently."
 
-                # handle latent embedding insertion position    
-                len_of_left = []
-                for p in judger_prompts:
-                    idx = p.find("<|im_start|>user\n")
-                    # Get the text up to and including "<|im_start|>user\n"
-                    left = p[: idx + len("<|im_start|>user\n")]
-                    len_of_left.append(len(self.model.tokenizer(left)['input_ids']))
-                    
-                B, L, H = curr_prompt_emb.shape
-                _, Lp, H = past_embedding.shape  # assume shape consistency
-                    
-                whole_prompt_emb_list = []
-                for i in range(B):
-                    insert_idx = len_of_left[i]
-                    left_emb = curr_prompt_emb[i, :insert_idx, :]
-                    right_emb = curr_prompt_emb[i, insert_idx:, :]
-                    combined = torch.cat([left_emb, past_embedding[i], right_emb], dim=0)
-                    whole_prompt_emb_list.append(combined)
+                if assembly == "repaired":
+                    generated_texts = self._run_judger_repaired(judger_prompts, batch_size)
+                else:
+                    # Original hybrid semantics. Batch size 1 crashes on squeeze(0).
+                    with self._stage("judger_assemble_transfer"):
+                        past_embedding = torch.cat(embedding_record, dim=1).to(self.vllm_device)
+                        judger_encoded = self.model.tokenizer(
+                            judger_prompts,
+                            return_tensors="pt",
+                            padding=True,
+                            add_special_tokens=False,
+                        )
+                        judger_encoded = judger_encoded["input_ids"].to(self.model.HF_device)
+                        curr_prompt_emb = self.model.embedding_layer(judger_encoded).squeeze(0).to(self.vllm_device)
 
-                # Pad back to max length if needed
-                max_len = max(x.shape[0] for x in whole_prompt_emb_list)
-                whole_prompt_emb = torch.stack([
-                    torch.cat([x, torch.zeros(max_len - x.shape[0], H, device=x.device)], dim=0)
-                    for x in whole_prompt_emb_list
-                ])
+                        assert "Qwen" in self.args.model_name or "qwen" in self.args.model_name, "latent_embedding_position is only supported for Qwen models currently."
 
-                # else:
-                    # Get full prompt embedding from cat with previous ones 
-                    # B L H B L H
-                    # whole_prompt_emb = torch.cat([past_embedding, curr_prompt_emb], dim=1)
-                
-                # pdb.set_trace()              
-                
-                # Use vLLM 
-                prompt_embeds_list = [
-                    {
-                        "prompt_embeds": embeds
-                    } for embeds in whole_prompt_emb 
-                ]
-                
-                
-                outputs = self.model.vllm_engine.generate(
-                    prompt_embeds_list,
-                    self.sampling_params,
-                )
+                        len_of_left = []
+                        for p in judger_prompts:
+                            idx = p.find("<|im_start|>user\n")
+                            left = p[: idx + len("<|im_start|>user\n")]
+                            len_of_left.append(len(self.model.tokenizer(left)['input_ids']))
 
-                generated_texts = [out.outputs[0].text.strip() for out in outputs]
-                    
+                        B, L, H = curr_prompt_emb.shape
+                        _, Lp, H = past_embedding.shape
+
+                        whole_prompt_emb_list = []
+                        for i in range(B):
+                            insert_idx = len_of_left[i]
+                            left_emb = curr_prompt_emb[i, :insert_idx, :]
+                            right_emb = curr_prompt_emb[i, insert_idx:, :]
+                            combined = torch.cat([left_emb, past_embedding[i], right_emb], dim=0)
+                            whole_prompt_emb_list.append(combined)
+
+                        max_len = max(x.shape[0] for x in whole_prompt_emb_list)
+                        whole_prompt_emb = torch.stack([
+                            torch.cat([x, torch.zeros(max_len - x.shape[0], H, device=x.device)], dim=0)
+                            for x in whole_prompt_emb_list
+                        ])
+                        prompt_embeds_list = [
+                            {"prompt_embeds": embeds} for embeds in whole_prompt_emb
+                        ]
+                        self._last_embed_meta = {
+                            "assembly": "original",
+                            "prompt_lengths": [int(whole_prompt_emb.shape[1])] * B,
+                            "embed_dtype": str(whole_prompt_emb.dtype),
+                            "insert_lengths": [int(n) for n in len_of_left],
+                        }
+
+                    with self._stage("vllm_generate"):
+                        outputs = self.model.vllm_engine.generate(
+                            prompt_embeds_list,
+                            self.sampling_params,
+                        )
+                    self._last_vllm_stats = self._vllm_request_stats(outputs)
+                    generated_texts = [out.outputs[0].text.strip() for out in outputs]
+
                 for idx in range(batch_size):
                     text_out = generated_texts[idx].strip()
                     final_texts[idx] = text_out
@@ -522,22 +679,29 @@ class LatentMASMethod:
 
 
         results: List[Dict] = []
+        stats = self._last_vllm_stats or []
+        meta = self._last_embed_meta or {}
+        prompt_lengths = meta.get("prompt_lengths") or []
         for idx, item in enumerate(items):
             final_text = final_texts[idx]
             pred = normalize_answer(extract_gsm8k_answer(final_text))
             gold = item["gold"]
             ok = (pred == gold) if (pred and gold) else False
-            results.append(
-                {
-                    "question": item["question"],
-                    "gold": gold,
-                    "solution": item["solution"],
-                    "prediction": pred,
-                    "raw_prediction": final_text,
-                    "agents": agent_traces[idx],
-                    "correct": ok,
-                }
-            )
+            row = {
+                "question": item["question"],
+                "gold": gold,
+                "solution": item["solution"],
+                "prediction": pred,
+                "raw_prediction": final_text,
+                "agents": agent_traces[idx],
+                "correct": ok,
+                "embed_assembly": meta.get("assembly", assembly),
+            }
+            if idx < len(stats):
+                row.update(stats[idx])
+            if idx < len(prompt_lengths):
+                row["prompt_embed_tokens"] = prompt_lengths[idx]
+            results.append(row)
         return results
 
     def run_item(self, item: Dict) -> Dict:
