@@ -1,0 +1,21 @@
+{
+  "load_s": 86.43220491707325,
+  "cache_config": {
+    "enable_prefix_caching": false,
+    "block_size": 16,
+    "num_gpu_blocks": 12101,
+    "gpu_memory_utilization": 0.45,
+    "cache_dtype": "auto",
+    "enable_prompt_embeds": true,
+    "dtype": "torch.bfloat16",
+    "max_model_len": 40960,
+    "revision": null
+  },
+  "init_logs": [
+    "non-default args: {'enable_prompt_embeds': True, 'enable_prefix_caching': True, 'gpu_memory_utilization': 0.45, 'model': 'Qwen/Qwen3-14B'}",
+    "--enable-prompt-embeds and --enable-prefix-caching are not supported together in V1. Prefix caching has been disabled.",
+    "--enable-prompt-embeds and --enable-prefix-caching are not supported together in V1. Prefix caching has been disabled."
+  ],
+  "padding_side": "right",
+  "torch_dtype": "torch.bfloat16"
+}

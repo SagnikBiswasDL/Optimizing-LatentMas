@@ -1,0 +1,7 @@
+{
+  "enable_prompt_embeds": false,
+  "output_tokens": 1024,
+  "seconds": 9.37206930667162,
+  "tok_s": 109.26082239607996,
+  "finish": "length"
+}

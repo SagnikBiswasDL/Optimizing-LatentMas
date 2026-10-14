@@ -154,6 +154,8 @@ def main():
     parser.add_argument("--ces_init_std", type=float, default=0.0, help="Init std for trainable v when no artifact")
 
     # vLLM support
+    parser.add_argument("--embed_assembly", choices=["original", "repaired"], default="original",
+                        help="Judger embedding assembly for the hybrid path. 'original' is the authors' code, which crashes at batch size 1. 'repaired' keeps the batch dimension and drops padding.")
     parser.add_argument("--use_vllm", action="store_true", help="Use vLLM backend for generation")
     parser.add_argument("--enable_prefix_caching", action="store_true", help="Enable prefix caching in vLLM for latent_mas")
     parser.add_argument("--use_second_HF_model", action="store_true", help="Use a second HF model for latent generation in latent_mas")

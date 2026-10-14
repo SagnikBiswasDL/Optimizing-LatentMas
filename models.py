@@ -46,8 +46,18 @@ class ModelWrapper:
             gpu_util = float(getattr(args, "gpu_memory_utilization", 0.9))
             
             print(f"[vLLM] Using vLLM backend for model {model_name}")
-            if args.enable_prefix_caching and args.method == "latent_mas": 
-                self.vllm_engine = LLM(model=model_name, tensor_parallel_size=tp_size, gpu_memory_utilization=gpu_util, enable_prefix_caching=True, enable_prompt_embeds=True)
+            # Prompt embeddings are how the hybrid Judger receives latent thoughts.
+            # Prefix caching is a separate switch. vLLM 0.11 turns prefix caching
+            # back off when prompt embeddings are enabled; that is recorded, not hidden.
+            if getattr(args, "method", None) == "latent_mas":
+                self.vllm_engine = LLM(
+                    model=model_name,
+                    tensor_parallel_size=tp_size,
+                    gpu_memory_utilization=gpu_util,
+                    enable_prefix_caching=bool(getattr(args, "enable_prefix_caching", False)),
+                    enable_prompt_embeds=True,
+                    disable_log_stats=False,
+                )
             else:
                 self.vllm_engine = LLM(model=model_name, tensor_parallel_size=tp_size, gpu_memory_utilization=gpu_util)
             self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)

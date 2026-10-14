@@ -1,0 +1,19 @@
+{
+  "n_rows": 3,
+  "n_error": 0,
+  "n_warmup": 0,
+  "n_steady": 3,
+  "errors": [],
+  "output_tokens_total": 1049,
+  "output_tokens_mean": 349.6666666666667,
+  "e2e_s_mean": 4.288450926542282,
+  "e2e_s_min": 3.4806070402264595,
+  "e2e_s_max": 5.822354771196842,
+  "requests_per_s": 0.23318443352371201,
+  "output_tokens_per_s": 81.53682358879131,
+  "e2e_s_p50": 3.5623909682035446,
+  "e2e_s_p95": null,
+  "p95_note": "omitted; fewer than 20 steady requests",
+  "load_s": 49.16515550762415,
+  "effective_prefix_caching": false
+}
