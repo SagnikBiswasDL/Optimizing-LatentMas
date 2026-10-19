@@ -1,0 +1,119 @@
+{
+  "question": "prefix hits around eviction, and whether freed cache is reused",
+  "num_gpu_blocks": 12102,
+  "block_size": 16,
+  "load": {
+    "load_s": 56.122020278126,
+    "cache_config": {
+      "enable_prefix_caching": true,
+      "block_size": 16,
+      "num_gpu_blocks": 12102,
+      "gpu_memory_utilization": 0.45,
+      "cache_dtype": "auto",
+      "max_model_len": 40960
+    },
+    "prefix_caching_requested": true,
+    "effective_prefix_caching": true
+  },
+  "idle": {
+    "usage": 0.0,
+    "blocks": {
+      "used_blocks_est": 0,
+      "free_blocks_est": 12102
+    }
+  },
+  "steps": [
+    {
+      "name": "cold",
+      "num_cached_tokens": 0,
+      "prompt_len": 8064,
+      "fresh_prefill_tokens": 8064,
+      "e2e_s": 0.45259811356663704,
+      "usage": 0.0,
+      "blocks": {
+        "used_blocks_est": 0,
+        "free_blocks_est": 12102
+      }
+    },
+    {
+      "name": "identical_replay_before_evict",
+      "num_cached_tokens": 8048,
+      "prompt_len": 8064,
+      "fresh_prefill_tokens": 16,
+      "e2e_s": 0.08109627664089203,
+      "usage": 0.0,
+      "blocks": {
+        "used_blocks_est": 0,
+        "free_blocks_est": 12102
+      }
+    },
+    {
+      "name": "different_request_after_evict",
+      "num_cached_tokens": 0,
+      "prompt_len": 8064,
+      "fresh_prefill_tokens": 8064,
+      "e2e_s": 0.45144592598080635,
+      "usage": 0.0,
+      "blocks": {
+        "used_blocks_est": 0,
+        "free_blocks_est": 12102
+      }
+    },
+    {
+      "name": "original_replay_after_evict",
+      "num_cached_tokens": 0,
+      "prompt_len": 8064,
+      "fresh_prefill_tokens": 8064,
+      "e2e_s": 0.4466755986213684,
+      "usage": 0.0,
+      "blocks": {
+        "used_blocks_est": 0,
+        "free_blocks_est": 12102
+      }
+    }
+  ],
+  "reset_prefix_cache": true,
+  "reset_result": null,
+  "before_reset": {
+    "usage": 0.0,
+    "blocks": {
+      "used_blocks_est": 0,
+      "free_blocks_est": 12102
+    }
+  },
+  "after_reset": {
+    "usage": 0.0,
+    "blocks": {
+      "used_blocks_est": 0,
+      "free_blocks_est": 12102
+    }
+  },
+  "raw_idle": {
+    "vllm:kv_cache_usage_perc": 0.0,
+    "vllm:prefix_cache_hits_total": 0.0,
+    "vllm:prefix_cache_queries_total": 0.0,
+    "vllm:num_preemptions_total": 0.0,
+    "vllm:request_success_total": 0.0
+  },
+  "raw_before_reset": {
+    "vllm:kv_cache_usage_perc": 0.0,
+    "vllm:prefix_cache_hits_total": 8048.0,
+    "vllm:prefix_cache_queries_total": 16128.0,
+    "vllm:num_preemptions_total": 0.0,
+    "vllm:request_success_total": 2.0
+  },
+  "raw_after_reset": {
+    "vllm:kv_cache_usage_perc": 0.0,
+    "vllm:prefix_cache_hits_total": 8048.0,
+    "vllm:prefix_cache_queries_total": 16128.0,
+    "vllm:num_preemptions_total": 0.0,
+    "vllm:request_success_total": 2.0
+  },
+  "raw_after_reuse": {
+    "vllm:kv_cache_usage_perc": 0.0,
+    "vllm:prefix_cache_hits_total": 8048.0,
+    "vllm:prefix_cache_queries_total": 24192.0,
+    "vllm:num_preemptions_total": 0.0,
+    "vllm:request_success_total": 3.0
+  }
+}
