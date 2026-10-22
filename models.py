@@ -50,6 +50,13 @@ class ModelWrapper:
             # Prefix caching is a separate switch. vLLM 0.11 turns prefix caching
             # back off when prompt embeddings are enabled; that is recorded, not hidden.
             if getattr(args, "method", None) == "latent_mas":
+                engine_extra = {}
+                if getattr(args, "scheduler_cls", None):
+                    engine_extra["scheduler_cls"] = args.scheduler_cls
+                if getattr(args, "max_model_len", None):
+                    engine_extra["max_model_len"] = int(args.max_model_len)
+                if getattr(args, "num_gpu_blocks_override", None):
+                    engine_extra["num_gpu_blocks_override"] = int(args.num_gpu_blocks_override)
                 self.vllm_engine = LLM(
                     model=model_name,
                     tensor_parallel_size=tp_size,
@@ -57,6 +64,7 @@ class ModelWrapper:
                     enable_prefix_caching=bool(getattr(args, "enable_prefix_caching", False)),
                     enable_prompt_embeds=True,
                     disable_log_stats=False,
+                    **engine_extra,
                 )
             else:
                 self.vllm_engine = LLM(model=model_name, tensor_parallel_size=tp_size, gpu_memory_utilization=gpu_util)
