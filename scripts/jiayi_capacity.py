@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import threading
 import time
 
@@ -105,7 +106,10 @@ def load_llm(args):
     extra = {}
     if args.scheduler != "default":
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        # The engine core is a child process and imports the scheduler by name.
+        # The engine core is a child process (forked or spawned) and imports the
+        # scheduler by name, so the repo root must be importable either way.
+        if root not in sys.path:
+            sys.path.insert(0, root)
         os.environ["PYTHONPATH"] = root + os.pathsep + os.environ.get("PYTHONPATH", "")
         os.environ["TAIL_PREEMPT_MODE"] = args.scheduler
         os.environ["TAIL_PREEMPT_LOG"] = os.path.join(args.out, "events.jsonl")
