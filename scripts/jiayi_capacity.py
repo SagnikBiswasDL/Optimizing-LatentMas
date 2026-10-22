@@ -102,6 +102,16 @@ def make_ids(tokenizer, length, salt):
 
 def load_llm(args):
     from vllm import LLM
+    extra = {}
+    if args.scheduler != "default":
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        # The engine core is a child process and imports the scheduler by name.
+        os.environ["PYTHONPATH"] = root + os.pathsep + os.environ.get("PYTHONPATH", "")
+        os.environ["TAIL_PREEMPT_MODE"] = args.scheduler
+        os.environ["TAIL_PREEMPT_LOG"] = os.path.join(args.out, "events.jsonl")
+        if os.path.exists(os.environ["TAIL_PREEMPT_LOG"]):
+            os.remove(os.environ["TAIL_PREEMPT_LOG"])
+        extra["scheduler_cls"] = "serving.tail_preempt_scheduler.TailPreemptScheduler"
     t0 = time.perf_counter()
     llm = LLM(
         model=args.model,
@@ -111,6 +121,7 @@ def load_llm(args):
         max_model_len=args.max_model_len,
         dtype="bfloat16",
         disable_log_stats=False,
+        **extra,
     )
     info = {
         "load_s": time.perf_counter() - t0,
@@ -227,6 +238,27 @@ def phase_reuse(args):
     print(json.dumps(summary, indent=2, default=str), flush=True)
 
 
+def event_totals(path):
+    """Preempt/resume/trim counts from serving/tail_preempt_scheduler.py, if it ran."""
+    if not os.path.exists(path):
+        return None
+    out = {"preempt": 0, "resume": 0, "pinned_blocks": 0, "trimmed_blocks": 0,
+           "recompute_tokens": 0, "hit_tokens": 0}
+    with open(path, encoding="utf-8") as handle:
+        for line in handle:
+            ev = json.loads(line)
+            if ev["event"] == "preempt":
+                out["preempt"] += 1
+                out["pinned_blocks"] += ev.get("pinned_blocks", 0)
+            elif ev["event"] == "resume":
+                out["resume"] += 1
+                out["recompute_tokens"] += ev["recompute_tokens"]
+                out["hit_tokens"] += ev["hit_tokens"]
+            elif ev["event"] == "trim":
+                out["trimmed_blocks"] += ev["blocks"]
+    return out
+
+
 def phase_pressure(args):
     from vllm import SamplingParams
     llm, info = load_llm(args)
@@ -270,6 +302,8 @@ def phase_pressure(args):
         "usage_peak": result["usage_peak"],
         "blocks_at_peak": blocks_from_usage(result["usage_peak"], num_blocks),
         "load_s": info["load_s"],
+        "scheduler": args.scheduler,
+        "events": event_totals(os.path.join(args.out, "events.jsonl")),
     }
     write(os.path.join(args.out, "pressure.json"), summary)
     print(json.dumps(summary, indent=2, default=str), flush=True)
@@ -284,6 +318,8 @@ def parse_args():
     parser.add_argument("--prefix-caching", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.45)
     parser.add_argument("--max-model-len", type=int, default=40960)
+    parser.add_argument("--scheduler", choices=["default", "stock", "tail"], default="default",
+                        help="stock/tail load serving/tail_preempt_scheduler.py; default is vLLM's own")
     parser.add_argument("--out", required=True)
     return parser.parse_args()
 
