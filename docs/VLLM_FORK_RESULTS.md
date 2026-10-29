@@ -47,8 +47,8 @@ Numbers below are filled as `/workspace/fork_runs/*/summary.json` lands. Incompl
 | fork_tail | GSM8K | 50 | 8 |  |  |  |  |  | re-queued |
 | single | GSM8K | 50 | 1 |  |  |  |  |  | re-queued (prompt fix) |
 | hybrid | GSM8K | 30 | 1 | **1.00** | 56.1 | 5.07 | — | 191 | repaired assembly |
-| fork_stock | AIME 24+25 | 60 | 1 |  |  |  |  |  | running |
-| hf | AIME 24+25 | 60 | 1 |  |  |  |  |  | queued |
+| fork_stock | AIME 24+25 | 60 | 1 | **0.383** | 86.8 | 93.8 | 94.9 | 4453 | 23/60; many hit 8192-tok cap (~94s) |
+| hf | AIME 24+25 | 60 | 1 |  |  |  |  |  | running |
 
 **Primary takeaway (GSM8K n=50, greedy, Qwen3-14B, C=1):** unified fork matches HF accuracy (0.98) with **2.3× lower p50 latency** (5.77s vs 13.26s) and **3.6× higher decode tok/s** (86.4 vs 24.3). Wall clock 350s vs 752s.
 
