@@ -65,6 +65,14 @@ Paired Δ accuracy = **−15.0 pp**, bootstrap 95% CI **[−26.7, −5.0] pp** (
 
 Stock vs tail at C=8 are within noise here (pool not stressed). Throughput scales with concurrency as expected for continuous batching.
 
+### MATH-500 n=50, fork_stock, C=1, max_new=2048
+
+| Acc | tok/s | p50 s | wall s |
+|---:|---:|---:|---:|
+| 0.46 (23/50) | 86.0 | 11.3 | 686 |
+
+HF MATH-500 arm not run in this pass (time). Number is a fork baseline only.
+
 ## What we are not claiming
 
 - Bit-identical greedy Judger text vs HF across attention backends.
