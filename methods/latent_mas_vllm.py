@@ -80,6 +80,8 @@ class LatentMASVLLMMethod:
             "enable_prompt_embeds": True,
             "enforce_eager": True,
             "disable_log_stats": False,
+            # Latent embeds are not hashable as token-id prefixes.
+            "enable_prefix_caching": False,
         }
         # Prefer async scheduling off when the installed EngineArgs supports it.
         from vllm.engine.arg_utils import EngineArgs
