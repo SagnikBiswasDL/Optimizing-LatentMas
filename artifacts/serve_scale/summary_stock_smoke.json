@@ -1,0 +1,125 @@
+{
+  "load": {
+    "load_s": 81.18615620801575,
+    "mode": "stock",
+    "enable_prefix_caching": true,
+    "num_gpu_blocks": 400,
+    "block_size": 16,
+    "max_model_len": 4096,
+    "scheduler_cls": "serving.tail_preempt_scheduler.TailPreemptScheduler",
+    "args": {
+      "mode": "stock",
+      "concurrency": "8,16,32,60",
+      "model": "Qwen/Qwen3-14B",
+      "latent_steps": 10,
+      "max_new_tokens": 20000,
+      "max_model_len": 4096,
+      "gpu_memory_utilization": 0.45,
+      "temperature": 0.6,
+      "top_p": 0.95,
+      "top_k": 20,
+      "seed": 42,
+      "limit": 6,
+      "level_timeout_s": 0,
+      "embeds": "",
+      "smoke": true,
+      "num_gpu_blocks_override": 400,
+      "out": "/root/serve_scale"
+    },
+    "vllm": "0.11.1"
+  },
+  "levels": [
+    {
+      "mode": "stock",
+      "concurrency": 6,
+      "n": 6,
+      "n_finished": 6,
+      "aborted": false,
+      "wall_s": 18.4898202419281,
+      "requests_per_hour": 1168.2103837342431,
+      "output_tokens": 6144,
+      "output_tok_per_s": 332.29095359551803,
+      "latency_p50_s": 10.58840012550354,
+      "latency_p95_s": 18.485839128494263,
+      "latency_mean_s": 13.239959478378296,
+      "ttft_p50_s": 0.2433943748474121,
+      "accuracy": 0.0,
+      "hit_cap": 6,
+      "preemptions": 3.0,
+      "kv_usage_peak": 0.9649122807017544,
+      "t_start": 1792630659.3201966,
+      "t_end": 1792630677.8100169,
+      "samples": [
+        {
+          "t": 0.07875823974609375,
+          "kv_usage": 0.16040100250626566,
+          "preemptions": 0.0,
+          "running": 6
+        },
+        {
+          "t": 2.0847244262695312,
+          "kv_usage": 0.9649122807017544,
+          "preemptions": 0.0,
+          "running": 6
+        },
+        {
+          "t": 4.091935873031616,
+          "kv_usage": 0.9323308270676691,
+          "preemptions": 0.0,
+          "running": 6
+        },
+        {
+          "t": 6.097729921340942,
+          "kv_usage": 0.8897243107769424,
+          "preemptions": 0.0,
+          "running": 6
+        },
+        {
+          "t": 8.100949048995972,
+          "kv_usage": 0.7769423558897244,
+          "preemptions": 0.0,
+          "running": 6
+        },
+        {
+          "t": 10.106059312820435,
+          "kv_usage": 0.8696741854636592,
+          "preemptions": 0.0,
+          "running": 6
+        },
+        {
+          "t": 12.115183353424072,
+          "kv_usage": 0.6967418546365916,
+          "preemptions": 3.0,
+          "running": 3
+        },
+        {
+          "t": 14.119062423706055,
+          "kv_usage": 0.4987468671679198,
+          "preemptions": 3.0,
+          "running": 2
+        },
+        {
+          "t": 16.12134051322937,
+          "kv_usage": 0.29323308270676696,
+          "preemptions": 3.0,
+          "running": 1
+        },
+        {
+          "t": 18.12788987159729,
+          "kv_usage": 0.3258145363408521,
+          "preemptions": 3.0,
+          "running": 1
+        }
+      ],
+      "events": {
+        "preempt": 3,
+        "resume": 3,
+        "trim_events": 0,
+        "trimmed_blocks": 0,
+        "recompute_tokens": 3197,
+        "hit_tokens": 896,
+        "pinned_blocks_at_preempt": 0
+      }
+    }
+  ]
+}

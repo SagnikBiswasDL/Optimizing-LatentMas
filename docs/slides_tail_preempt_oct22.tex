@@ -1,0 +1,166 @@
+% !TEX TS-program = pdflatex
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage{booktabs}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\title{Free the tail, keep the head}
+\subtitle{Tail-only preemption in vLLM $\cdot$ Qwen3-14B $\cdot$ one H200 $\cdot$ vLLM 0.11.1}
+\author{Sagnik Biswas}
+\date{22 October 2026}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{The bug: 7 minutes becomes 31}
+
+Pool at 45\% memory: \textbf{29.5 GiB} (12{,}100 blocks of 16 tokens).
+Each request: 8{,}064-token prompt, forced to 32{,}768 output tokens. Caching off.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+run & KV needed & preemptions & time \\
+\midrule
+4 requests & 24.9 GiB & 0 & 7.1 min \\
+5 requests & 31.2 GiB & 807 & 30.7 min \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The fifth request overflows the pool by 1.7 GiB, about 6\%.
+Stock vLLM answers by throwing away a \emph{whole} request and recomputing it, over and over.
+
+\end{frame}
+
+\begin{frame}{What stock vLLM does on preemption}
+
+\begin{itemize}
+  \item Free \emph{every} KV block of the victim.
+  \item Set its progress to zero and put it back in the queue.
+  \item On resume, prefill the prompt and everything it has generated so far.
+\end{itemize}
+
+\vspace{0.5em}
+The pool was short by a few hundred blocks. The victim held thousands.
+Most of what gets freed did not need to be freed.
+
+\end{frame}
+
+\begin{frame}{The patch: a scheduler subclass}
+
+\texttt{serving/tail\_preempt\_scheduler.py}, passed in through \texttt{scheduler\_cls}. No vLLM fork.
+
+\begin{itemize}
+  \item On preemption, keep the victim's head blocks pinned. Free nothing yet.
+  \item When someone needs memory, trim the pinned blocks one at a time from the \emph{tail} of the lowest-priority victim.
+  \item On resume, hand the surviving head back. Recompute only the trimmed tail.
+  \item Wait to resume until the request's remaining blocks fit, so it is not preempted again right away.
+  \item Fall back to stock behavior when something is unsupported (spec decode, KV connectors, multiple KV groups, async scheduling).
+\end{itemize}
+
+Works with prefix caching on or off.
+
+\end{frame}
+
+\begin{frame}{Five requests, same pod}
+
+\begin{center}
+\begin{tabular}{llrrr}
+\toprule
+caching & scheduler & preemptions & recomputed & time \\
+\midrule
+off & stock & 815 & 31.5M & 30.2 min \\
+off & \textbf{tail} & \textbf{1} & \textbf{8.4k} & \textbf{8.0 min} \\
+on & stock & 1 & 8.4k & 8.0 min \\
+on & tail & 1 & 8.4k & 8.0 min \\
+\midrule
+\multicolumn{2}{l}{earlier: 4 requests, no pressure} & 0 & 0 & 7.1 min \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Every arm reached all 32{,}768 tokens. With caching off, tail is \textbf{3.8$\times$ faster} and recomputes 3{,}700$\times$ fewer tokens.
+With caching on, stock and tail are identical: same one preemption, same 528 blocks recomputed.
+
+\end{frame}
+
+\begin{frame}{Inside the tail run}
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+event & count \\
+\midrule
+preemptions & 1 \\
+blocks pinned at preemption & 2{,}419 \\
+blocks actually trimmed & 528 \\
+tokens reused on resume & 30{,}256 \\
+tokens recomputed & 8{,}449 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The pool needed 528 blocks. Tail freed 528 blocks, not 2{,}419.
+Stock freed whole requests 815 times and recomputed 31.5M tokens.
+
+\end{frame}
+
+\begin{frame}{The honest caveat}
+
+Prefix caching is on by default in vLLM, and it already rescues this case:
+stock with caching on took \textbf{478 s with 1 preemption}, the same as tail.
+
+\begin{itemize}
+  \item Freed blocks keep their hashes, and the free queue evicts the tail first.
+    So stock plus caching recovers most of the head on its own.
+  \item The 31-minute behavior needs caching off.
+  \item What tail adds: the same recovery \emph{without} relying on prefix caching.
+    That matters where caching is off or does not apply (prompt embeddings on vLLM 0.11.0, multimodal inputs, per-request salts).
+\end{itemize}
+
+With caching on, tail adds nothing: stock already recovers exactly the same head.
+
+\end{frame}
+
+\begin{frame}{LatentMAS on AIME: no gain}
+
+60 AIME 2024+2025 problems, up to 20k output tokens, the Judger served through vLLM.
+
+\begin{center}
+\begin{tabular}{rlrrr}
+\toprule
+concurrency & scheduler & output tok/s & preemptions & recompute tokens \\
+\midrule
+16 & stock & 844 & 0 & 0 \\
+16 & tail & 874 & 0 & 0 \\
+32 & stock & 1033 & 35 & 94k \\
+32 & tail & 999 & 62 & 149k \\
+60 & stock & 996 & 54 & 240k \\
+60 & tail & 1002 & 51 & 208k \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Differences are inside the 3.5\% noise floor. Recompute is a cheap prefill here, at most about 4\% of time.
+
+\end{frame}
+
+\begin{frame}{Takeaways}
+
+\begin{itemize}
+  \item Under real overflow with caching off, tail preemption turns 815 preemptions and 30.2 min into 1 preemption and 8.0 min.
+  \item With caching on, stock gets exactly the same result. Tail only helps where caching is off or does not apply.
+  \item On LatentMAS AIME serving, recompute is too cheap for either scheduler to matter.
+  \item Next: workloads where recompute is expensive and caching does not help,
+    such as long contexts, many victims at once, or caching off by design.
+\end{itemize}
+
+\end{frame}
+
+\end{document}

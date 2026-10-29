@@ -1,0 +1,97 @@
+% !TEX TS-program = pdflatex
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage{booktabs}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\title{A shorter prefix helps only when the pool is full}
+\subtitle{Qwen3-14B $\cdot$ one H200 $\cdot$ vLLM 0.11.1 $\cdot$ bf16}
+\author{Sagnik Biswas}
+\date{15 October 2026}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Three checks}
+
+Same model, same GPU. Pool: \textbf{29.5 GiB} (12{,}102 blocks).
+One 32k decode is \textbf{5.0 GiB}. One block is 2.5 MiB.
+
+\begin{itemize}
+  \item Clear the cache and the same prompt is computed again. Send it once more and the saved result is used.
+  \item A shorter prompt uses less GPU memory while those 32k tokens are generated.
+  \item Five long prompts do not fit. vLLM throws a running request out and starts it over. Five short prompts fit, so that does not happen.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Caching behaves}
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+probe & cached / prompt & \\
+\midrule
+cold & 0 / 525 & miss \\
+identical replay & 512 / 525 & hit \\
+one block changed & 256 / 525 & suffix misses \\
+different question & 64 / 617 & shared prefix only \\
+after cache clear & 0 / 525 & cleared \\
+replay after clear & 512 / 525 & hit again \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+8{,}064-token prompt: 8{,}048 cached on replay, 0 after the clear.
+
+\end{frame}
+
+\begin{frame}{A 77-token cut does nothing}
+
+525 vs 448 tokens, about 12 MiB. Caching off. Every request wrote 5 GiB.
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+requests & full & short & preemptions \\
+\midrule
+1 & 324 s & 324 s & 0, 0 \\
+2 & 344 s & 344 s & 0, 0 \\
+4 & 389 s & 388 s & 0, 0 \\
+6 & 955 s & 920 s & 518, 479 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Both arms finish at 6. The short arm ran second, so the 35 s is partly a warm engine.
+
+\end{frame}
+
+\begin{frame}{6.2 GiB vs 5.2 GiB per job, caching off}
+
+Long prompt: 6.2 GiB per request. Five are 31.2 GiB, over the 29.5 GiB pool.
+Short prompt: 5.2 GiB. Five are 25.8 GiB, inside it.
+
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+run & used & free & preemptions & time \\
+\midrule
+4 $\times$ long & 24.9 GiB & 4.6 GiB & 0 & 7.1 min \\
+4 $\times$ short & 20.6 GiB & 8.9 GiB & 0 & 6.5 min \\
+5 $\times$ long & 29.5 GiB & 42 MiB & 807 & 30.7 min \\
+5 $\times$ short & 25.8 GiB & 3.8 GiB & 0 & 6.9 min \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The 4-request gap is 4.3 GiB. The shorter prefix predicts 4.3 GiB.
+
+\end{frame}
+
+\end{document}

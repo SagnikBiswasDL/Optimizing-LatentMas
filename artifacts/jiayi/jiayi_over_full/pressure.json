@@ -1,0 +1,37 @@
+{
+  "question": "full versus evicted prefix during 32768-token decode",
+  "arm": "full",
+  "prefix_tokens": 8064,
+  "prefix_blocks": 504,
+  "dropped_tokens": 0,
+  "concurrency": 5,
+  "prefix_caching": false,
+  "num_gpu_blocks": 12102,
+  "block_size": 16,
+  "kv_blocks_if_resident": 2552,
+  "output_tokens": [
+    32768,
+    32768,
+    32768,
+    32768,
+    32768
+  ],
+  "all_reached_32768": true,
+  "num_cached_tokens": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "e2e_s": 1844.6294333152473,
+  "preemptions": 807.0,
+  "usage_before": 0.0,
+  "usage_after": 0.0,
+  "usage_peak": 0.9985951574250062,
+  "blocks_at_peak": {
+    "used_blocks_est": 12085,
+    "free_blocks_est": 17
+  },
+  "load_s": 27.66293830052018
+}
