@@ -1,0 +1,29 @@
+{
+  "load_s": 54.62592881702585,
+  "mode": "tail",
+  "enable_prefix_caching": true,
+  "num_gpu_blocks": 12100,
+  "block_size": 16,
+  "max_model_len": 24576,
+  "scheduler_cls": "serving.tail_preempt_scheduler.TailPreemptScheduler",
+  "args": {
+    "mode": "tail",
+    "concurrency": "16,32,60",
+    "model": "Qwen/Qwen3-14B",
+    "latent_steps": 10,
+    "max_new_tokens": 20000,
+    "max_model_len": 24576,
+    "gpu_memory_utilization": 0.45,
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "seed": 42,
+    "limit": 0,
+    "level_timeout_s": 3600.0,
+    "embeds": "/root/serve_scale/embeds.pt",
+    "smoke": false,
+    "num_gpu_blocks_override": 0,
+    "out": "/root/serve_scale"
+  },
+  "vllm": "0.11.1"
+}
