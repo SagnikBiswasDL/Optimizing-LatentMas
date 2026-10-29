@@ -144,8 +144,14 @@ def build_method(cli):
 
     use_vllm = cli.arm in ("hybrid", "single", "text_mas")
     use_second = cli.arm == "hybrid"
+    method_name = {
+        "hf": "latent_mas",
+        "hybrid": "latent_mas",
+        "single": "baseline",
+        "text_mas": "text_mas",
+    }[cli.arm]
     ns = SimpleNamespace(
-        model_name=cli.model, method=("latent_mas" if cli.arm in ("hf", "hybrid") else cli.arm),
+        model_name=cli.model, method=method_name,
         task=cli.task if cli.task != "aime" else "aime2024", prompt=cli.prompt,
         think=False, latent_steps=cli.latent_steps, planner_steps=None, critic_steps=None,
         refiner_steps=None, max_new_tokens=cli.max_new_tokens, temperature=temp, top_p=top_p,
@@ -214,22 +220,64 @@ def closed_loop(method, kind, items, concurrency: int):
             print(f"[{i+1}/{len(items)}] ok={results[i]['correct']} lat={results[i]['latency_s']:.2f}s")
         return results
 
-    # Threaded closed loop. The unified fork engine is thread-safe for generate
-    # submission via the public LLM API; HF arms should keep concurrency=1.
-    inflight = set()
-    idx = 0
-    with ThreadPoolExecutor(max_workers=concurrency) as ex:
-        while idx < len(items) or inflight:
-            while idx < len(items) and len(inflight) < concurrency:
-                fut = ex.submit(run_one, method, kind, items[idx])
-                inflight.add(fut)
-                fut._item_index = idx  # type: ignore[attr-defined]
-                idx += 1
-            done = next(as_completed(inflight))
-            inflight.remove(done)
-            i = done._item_index  # type: ignore[attr-defined]
-            results[i] = done.result()
-            print(f"[{i+1}/{len(items)}] ok={results[i]['correct']} lat={results[i]['latency_s']:.2f}s")
+    # LLM.generate is not safe to call from multiple threads against one engine
+    # (segfault / TMA errors). For C>1 on fork arms, submit waves of size C in
+    # a single generate() so the engine continuously batches them.
+    if kind == "fork" and hasattr(method, "engine"):
+        return _fork_wave_batch(method, items, concurrency)
+
+    # HF / hybrid: stay serial (second model + engine are not multi-thread safe).
+    print(f"[eval] concurrency={concurrency} ignored for kind={kind}; running serial")
+    for i, item in enumerate(items):
+        results[i] = run_one(method, kind, item)
+        print(f"[{i+1}/{len(items)}] ok={results[i]['correct']} lat={results[i]['latency_s']:.2f}s")
+    return results
+
+
+def _fork_wave_batch(method, items, concurrency: int):
+    """Submit waves of up to ``concurrency`` LatentMAS requests per generate()."""
+    results = [None] * len(items)
+    for start in range(0, len(items), concurrency):
+        batch_items = items[start : start + concurrency]
+        prompts, params_list, internals = [], [], []
+        for item in batch_items:
+            prompt, sp, n_int = method._build_request(item)
+            prompts.append(prompt)
+            params_list.append(sp)
+            internals.append(n_int)
+        t0 = time.perf_counter()
+        outputs = method.engine.generate(prompts, params_list)
+        wall = time.perf_counter() - t0
+        per = wall / max(1, len(batch_items))
+        for j, (item, out, n_int) in enumerate(zip(batch_items, outputs, internals)):
+            completion = out.outputs[0]
+            all_ids = list(completion.token_ids)
+            decode_ids = all_ids[n_int:] if n_int < len(all_ids) else []
+            text = method.tokenizer.decode(decode_ids, skip_special_tokens=True).strip()
+            if not text and completion.text:
+                text = completion.text.strip()
+            from utils import extract_gsm8k_answer, normalize_answer
+            pred = normalize_answer(extract_gsm8k_answer(text))
+            gold = item.get("gold", "")
+            try:
+                ok = int(pred) == int(str(gold).strip()) if pred else False
+            except ValueError:
+                ok = (pred == gold) if (pred and gold) else False
+            row = {
+                "question": item.get("question", "")[:200],
+                "gold": gold,
+                "prediction": pred,
+                "correct": bool(ok),
+                "latency_s": per,
+                "output_tokens": len(decode_ids),
+                "stats": {"wave_wall_s": wall, "wave_size": len(batch_items)},
+                "output_head": text[:200],
+            }
+            results[start + j] = row
+            print(
+                f"[{start + j + 1}/{len(items)}] ok={row['correct']} "
+                f"wave_lat~{per:.2f}s wave_wall={wall:.2f}s"
+            )
     return results
 
 

@@ -78,13 +78,33 @@ We report early-step cosine, not fake bit-identity across attention backends.
 
 \end{frame}
 
+\begin{frame}{First head-to-head number}
+
+GSM8K, $n{=}50$, greedy, Qwen3-14B, concurrency 1, $K{=}10$, max new tokens 2048.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+arm & accuracy & p50 latency & tok/s \\
+\midrule
+HF-only LatentMAS (paper) & 0.98 & 13.3 s & 24.3 \\
+\textbf{unified vLLM fork} & \textbf{0.98} & \textbf{5.8 s} & \textbf{86.4} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+Same 49/50 items correct. Fork wall clock 350 s vs HF 752 s.
+Single-model and concurrency sweeps are in the results doc as they finish.
+
+\end{frame}
+
 \begin{frame}{Status on the pod}
 
 \begin{itemize}
-  \item Fork and hybrid method are landed and smoke-tested on H200.
-  \item Correctness + preemption checks written under \texttt{tests/}.
-  \item Eval queue running under \texttt{/workspace/fork\_runs/} (tmux \texttt{fork\_eval}).
-  \item Tables in \texttt{docs/VLLM\_FORK\_RESULTS.md} fill as \texttt{summary.json} files appear.
+  \item Fork and hybrid method landed; correctness + forced preemption pass.
+  \item Eval queue under \texttt{/workspace/fork\_runs/} (tmux \texttt{fork\_eval}).
+  \item Concurrency $>$1 uses wave-batched \texttt{generate} (threaded generate is unsafe).
 \end{itemize}
 
 \end{frame}

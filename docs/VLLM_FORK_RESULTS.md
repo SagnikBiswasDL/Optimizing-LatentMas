@@ -39,22 +39,26 @@ Numbers below are filled as `/workspace/fork_runs/*/summary.json` lands. Incompl
 
 ### Greedy, Qwen3-14B
 
-| Arm | Task | n | C | Acc | tok/s | p50 s | p95 s | notes |
-|---|---|---:|---:|---:|---:|---:|---:|---|
-| fork_stock | GSM8K | 50 | 1 |  |  |  |  | |
-| hf | GSM8K | 50 | 1 |  |  |  |  | paper path |
-| fork_stock | GSM8K | 50 | 8 |  |  |  |  | |
-| fork_tail | GSM8K | 50 | 8 |  |  |  |  | |
-| single | GSM8K | 50 | 8 |  |  |  |  | must report |
-| hybrid | GSM8K | 30 | 1 |  |  |  |  | repaired assembly |
-| fork_stock | AIME 24+25 | 60 | 1 |  |  |  |  | |
-| hf | AIME 24+25 | 60 | 1 |  |  |  |  | |
+| Arm | Task | n | C | Acc | tok/s | p50 s | p95 s | wall s | notes |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| fork_stock | GSM8K | 50 | 1 | **0.98** | 86.4 | 5.77 | 15.1 | 350 | max_new=2048 |
+| hf | GSM8K | 50 | 1 | **0.98** | 24.3 | 13.26 | — | 752 | paper path; same 49/50 |
+| fork_stock | GSM8K | 50 | 8 |  |  |  |  |  | re-queued (thread-safe wave batch) |
+| fork_tail | GSM8K | 50 | 8 |  |  |  |  |  | re-queued |
+| single | GSM8K | 50 | 1 |  |  |  |  |  | re-queued (prompt fix) |
+| hybrid | GSM8K | 30 | 1 | **1.00** | 56.1 | 5.07 | — | 191 | repaired assembly |
+| fork_stock | AIME 24+25 | 60 | 1 |  |  |  |  |  | running |
+| hf | AIME 24+25 | 60 | 1 |  |  |  |  |  | queued |
+
+**Primary takeaway (GSM8K n=50, greedy, Qwen3-14B, C=1):** unified fork matches HF accuracy (0.98) with **2.3× lower p50 latency** (5.77s vs 13.26s) and **3.6× higher decode tok/s** (86.4 vs 24.3). Wall clock 350s vs 752s.
+
+Concurrency>1 initially segfaulted because threaded `LLM.generate` is unsafe; the harness now submits waves of size C in one `generate()` call.
 
 ### Sanity (Qwen3-4B)
 
-| Arm | Task | n | C | Acc | wall s | notes |
-|---|---|---:|---:|---:|---:|---|
-| fork_stock | GSM8K | 20 | 1 |  |  | first queue job |
+| Arm | Task | n | C | Acc | tok/s | p50 s | wall s | notes |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| fork_stock | GSM8K | 20 | 1 | 0.40 | 88.3 | 5.69 | 102 | max_new=512 truncates thinking |
 
 ## Related work (short)
 
