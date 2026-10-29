@@ -44,24 +44,15 @@
 
 \begin{frame}{Correctness vs Hugging Face}
 
-Qwen3-4B, GSM8K, greedy, $K{=}4$ latent steps per upstream agent.
+\begin{itemize}
+  \item Prompt token ids match; forced preemption replays stored latent embeds.
+  \item First latent of each agent: cosine $\approx 0.999$ (role-prompt splice OK).
+  \item All $3K$ steps: recurrent feedback amplifies attention-kernel noise.
+\end{itemize}
 
-\begin{center}
-\begin{tabular}{lr}
-\toprule
-check & result \\
-\midrule
-prompt token ids & exact match \\
-first latent cosine (5 items) & $\ge 0.9997$ \\
-Judger text prefix (80 chars) & match on 5/5 \\
-forced preemption + recompute & latents + prefix hold \\
-full greedy answer & can drift (SDPA vs FlashAttention) \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\vspace{0.5em}
-We report early-step cosine, not fake bit-identity across attention backends.
+\vspace{0.3em}
+\textbf{14B AIME control} (min cosine over 30 steps, item 0): HF sdpa vs eager $0.81$; HF vs fork $0.82$.
+Fork drift is inside the HF kernel-drift envelope --- not a separate realign/RoPE bug.
 
 \end{frame}
 
@@ -117,16 +108,41 @@ unified fork & 0.38 (23/60) & 94 s & 86.8 \\
 
 \vspace{0.5em}
 Fork wall $1.99\times$ lower, but paired accuracy $\Delta {=} {-15}$ pp, CI $[-27,-5]$.
-Many fork items hit the 8192-token Judger cap. Do not claim an AIME accuracy win.
+\textbf{34/60} fork items hit the 8192 Judger length cap (HF: 0/60, max $\approx 6474$).
+Do not claim an AIME accuracy win.
 
 \end{frame}
 
-\begin{frame}{Status on the pod}
+\begin{frame}{Concurrency (wave-batched)}
+
+Threaded concurrent \texttt{generate} segfaults (TMA). One wave per \texttt{generate} is stable.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+arm & $C$ & tok/s & p50 s \\
+\midrule
+fork\_stock & 1 & 86 & 5.8 \\
+fork\_stock & 8 & 275 & 2.7 \\
+fork\_stock & 32 & 776 & 0.68 \\
+fork\_stock & 60 & 1146 & 0.51 \\
+fork\_tail & 32 & 769 & 0.69 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+Tail vs stock within noise when the KV pool is not overflowing. Accuracy stays $\approx 0.98$ on GSM8K.
+
+\end{frame}
+
+\begin{frame}{Takeaways}
 
 \begin{itemize}
-  \item Fork and hybrid method landed; correctness + forced preemption pass.
-  \item Eval queue under \texttt{/workspace/fork\_runs/} (tmux \texttt{fork\_eval}).
-  \item Concurrency $>$1 uses wave-batched \texttt{generate} (threaded generate is unsafe).
+  \item One engine removes the hybrid handoff; GSM8K matches HF accuracy at $\sim 2\times$ lower p50.
+  \item Single-model vLLM is reported (0.98 acc, 6.5 s p50, 68 tok/s) --- not hidden.
+  \item AIME: speed win, accuracy loss under the same length budget; length caps dominate.
+  \item Per-step latents match HF within normal SDPA/eager kernel drift on 14B.
 \end{itemize}
 
 \end{frame}
