@@ -1,0 +1,3 @@
+{"t": 1792690939.3335464, "event": "init", "mode": "stock", "num_gpu_blocks": 12100, "block_size": 16, "prefix_caching": true, "fallback_reasons": []}
+{"t": 1792691359.4481924, "event": "preempt", "req": "4", "mode": "stock", "num_tokens": 38705, "num_computed_tokens": 38704, "pinned_blocks": 0, "free_before": 0, "free_after": 2419}
+{"t": 1792691394.3813388, "event": "resume", "req": "4", "mode": "stock", "num_tokens": 38705, "hit_tokens": 30256, "recompute_tokens": 8449, "num_preemptions": 1}

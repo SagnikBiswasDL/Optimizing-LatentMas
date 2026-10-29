@@ -1,0 +1,7 @@
+{"t": 1792630646.460871, "event": "init", "mode": "stock", "num_gpu_blocks": 400, "block_size": 16, "fallback_reasons": []}
+{"t": 1792630661.7372382, "event": "preempt", "req": "stock-c6-aime2024-5", "mode": "stock", "num_tokens": 1309, "num_computed_tokens": 1308, "pinned_blocks": 0, "free_before": 0, "free_after": 78}
+{"t": 1792630664.3300493, "event": "preempt", "req": "stock-c6-aime2024-4", "mode": "stock", "num_tokens": 1216, "num_computed_tokens": 1215, "pinned_blocks": 0, "free_before": 0, "free_after": 72}
+{"t": 1792630667.201631, "event": "preempt", "req": "stock-c6-aime2024-3", "mode": "stock", "num_tokens": 1568, "num_computed_tokens": 1567, "pinned_blocks": 0, "free_before": 0, "free_after": 94}
+{"t": 1792630669.8251069, "event": "resume", "req": "stock-c6-aime2024-3", "mode": "stock", "num_tokens": 1568, "hit_tokens": 768, "recompute_tokens": 800, "num_preemptions": 1}
+{"t": 1792630669.8253543, "event": "resume", "req": "stock-c6-aime2024-4", "mode": "stock", "num_tokens": 1216, "hit_tokens": 64, "recompute_tokens": 1152, "num_preemptions": 1}
+{"t": 1792630669.9082592, "event": "resume", "req": "stock-c6-aime2024-5", "mode": "stock", "num_tokens": 1309, "hit_tokens": 64, "recompute_tokens": 1245, "num_preemptions": 1}
