@@ -46,7 +46,7 @@ Now, output your refined plan below:
 """
     
     elif role == "judger":
-        if args.task in ['gsm8k', 'aime2024', 'aime2025', 'math']:
+        if args.task in ['gsm8k', 'aime2024', 'aime2025', 'math', 'math500']:
             user_prompt = f"""
 Target Question: {question}
 

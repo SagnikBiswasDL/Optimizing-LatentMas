@@ -120,7 +120,8 @@ def build_method(cli):
     if cli.arm in ("fork_stock", "fork_tail"):
         from methods.latent_mas_vllm import LatentMASVLLMMethod
         ns = SimpleNamespace(
-            model_name=cli.model, task=cli.task if cli.task != "aime" else "aime2024",
+            model_name=cli.model,
+            task=("aime2024" if cli.task == "aime" else ("math" if cli.task == "math500" else cli.task)),
             prompt=cli.prompt, think=False, latent_space_realign=False,
             latent_steps=cli.latent_steps, planner_steps=None, critic_steps=None,
             refiner_steps=None, agents=None, device="cuda",
