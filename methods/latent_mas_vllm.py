@@ -234,8 +234,12 @@ class LatentMASVLLMMethod:
             gold = item.get("gold", "")
             if self.task in ("aime2024", "aime2025"):
                 try:
-                    ok = int(pred) == int(str(gold).strip())
-                except ValueError:
+                    ok = (
+                        pred is not None
+                        and str(pred).strip() != ""
+                        and int(pred) == int(str(gold).strip())
+                    )
+                except (TypeError, ValueError):
                     ok = False
             else:
                 ok = (pred == gold) if (pred and gold) else False
