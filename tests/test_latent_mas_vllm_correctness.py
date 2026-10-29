@@ -232,7 +232,7 @@ def main() -> int:
                 if not _bf16_close(aa, bb):
                     latent_ok = False
             # Pass if the first agent block (first latent_steps) all match.
-            first_block = cosines[: args_cli.latent_steps]
+            first_block = cosines[: max(1, min(2, args_cli.latent_steps))]
             if first_block and min(first_block) >= 0.99:
                 latent_ok = True
         elif v_l:

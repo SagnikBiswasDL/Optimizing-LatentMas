@@ -1,0 +1,92 @@
+% !TEX TS-program = pdflatex
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage{booktabs}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\title{One engine for LatentMAS}
+\subtitle{vLLM fork $\cdot$ latent steps + Judger decode $\cdot$ Qwen3 $\cdot$ one H200}
+\author{Sagnik Biswas}
+\date{29 October 2026}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{The gap}
+
+\begin{itemize}
+  \item Paper numbers use the \textbf{Hugging Face} LatentMAS path.
+  \item Authors' ``vLLM support'' still runs latent agents on a second HF copy, then hands off via \texttt{prompt\_embeds} and a re-prefill.
+  \item That handoff drops the in-engine KV and blocks the Judger on a CPU/GPU transfer.
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Contribution:} a vLLM 0.11.1 fork where Planner / Critic / Refiner latent steps and Judger decode share one request and one KV.
+
+\end{frame}
+
+\begin{frame}{What the fork does}
+
+\begin{itemize}
+  \item Flag a request with a phase schedule: latent $\rightarrow$ role tokens $\rightarrow$ \ldots $\rightarrow$ decode.
+  \item Latent step: next input is \texttt{realign(last\_hidden)} written into \texttt{inputs\_embeds}, not a sampled token embedding.
+  \item Role prompts append as ordinary tokens on the \emph{same} request.
+  \item Latent embeddings are stored so preemption / recompute replays them.
+  \item Start with \texttt{enforce\_eager}, async scheduling off; stock or tail scheduler via \texttt{scheduler\_cls}.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Correctness vs Hugging Face}
+
+Qwen3-4B, GSM8K, greedy, $K{=}4$ latent steps per upstream agent.
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+check & result \\
+\midrule
+prompt token ids & exact match \\
+first latent cosine (5 items) & $\ge 0.9997$ \\
+Judger text prefix (80 chars) & match on 5/5 \\
+forced preemption + recompute & latents + prefix hold \\
+full greedy answer & can drift (SDPA vs FlashAttention) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+We report early-step cosine, not fake bit-identity across attention backends.
+
+\end{frame}
+
+\begin{frame}{What we measure next}
+
+\begin{itemize}
+  \item Primary: unified fork vs HF-only LatentMAS (paper setup).
+  \item Also: repaired hybrid, single-model vLLM, text-MAS vLLM.
+  \item AIME 2024{+}2025, MATH-500 ($n{=}200$), GSM8K ($n{=}200$), Qwen3-14B.
+  \item Concurrency 1/8/16/32/60 closed loop for vLLM arms.
+  \item Throughput, p50/p95 latency, accuracy with paired bootstrap CIs, memory, preemptions.
+  \item Greedy and sampled kept separate; single-model always reported.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Status on the pod}
+
+\begin{itemize}
+  \item Fork and hybrid method are landed and smoke-tested on H200.
+  \item Correctness + preemption checks written under \texttt{tests/}.
+  \item Eval queue running under \texttt{/workspace/fork\_runs/} (tmux \texttt{fork\_eval}).
+  \item Tables in \texttt{docs/VLLM\_FORK\_RESULTS.md} fill as \texttt{summary.json} files appear.
+\end{itemize}
+
+\end{frame}
+
+\end{document}
