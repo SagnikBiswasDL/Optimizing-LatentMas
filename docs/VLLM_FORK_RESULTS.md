@@ -102,13 +102,14 @@ Thread-pool concurrent `generate` segfaulted (TMA / illegal memory access). **Wa
 
 Stock vs tail are within noise when the KV pool is not overflowing. Throughput scales with concurrency as expected.
 
-### MATH-500
+### MATH-500, concurrency 1, max_new=2048
 
-| Arm | n | Acc | tok/s | p50 s | wall s |
-|---|---:|---:|---:|---:|---:|
-| fork_stock | 50 | 0.46 (23/50) | 86.0 | 11.3 | 686 |
+| Arm | n | Acc | tok/s | p50 s | p95 s | wall s |
+|---|---:|---:|---:|---:|---:|---:|
+| fork_stock | 50 | 0.46 (23/50) | 86.0 | 11.3 | 23.6 | 686 |
+| **fork_stock** | **200** | **0.510 (102/200)** | **85.2** | **12.5** | 24.2 | **2891** |
 
-HF MATH-500 and n=200 arms: see continuation queue / tables below when filled.
+HF MATH-500 n=200: running (continuation queue).
 
 ## What we are not claiming
 
