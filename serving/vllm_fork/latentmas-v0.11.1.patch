@@ -1,0 +1,793 @@
+From 63f94730568f8f2f461e542740d5485aa587cb10 Mon Sep 17 00:00:00 2001
+From: LatentMAS Agent <agent@localhost>
+Date: Thu, 29 Oct 2026 06:05:59 +0000
+Subject: [PATCH 1/2] Add LatentMAS latent-step mode to the V1 engine.
+
+For flagged requests, feed realign(last_hidden) as the next inputs_embeds,
+append agent role prompts as ordinary tokens on the same request, keep KV
+in-engine through Judger decode, and store latent embeds so preemption
+recompute replays them.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+---
+ vllm/latentmas/__init__.py         |  27 +++++
+ vllm/latentmas/constants.py        |   7 ++
+ vllm/latentmas/realign.py          | 103 ++++++++++++++++
+ vllm/latentmas/runner_hooks.py     | 159 +++++++++++++++++++++++++
+ vllm/latentmas/state.py            | 181 +++++++++++++++++++++++++++++
+ vllm/v1/core/sched/utils.py        |  18 ++-
+ vllm/v1/request.py                 |   7 ++
+ vllm/v1/worker/gpu_input_batch.py  |   3 +
+ vllm/v1/worker/gpu_model_runner.py |  74 +++++++++++-
+ 9 files changed, 575 insertions(+), 4 deletions(-)
+ create mode 100644 vllm/latentmas/__init__.py
+ create mode 100644 vllm/latentmas/constants.py
+ create mode 100644 vllm/latentmas/realign.py
+ create mode 100644 vllm/latentmas/runner_hooks.py
+ create mode 100644 vllm/latentmas/state.py
+
+diff --git a/vllm/latentmas/__init__.py b/vllm/latentmas/__init__.py
+new file mode 100644
+index 000000000..90be64ad3
+--- /dev/null
++++ b/vllm/latentmas/__init__.py
+@@ -0,0 +1,27 @@
++# SPDX-License-Identifier: Apache-2.0
++"""LatentMAS single-engine support for the vLLM fork.
++
++Latent-step requests feed realign(last_hidden) as the next inputs_embeds
++instead of a sampled token embedding, keep KV in-engine across agent role
++prompts, then decode the Judger normally.
++"""
++
++from vllm.latentmas.constants import LATENT_PLACEHOLDER_TOKEN_ID
++from vllm.latentmas.realign import (
++    apply_latent_realignment,
++    build_latent_realign_matrix,
++)
++from vllm.latentmas.state import (
++    LatentMASPhase,
++    LatentMASRequestState,
++    latent_mas_from_extra_args,
++)
++
++__all__ = [
++    "LATENT_PLACEHOLDER_TOKEN_ID",
++    "LatentMASPhase",
++    "LatentMASRequestState",
++    "apply_latent_realignment",
++    "build_latent_realign_matrix",
++    "latent_mas_from_extra_args",
++]
+diff --git a/vllm/latentmas/constants.py b/vllm/latentmas/constants.py
+new file mode 100644
+index 000000000..7072ca236
+--- /dev/null
++++ b/vllm/latentmas/constants.py
+@@ -0,0 +1,7 @@
++# SPDX-License-Identifier: Apache-2.0
++"""Constants for LatentMAS latent-step mode."""
++
++# Placeholder token id written into the request's token stream for each latent
++# position. It is never embedded; the runner substitutes the stored realigned
++# hidden-state embedding. Filtered from user-visible Judger text by count.
++LATENT_PLACEHOLDER_TOKEN_ID = 0
+diff --git a/vllm/latentmas/realign.py b/vllm/latentmas/realign.py
+new file mode 100644
+index 000000000..59b85f350
+--- /dev/null
++++ b/vllm/latentmas/realign.py
+@@ -0,0 +1,103 @@
++# SPDX-License-Identifier: Apache-2.0
++"""Latent realignment matching LatentMAS models._apply_latent_realignment."""
++
++from __future__ import annotations
++
++import torch
++import torch.nn as nn
++
++
++def _embedding_module(model: nn.Module) -> nn.Module | None:
++    """Resolve input embedding module on HF or vLLM model wrappers."""
++    if hasattr(model, "get_input_embeddings"):
++        try:
++            emb = model.get_input_embeddings()
++            if emb is not None:
++                return emb
++        except Exception:
++            pass
++    # vLLM Qwen2/3: model.model.embed_tokens
++    inner = getattr(model, "model", None)
++    if inner is not None and hasattr(inner, "embed_tokens"):
++        return inner.embed_tokens
++    if hasattr(model, "embed_tokens"):
++        return model.embed_tokens
++    return None
++
++
++def _output_embedding_module(model: nn.Module) -> nn.Module | None:
++    if hasattr(model, "get_output_embeddings"):
++        try:
++            emb = model.get_output_embeddings()
++            if emb is not None:
++                return emb
++        except Exception:
++            pass
++    return getattr(model, "lm_head", None)
++
++
++def _weight_matrix(module: nn.Module) -> torch.Tensor:
++    if hasattr(module, "weight"):
++        return module.weight
++    # VocabParallelEmbedding / ParallelLMHead occasionally nest weight.
++    for name in ("weight", "params"):
++        if hasattr(module, name):
++            w = getattr(module, name)
++            if isinstance(w, torch.Tensor):
++                return w
++    raise RuntimeError(f"No weight tensor on embedding module {type(module)}")
++
++
++def build_latent_realign_matrix(
++    model: nn.Module,
++    device: torch.device,
++    *,
++    latent_space_realign: bool = False,
++) -> tuple[torch.Tensor, torch.Tensor]:
++    """Return (realign_matrix[H,H], target_norm) in float32 on ``device``.
++
++    When ``latent_space_realign`` is False (LatentMAS default), the solve is
++    replaced with identity but target_norm still comes from input embeddings —
++    matching models.py.
++    """
++    input_embeds = _embedding_module(model)
++    output_embeds = _output_embedding_module(model)
++    if input_embeds is None or output_embeds is None:
++        raise RuntimeError(
++            "Cannot build latent realignment matrix: embedding weights not accessible."
++        )
++
++    input_weight = _weight_matrix(input_embeds).detach().to(
++        device=device, dtype=torch.float32
++    )
++    output_weight = _weight_matrix(output_embeds).detach().to(
++        device=device, dtype=torch.float32
++    )
++    # Tied embeddings (Qwen3): identity path only needs target_norm; skip solve.
++    if not latent_space_realign:
++        hidden = input_weight.shape[1]
++        realign_matrix = torch.eye(hidden, device=device, dtype=torch.float32)
++        target_norm = input_weight.norm(dim=1).mean().detach()
++        return realign_matrix, target_norm
++
++    gram = torch.matmul(output_weight.T, output_weight)
++    reg = 1e-5 * torch.eye(gram.shape[0], device=gram.device, dtype=gram.dtype)
++    gram = gram + reg
++    rhs = torch.matmul(output_weight.T, input_weight)
++    realign_matrix = torch.linalg.solve(gram, rhs)
++    target_norm = input_weight.norm(dim=1).mean().detach()
++    return realign_matrix, target_norm
++
++
++def apply_latent_realignment(
++    hidden: torch.Tensor,
++    matrix: torch.Tensor,
++    target_norm: torch.Tensor,
++) -> torch.Tensor:
++    """Apply realign matrix and rescale to mean input-embedding norm."""
++    hidden_fp32 = hidden.to(torch.float32)
++    aligned = torch.matmul(hidden_fp32, matrix)
++    aligned_norm = aligned.norm(dim=-1, keepdim=True).clamp_min(1e-6)
++    target = target_norm.to(device=aligned.device, dtype=aligned.dtype)
++    aligned = aligned * (target / aligned_norm)
++    return aligned.to(hidden.dtype)
+diff --git a/vllm/latentmas/runner_hooks.py b/vllm/latentmas/runner_hooks.py
+new file mode 100644
+index 000000000..7f3312811
+--- /dev/null
++++ b/vllm/latentmas/runner_hooks.py
+@@ -0,0 +1,159 @@
++# SPDX-License-Identifier: Apache-2.0
++"""GPUModelRunner hooks for LatentMAS latent-step mode."""
++
++from __future__ import annotations
++
++from typing import Any
++
++import numpy as np
++import torch
++import torch.nn as nn
++
++from vllm.latentmas.realign import build_latent_realign_matrix
++from vllm.latentmas.state import (
++    LatentMASRequestState,
++    latent_mas_from_extra_args,
++    next_tokens_after_hidden,
++)
++
++
++class LatentRealignCache:
++    """Lazy per-model realignment matrix."""
++
++    def __init__(self) -> None:
++        self._matrix: torch.Tensor | None = None
++        self._target_norm: torch.Tensor | None = None
++        self._latent_space_realign: bool | None = None
++
++    def get(
++        self,
++        model: nn.Module,
++        device: torch.device,
++        *,
++        latent_space_realign: bool,
++    ) -> tuple[torch.Tensor, torch.Tensor]:
++        if (
++            self._matrix is None
++            or self._latent_space_realign != latent_space_realign
++            or self._matrix.device != device
++        ):
++            matrix, target_norm = build_latent_realign_matrix(
++                model, device, latent_space_realign=latent_space_realign
++            )
++            self._matrix = matrix
++            self._target_norm = target_norm
++            self._latent_space_realign = latent_space_realign
++        assert self._matrix is not None and self._target_norm is not None
++        return self._matrix, self._target_norm
++
++
++def attach_latent_mas_to_req_state(req_state: Any) -> None:
++    """Initialize latent_mas on CachedRequestState from sampling_params."""
++    if getattr(req_state, "latent_mas", None) is not None:
++        return
++    sp = getattr(req_state, "sampling_params", None)
++    if sp is None:
++        return
++    state = latent_mas_from_extra_args(sp.extra_args)
++    req_state.latent_mas = state
++
++
++def fill_latent_embeds_for_batch(
++    *,
++    requests: dict[str, Any],
++    req_ids: list[str],
++    req_id_to_index: dict[str, int],
++    num_scheduled_tokens: np.ndarray,
++    num_computed_tokens_cpu: np.ndarray,
++    is_token_ids_batch: np.ndarray,
++    is_token_ids_flat: torch.Tensor,
++    inputs_embeds_flat: torch.Tensor,
++) -> bool:
++    """Copy stored latent embeds into flattened CPU inputs_embeds / is_token_ids.
++
++    Must run after the normal prompt-embeds / is_token_ids gather in
++    ``_prepare_inputs``. Returns True if any latent embed was written.
++    """
++    wrote = False
++    output_idx = 0
++    for req_id in req_ids:
++        req_idx = req_id_to_index[req_id]
++        num_sched = int(num_scheduled_tokens[req_idx])
++        req_state = requests.get(req_id)
++        latent_mas: LatentMASRequestState | None = (
++            getattr(req_state, "latent_mas", None) if req_state is not None else None
++        )
++        if latent_mas is None or not latent_mas.stored_embeds or num_sched <= 0:
++            output_idx += num_sched
++            continue
++        start_pos = int(num_computed_tokens_cpu[req_idx])
++        for i in range(num_sched):
++            abs_pos = start_pos + i
++            embed = latent_mas.stored_embeds.get(abs_pos)
++            if embed is None:
++                continue
++            flat = output_idx + i
++            inputs_embeds_flat[flat].copy_(
++                embed.to(device=inputs_embeds_flat.device, dtype=inputs_embeds_flat.dtype)
++            )
++            is_token_ids_flat[flat] = False
++            is_token_ids_batch[req_idx, abs_pos] = False
++            wrote = True
++        output_idx += num_sched
++    return wrote
++
++
++def override_sampled_tokens_for_latent(
++    *,
++    model: nn.Module,
++    device: torch.device,
++    realign_cache: LatentRealignCache,
++    requests: dict[str, Any],
++    req_ids: list[str],
++    valid_sampled_token_ids: list[np.ndarray],
++    sample_hidden_states: torch.Tensor,
++    discard_req_indices: set[int],
++    num_tokens_no_spec: np.ndarray,
++) -> None:
++    """Replace sampled ids for LatentMAS requests still in internal phases.
++
++    Mutates ``valid_sampled_token_ids`` in place. Each entry may become longer
++    when an agent role prompt is injected.
++    """
++    for req_idx, req_id in enumerate(req_ids):
++        if req_idx in discard_req_indices:
++            continue
++        req_state = requests.get(req_id)
++        if req_state is None:
++            continue
++        latent_mas: LatentMASRequestState | None = getattr(req_state, "latent_mas", None)
++        if latent_mas is None:
++            continue
++        phase = latent_mas.current_phase()
++        if phase is None:
++            continue
++        # Once in decode with no further latent/token phases, keep sampler output.
++        if phase.kind == "decode" and latent_mas.in_decode:
++            continue
++
++        sampled = valid_sampled_token_ids[req_idx]
++        sampled_decode = None
++        if sampled is not None and sampled.size > 0:
++            sampled_decode = int(sampled.reshape(-1)[0])
++
++        hidden = sample_hidden_states[req_idx]
++        matrix, target_norm = realign_cache.get(
++            model,
++            device,
++            latent_space_realign=latent_mas.latent_space_realign,
++        )
++        next_abs_pos = int(num_tokens_no_spec[req_idx])
++        new_ids = next_tokens_after_hidden(
++            latent_mas,
++            hidden,
++            matrix,
++            target_norm,
++            next_abs_pos,
++            sampled_decode_token=sampled_decode,
++        )
++        valid_sampled_token_ids[req_idx] = np.asarray(new_ids, dtype=np.int64)
+diff --git a/vllm/latentmas/state.py b/vllm/latentmas/state.py
+new file mode 100644
+index 000000000..2a37531c8
+--- /dev/null
++++ b/vllm/latentmas/state.py
+@@ -0,0 +1,181 @@
++# SPDX-License-Identifier: Apache-2.0
++"""Per-request LatentMAS phase machine."""
++
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any
++
++import torch
++
++from vllm.latentmas.constants import LATENT_PLACEHOLDER_TOKEN_ID
++
++
++@dataclass
++class LatentMASPhase:
++    kind: str  # "latent" | "tokens" | "decode"
++    steps: int = 0
++    token_ids: list[int] = field(default_factory=list)
++
++
++@dataclass
++class LatentMASRequestState:
++    """Mutable schedule for one LatentMAS request inside the engine."""
++
++    phases: list[LatentMASPhase]
++    phase_idx: int = 0
++    # How many latent placeholders have been emitted in the current latent phase.
++    steps_emitted: int = 0
++    latent_space_realign: bool = False
++    return_latents: bool = False
++    # Absolute sequence positions -> realigned embedding (CPU, model dtype).
++    # Survives preemption so recompute replays embeds instead of token ids.
++    stored_embeds: dict[int, torch.Tensor] = field(default_factory=dict)
++    # Per-step latent vectors collected when return_latents=True (CPU).
++    collected_latents: list[torch.Tensor] = field(default_factory=list)
++    # True once the Judger decode phase has started (visible output).
++    in_decode: bool = False
++    # Count of output tokens that are internal (latent placeholders + role prompts).
++    num_internal_output_tokens: int = 0
++
++    def current_phase(self) -> LatentMASPhase | None:
++        if self.phase_idx >= len(self.phases):
++            return None
++        return self.phases[self.phase_idx]
++
++    def advance_phase(self) -> LatentMASPhase | None:
++        self.phase_idx += 1
++        self.steps_emitted = 0
++        phase = self.current_phase()
++        if phase is not None and phase.kind == "decode":
++            self.in_decode = True
++        return phase
++
++    @property
++    def active(self) -> bool:
++        return self.current_phase() is not None and not (
++            self.in_decode and self.current_phase().kind == "decode"
++        )
++
++    def record_internal_tokens(self, n: int) -> None:
++        self.num_internal_output_tokens += int(n)
++
++    def num_expected_internal_tokens(self) -> int:
++        n = 0
++        for p in self.phases:
++            if p.kind == "latent":
++                n += int(p.steps)
++            elif p.kind == "tokens":
++                n += len(p.token_ids)
++        return n
++
++
++def latent_mas_from_extra_args(
++    extra_args: dict[str, Any] | None,
++) -> LatentMASRequestState | None:
++    """Parse SamplingParams.extra_args['latent_mas'] into request state."""
++    if not extra_args:
++        return None
++    cfg = extra_args.get("latent_mas")
++    if not cfg:
++        return None
++    phases_raw = cfg.get("phases") or []
++    phases: list[LatentMASPhase] = []
++    for p in phases_raw:
++        phases.append(
++            LatentMASPhase(
++                kind=str(p["kind"]),
++                steps=int(p.get("steps", 0) or 0),
++                token_ids=[int(t) for t in (p.get("token_ids") or [])],
++            )
++        )
++    if not phases:
++        return None
++    return LatentMASRequestState(
++        phases=phases,
++        latent_space_realign=bool(cfg.get("latent_space_realign", False)),
++        return_latents=bool(cfg.get("return_latents", False)),
++    )
++
++
++def next_tokens_after_hidden(
++    state: LatentMASRequestState,
++    hidden: torch.Tensor,
++    matrix: torch.Tensor,
++    target_norm: torch.Tensor,
++    next_abs_pos: int,
++    *,
++    sampled_decode_token: int | None = None,
++) -> list[int]:
++    """Decide tokens to append after a forward, given last-position hidden.
++
++    ``hidden`` is the last-layer hidden at the last scheduled position for this
++    request (pre-realignment). ``next_abs_pos`` is where the next appended
++    token will land in the full sequence (``request.num_tokens`` before append).
++    """
++    from vllm.latentmas.realign import apply_latent_realignment
++
++    phase = state.current_phase()
++    if phase is None:
++        return [] if sampled_decode_token is None else [int(sampled_decode_token)]
++
++    if phase.kind == "latent":
++        if state.steps_emitted < phase.steps:
++            embed = apply_latent_realignment(hidden, matrix, target_norm)
++            # Store the embedding that will be fed at next_abs_pos.
++            state.stored_embeds[next_abs_pos] = embed.detach().to("cpu").contiguous()
++            if state.return_latents:
++                state.collected_latents.append(
++                    embed.detach().to("cpu").contiguous().float()
++                )
++            state.steps_emitted += 1
++            state.record_internal_tokens(1)
++            return [LATENT_PLACEHOLDER_TOKEN_ID]
++        # All latent steps for this phase have been emitted and the last one
++        # was just computed. Advance and handle the next phase.
++        nxt = state.advance_phase()
++        return _enter_phase(
++            state, nxt, hidden, matrix, target_norm, next_abs_pos, sampled_decode_token
++        )
++
++    if phase.kind == "tokens":
++        # Transition tokens were just computed; move on.
++        nxt = state.advance_phase()
++        return _enter_phase(
++            state, nxt, hidden, matrix, target_norm, next_abs_pos, sampled_decode_token
++        )
++
++    # decode
++    assert sampled_decode_token is not None
++    return [int(sampled_decode_token)]
++
++
++def _enter_phase(
++    state: LatentMASRequestState,
++    phase: LatentMASPhase | None,
++    hidden: torch.Tensor,
++    matrix: torch.Tensor,
++    target_norm: torch.Tensor,
++    next_abs_pos: int,
++    sampled_decode_token: int | None,
++) -> list[int]:
++    if phase is None:
++        return [] if sampled_decode_token is None else [int(sampled_decode_token)]
++    if phase.kind == "tokens":
++        ids = list(phase.token_ids)
++        state.record_internal_tokens(len(ids))
++        # Tokens themselves do not need stored embeds; leave phase as tokens
++        # until they are computed, then advance_phase runs on next after_forward.
++        return ids
++    if phase.kind == "latent":
++        return next_tokens_after_hidden(
++            state,
++            hidden,
++            matrix,
++            target_norm,
++            next_abs_pos,
++            sampled_decode_token=sampled_decode_token,
++        )
++    # decode: use the normal sample
++    assert sampled_decode_token is not None
++    return [int(sampled_decode_token)]
+diff --git a/vllm/v1/core/sched/utils.py b/vllm/v1/core/sched/utils.py
+index 82166dc97..38dc65f87 100644
+--- a/vllm/v1/core/sched/utils.py
++++ b/vllm/v1/core/sched/utils.py
+@@ -55,11 +55,25 @@ def check_stop(
+         return False
+ 
+     last_token_id = request.output_token_ids[-1]
+-    if not sampling_params.ignore_eos and last_token_id == request.eos_token_id:
++    # LatentMAS: latent placeholders + agent role prompts are internal output
++    # tokens. Do not treat EOS/stop among them as request completion.
++    latent_mas = getattr(request, "latent_mas", None)
++    in_latent_internal = False
++    if latent_mas is not None:
++        in_latent_internal = (
++            request.num_output_tokens <= latent_mas.num_expected_internal_tokens()
++        )
++    if (
++        not in_latent_internal
++        and not sampling_params.ignore_eos
++        and last_token_id == request.eos_token_id
++    ):
+         request.status = RequestStatus.FINISHED_STOPPED
+         return True
+ 
+-    if last_token_id in (sampling_params.stop_token_ids or ()):
++    if not in_latent_internal and last_token_id in (
++        sampling_params.stop_token_ids or ()
++    ):
+         request.status = RequestStatus.FINISHED_STOPPED
+         request.stop_reason = last_token_id
+         return True
+diff --git a/vllm/v1/request.py b/vllm/v1/request.py
+index 3d92906fb..fdf61c8f0 100644
+--- a/vllm/v1/request.py
++++ b/vllm/v1/request.py
+@@ -82,6 +82,13 @@ class Request:
+         else:
+             raise ValueError("sampling_params and pooling_params can't both be unset")
+ 
++        # LatentMAS single-engine schedule (optional).
++        from vllm.latentmas.state import latent_mas_from_extra_args
++
++        self.latent_mas = None
++        if sampling_params is not None:
++            self.latent_mas = latent_mas_from_extra_args(sampling_params.extra_args)
++
+         self.prompt_token_ids = prompt_token_ids
+         self.prompt_embeds = prompt_embeds
+         self.num_prompt_tokens = length_from_prompt_token_ids_or_embeds(
+diff --git a/vllm/v1/worker/gpu_input_batch.py b/vllm/v1/worker/gpu_input_batch.py
+index 7cf6afa3f..589bd6e7f 100644
+--- a/vllm/v1/worker/gpu_input_batch.py
++++ b/vllm/v1/worker/gpu_input_batch.py
+@@ -49,6 +49,9 @@ class CachedRequestState:
+     # Used when both async_scheduling and spec_decode are enabled.
+     prev_num_draft_len: int = 0
+ 
++    # LatentMAS phase machine + stored latent embeds (survives preemption).
++    latent_mas: object | None = None
++
+     def __post_init__(self):
+         self.num_prompt_tokens = length_from_prompt_token_ids_or_embeds(
+             self.prompt_token_ids, self.prompt_embeds
+diff --git a/vllm/v1/worker/gpu_model_runner.py b/vllm/v1/worker/gpu_model_runner.py
+index 0102ca473..735d5f0a3 100644
+--- a/vllm/v1/worker/gpu_model_runner.py
++++ b/vllm/v1/worker/gpu_model_runner.py
+@@ -289,6 +289,14 @@ class GPUModelRunner(
+ 
+         self.is_pooling_model = model_config.runner_type == "pooling"
+         self.enable_prompt_embeds = model_config.enable_prompt_embeds
++        # LatentMAS latent-step mode needs the inputs_embeds path.
++        self._latent_realign_cache = None
++        try:
++            from vllm.latentmas.runner_hooks import LatentRealignCache
++
++            self._latent_realign_cache = LatentRealignCache()
++        except ImportError:
++            self._latent_realign_cache = None
+         self.is_multimodal_raw_input_only_model = (
+             model_config.is_multimodal_raw_input_only_model
+         )
+@@ -747,6 +755,15 @@ class GPUModelRunner(
+                 output_token_ids=[],
+                 lora_request=new_req_data.lora_request,
+             )
++            try:
++                from vllm.latentmas.runner_hooks import attach_latent_mas_to_req_state
++
++                attach_latent_mas_to_req_state(req_state)
++                if getattr(req_state, "latent_mas", None) is not None:
++                    # Latent positions are fed as embeds; force embeds path.
++                    self.enable_prompt_embeds = True
++            except ImportError:
++                pass
+             self.requests[req_id] = req_state
+ 
+             # Only relevant for models using M-RoPE (e.g, Qwen2-VL)
+@@ -1272,6 +1289,25 @@ class GPUModelRunner(
+ 
+                 output_idx += num_sched
+ 
++        # LatentMAS: overlay stored latent embeds for scheduled positions.
++        try:
++            from vllm.latentmas.runner_hooks import fill_latent_embeds_for_batch
++
++            wrote_latent = fill_latent_embeds_for_batch(
++                requests=self.requests,
++                req_ids=list(self.input_batch.req_ids),
++                req_id_to_index=self.input_batch.req_id_to_index,
++                num_scheduled_tokens=num_scheduled_tokens,
++                num_computed_tokens_cpu=self.input_batch.num_computed_tokens_cpu,
++                is_token_ids_batch=self.input_batch.is_token_ids,
++                is_token_ids_flat=self.is_token_ids.cpu,
++                inputs_embeds_flat=self.inputs_embeds.cpu,
++            )
++            if wrote_latent:
++                self.enable_prompt_embeds = True
++        except ImportError:
++            pass
++
+         self.input_batch.block_table.compute_slot_mapping(req_indices, positions_np)
+         self.input_batch.block_table.commit_slot_mapping(total_num_scheduled_tokens)
+ 
+@@ -2442,6 +2478,7 @@ class GPUModelRunner(
+         hidden_states: torch.Tensor,
+         num_scheduled_tokens: int,
+         spec_decode_metadata: SpecDecodeMetadata | None,
++        sample_hidden_states: torch.Tensor | None = None,
+     ) -> tuple[
+         dict[str, int],
+         LogprobsLists | None,
+@@ -2487,6 +2524,32 @@ class GPUModelRunner(
+             # Mask out the sampled tokens that should not be sampled.
+             for i in discard_sampled_tokens_req_indices:
+                 valid_sampled_token_ids[int(i)] = np.array([])
++            # LatentMAS: replace sampler output with placeholder / role tokens.
++            if (
++                sample_hidden_states is not None
++                and self._latent_realign_cache is not None
++                and not self.use_async_scheduling
++            ):
++                try:
++                    from vllm.latentmas.runner_hooks import (
++                        override_sampled_tokens_for_latent,
++                    )
++
++                    override_sampled_tokens_for_latent(
++                        model=self.model,
++                        device=self.device,
++                        realign_cache=self._latent_realign_cache,
++                        requests=self.requests,
++                        req_ids=list(self.input_batch.req_ids),
++                        valid_sampled_token_ids=valid_sampled_token_ids,
++                        sample_hidden_states=sample_hidden_states,
++                        discard_req_indices={
++                            int(i) for i in discard_sampled_tokens_req_indices
++                        },
++                        num_tokens_no_spec=self.input_batch.num_tokens_no_spec,
++                    )
++                except ImportError:
++                    pass
+         else:
+             valid_sampled_token_ids = []
+             invalid_req_indices = discard_sampled_tokens_req_indices.tolist()
+@@ -2546,11 +2609,17 @@ class GPUModelRunner(
+ 
+             self.input_batch.token_ids_cpu[req_idx, start_idx:end_idx] = sampled_ids
+             self.input_batch.is_token_ids[req_idx, start_idx:end_idx] = True
++            # LatentMAS placeholders at these positions use stored embeds, not token ids.
++            req_id = req_ids[req_idx]
++            req_state = self.requests[req_id]
++            latent_mas = getattr(req_state, "latent_mas", None)
++            if latent_mas is not None and latent_mas.stored_embeds:
++                for pos in range(start_idx, end_idx):
++                    if pos in latent_mas.stored_embeds:
++                        self.input_batch.is_token_ids[req_idx, pos] = False
+             self.input_batch.num_tokens_no_spec[req_idx] = end_idx
+             self.input_batch.num_tokens[req_idx] = end_idx
+ 
+-            req_id = req_ids[req_idx]
+-            req_state = self.requests[req_id]
+             req_state.output_token_ids.extend(sampled_ids)
+ 
+         logprobs_lists = (
+@@ -2990,6 +3059,7 @@ class GPUModelRunner(
+                 hidden_states,
+                 scheduler_output.total_num_scheduled_tokens,
+                 spec_decode_metadata,
++                sample_hidden_states=sample_hidden_states,
+             )
+ 
+         if (
+-- 
+2.43.0
+
+
+From a1593942a021bce929a706c52d6104370662e205 Mon Sep 17 00:00:00 2001
+From: LatentMAS Agent <agent@localhost>
+Date: Thu, 29 Oct 2026 06:08:26 +0000
+Subject: [PATCH 2/2] Dump collected latents to disk for cross-process
+ correctness checks.
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+---
+ vllm/latentmas/runner_hooks.py | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+
+diff --git a/vllm/latentmas/runner_hooks.py b/vllm/latentmas/runner_hooks.py
+index 7f3312811..83fa5dda8 100644
+--- a/vllm/latentmas/runner_hooks.py
++++ b/vllm/latentmas/runner_hooks.py
+@@ -17,6 +17,18 @@ from vllm.latentmas.state import (
+ )
+ 
+ 
++# Side channel for correctness tests: req_id -> list of CPU float latent embeds.
++COLLECTED_LATENTS: dict[str, list[torch.Tensor]] = {}
++
++
++def clear_collected_latents() -> None:
++    COLLECTED_LATENTS.clear()
++
++
++def pop_collected_latents(req_id: str) -> list[torch.Tensor] | None:
++    return COLLECTED_LATENTS.pop(req_id, None)
++
++
+ class LatentRealignCache:
+     """Lazy per-model realignment matrix."""
+ 
+@@ -157,3 +169,22 @@ def override_sampled_tokens_for_latent(
+             sampled_decode_token=sampled_decode,
+         )
+         valid_sampled_token_ids[req_idx] = np.asarray(new_ids, dtype=np.int64)
++        if latent_mas.return_latents and latent_mas.collected_latents:
++            tensors = [
++                t.detach().cpu().contiguous() for t in latent_mas.collected_latents
++            ]
++            COLLECTED_LATENTS[req_id] = tensors
++            # Disk side channel survives engine-core multiprocessing.
++            try:
++                import os
++                from pathlib import Path
++
++                dump_dir = Path(
++                    os.environ.get("LATENTMAS_LATENT_DUMP_DIR", "/workspace/fork_runs")
++                )
++                dump_dir.mkdir(parents=True, exist_ok=True)
++                safe = req_id.replace("/", "_")
++                torch.save(tensors, dump_dir / f"latents_{safe}.pt")
++                torch.save(tensors, dump_dir / "latents_last.pt")
++            except Exception:
++                pass
+-- 
+2.43.0
+

@@ -1,0 +1,91 @@
+{
+  "items": [
+    {
+      "i": 0,
+      "gold": "18",
+      "hf_pred": "2",
+      "vllm_pred": "4",
+      "text_match": false,
+      "prefix80_match": true,
+      "pred_match": false,
+      "latent_match": true,
+      "latent_cosines": [
+        0.9997687339782715,
+        0.9985414743423462,
+        0.999417245388031,
+        0.9907041192054749,
+        0.9973750114440918,
+        0.9851972460746765,
+        0.9793351888656616,
+        0.9562236666679382,
+        0.9971665143966675,
+        0.9708510637283325,
+        0.9490604400634766,
+        0.6154480576515198
+      ],
+      "hf_text_head": "<think>\nOkay, let's tackle this problem step by step. First, I need to figure out how many eggs Janet has left after she",
+      "vllm_text_head": "<think>\nOkay, let's tackle this problem step by step. First, I need to figure out how many eggs Janet has left after she",
+      "n_hf_latents": 12,
+      "n_vllm_latents": 12
+    },
+    {
+      "i": 1,
+      "gold": "3",
+      "hf_pred": "1",
+      "vllm_pred": "1",
+      "text_match": true,
+      "prefix80_match": true,
+      "pred_match": true,
+      "latent_match": true,
+      "latent_cosines": [
+        0.9997932314872742,
+        0.9984893798828125,
+        0.9980288743972778,
+        0.9761701822280884,
+        0.9992027878761292,
+        0.9975101947784424,
+        0.9963880181312561,
+        0.9885246753692627,
+        0.998479962348938,
+        0.9427372217178345,
+        0.26969167590141296,
+        0.8771294355392456
+      ],
+      "hf_text_head": "<think>\nOkay, let's tackle this problem. The question is about figuring out the total number of bolts needed for a robe ",
+      "vllm_text_head": "<think>\nOkay, let's tackle this problem. The question is about figuring out the total number of bolts needed for a robe ",
+      "n_hf_latents": 12,
+      "n_vllm_latents": 12
+    },
+    {
+      "i": 2,
+      "gold": "70000",
+      "hf_pred": "1",
+      "vllm_pred": "1",
+      "text_match": true,
+      "prefix80_match": true,
+      "pred_match": true,
+      "latent_match": true,
+      "latent_cosines": [
+        0.9997180700302124,
+        0.9967593550682068,
+        0.9915974140167236,
+        0.8272292613983154,
+        0.9958338737487793,
+        0.9809920191764832,
+        0.9907774925231934,
+        0.9537021517753601,
+        0.9974290132522583,
+        0.9827055931091309,
+        0.9841660261154175,
+        0.9806025624275208
+      ],
+      "hf_text_head": "<think>\nOkay, let's tackle this problem step by step. So, Josh is flipping a house. He bought it for $80,000 and spent $",
+      "vllm_text_head": "<think>\nOkay, let's tackle this problem step by step. So, Josh is flipping a house. He bought it for $80,000 and spent $",
+      "n_hf_latents": 12,
+      "n_vllm_latents": 12
+    }
+  ],
+  "latent_match": true,
+  "text_match": true,
+  "preempt": true
+}

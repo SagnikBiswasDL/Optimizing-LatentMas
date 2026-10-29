@@ -1,0 +1,19 @@
+{
+  "n": 50,
+  "accuracy": 1.0,
+  "correct": 50,
+  "throughput_rps": 0.8882479138131971,
+  "throughput_tok_s": 535.1338381558987,
+  "latency_p50_s": 0.997674180121976,
+  "latency_p95_s": 1.378675309875689,
+  "latency_mean_s": 1.1236592948180624,
+  "wall_s": 56.290590974036604,
+  "gpu_mem_gi_b": 63.177133560180664,
+  "arm": "fork_stock",
+  "task": "gsm8k",
+  "model": "Qwen/Qwen3-14B",
+  "concurrency": 16,
+  "greedy": true,
+  "latent_steps": 10,
+  "max_new_tokens": 2048
+}
