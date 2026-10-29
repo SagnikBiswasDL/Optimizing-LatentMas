@@ -117,11 +117,18 @@ def build_method(cli):
     temp = 0.0 if cli.greedy else cli.temperature
     top_p = 1.0 if cli.greedy else cli.top_p
 
+    def _task_name(t: str) -> str:
+        if t == "aime":
+            return "aime2024"
+        if t == "math500":
+            return "math"
+        return t
+
     if cli.arm in ("fork_stock", "fork_tail"):
         from methods.latent_mas_vllm import LatentMASVLLMMethod
         ns = SimpleNamespace(
             model_name=cli.model,
-            task=("aime2024" if cli.task == "aime" else ("math" if cli.task == "math500" else cli.task)),
+            task=_task_name(cli.task),
             prompt=cli.prompt, think=False, latent_space_realign=False,
             latent_steps=cli.latent_steps, planner_steps=None, critic_steps=None,
             refiner_steps=None, agents=None, device="cuda",
@@ -153,7 +160,7 @@ def build_method(cli):
     }[cli.arm]
     ns = SimpleNamespace(
         model_name=cli.model, method=method_name,
-        task=cli.task if cli.task != "aime" else "aime2024", prompt=cli.prompt,
+        task=_task_name(cli.task), prompt=cli.prompt,
         think=False, latent_steps=cli.latent_steps, planner_steps=None, critic_steps=None,
         refiner_steps=None, max_new_tokens=cli.max_new_tokens, temperature=temp, top_p=top_p,
         generate_bs=1, use_vllm=use_vllm, use_second_HF_model=use_second,
@@ -260,9 +267,13 @@ def _fork_wave_batch(method, items, concurrency: int):
             from utils import extract_gsm8k_answer, normalize_answer
             pred = normalize_answer(extract_gsm8k_answer(text))
             gold = item.get("gold", "")
-            try:
-                ok = int(pred) == int(str(gold).strip()) if pred else False
-            except ValueError:
+            task = getattr(method, "task", "")
+            if task in ("aime2024", "aime2025"):
+                try:
+                    ok = int(pred) == int(str(gold).strip()) if pred else False
+                except ValueError:
+                    ok = False
+            else:
                 ok = (pred == gold) if (pred and gold) else False
             row = {
                 "question": item.get("question", "")[:200],
