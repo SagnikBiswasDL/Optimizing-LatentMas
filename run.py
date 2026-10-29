@@ -17,6 +17,7 @@ from data import (
 )
 from methods.baseline import BaselineMethod
 from methods.latent_mas import LatentMASMethod
+from methods.latent_mas_vllm import LatentMASVLLMMethod
 from methods.text_mas import TextMASMethod
 from models import ModelWrapper
 from utils import auto_device, set_seed
@@ -43,8 +44,10 @@ def process_batch(
     if remaining <= 0:
         return processed, preds
     current_batch = batch[:remaining]
-    if args.method == "latent_mas" and args.use_vllm: 
-        results = method.run_batch_vllm(current_batch) 
+    if args.method == "latent_mas" and args.use_vllm:
+        results = method.run_batch_vllm(current_batch)
+    elif args.method == "latent_mas_vllm":
+        results = method.run_batch(current_batch)
     else:
         results = method.run_batch(current_batch)
     if len(results) > remaining:
@@ -85,8 +88,8 @@ def main():
     parser = argparse.ArgumentParser()
 
     # core args for experiments
-    parser.add_argument("--method", choices=["baseline", "text_mas", "latent_mas"], required=True,
-                        help="Which multi-agent method to run: 'baseline', 'text_mas', or 'latent_mas'.")
+    parser.add_argument("--method", choices=["baseline", "text_mas", "latent_mas", "latent_mas_vllm"], required=True,
+                        help="Which multi-agent method to run: 'baseline', 'text_mas', 'latent_mas', or 'latent_mas_vllm' (unified fork).")
     parser.add_argument("--model_name", type=str, required=True,
                         choices=["Qwen/Qwen3-4B", "Qwen/Qwen3-4B", "Qwen/Qwen3-14B"],
                         help="Model choices to use for experiments (e.g. 'Qwen/Qwen3-14B').")
@@ -162,6 +165,10 @@ def main():
     parser.add_argument("--device2", type=str, default="cuda:1")
     parser.add_argument("--tensor_parallel_size", type=int, default=1, help="How many GPUs vLLM should shard the model across")
     parser.add_argument("--gpu_memory_utilization", type=float, default=0.9, help="Target GPU memory utilization for vLLM")
+    parser.add_argument("--scheduler_cls", type=str, default=None,
+                        help="Optional vLLM scheduler class path (e.g. serving.tail_preempt_scheduler.TailPreemptScheduler).")
+    parser.add_argument("--max_model_len", type=int, default=None, help="Optional vLLM max_model_len override.")
+    parser.add_argument("--num_gpu_blocks_override", type=int, default=None, help="Optional vLLM KV block override (forced preemption tests).")
 
     args = parser.parse_args()
     
@@ -171,7 +178,10 @@ def main():
     
     set_seed(args.seed)
     device = auto_device(args.device)
-    model = ModelWrapper(args.model_name, device, use_vllm=args.use_vllm, args=args)
+    # latent_mas_vllm owns its engine; do not load HF / hybrid ModelWrapper.
+    model = None
+    if args.method != "latent_mas_vllm":
+        model = ModelWrapper(args.model_name, device, use_vllm=args.use_vllm, args=args)
     
     start_time = time.time()
 
@@ -205,6 +215,15 @@ def main():
             judger_max_new_tokens=args.max_new_tokens,
             **common_kwargs,
             generate_bs=args.generate_bs, 
+            args=args,
+        )
+    elif args.method == "latent_mas_vllm":
+        method = LatentMASVLLMMethod(
+            args.model_name,
+            latent_steps=args.latent_steps,
+            judger_max_new_tokens=args.max_new_tokens,
+            **common_kwargs,
+            generate_bs=args.generate_bs,
             args=args,
         )
 
