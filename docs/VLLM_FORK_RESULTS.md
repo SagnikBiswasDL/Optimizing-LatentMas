@@ -52,6 +52,8 @@ Numbers below are filled as `/workspace/fork_runs/*/summary.json` lands. Incompl
 
 **Primary takeaway (GSM8K n=50, greedy, Qwen3-14B, C=1):** unified fork matches HF accuracy (0.98) with **2.3× lower p50 latency** (5.77s vs 13.26s) and **3.6× higher decode tok/s** (86.4 vs 24.3). Wall clock 350s vs 752s.
 
+Paired over the same 50 items: accuracy Δ = 0.0 pp, bootstrap 95% CI **[-6.0, +6.0] pp** (agree on 48/50; one fork-only correct, one HF-only). Per-item latency ratio HF/fork median **2.17×**.
+
 Concurrency>1 initially segfaulted because threaded `LLM.generate` is unsafe; the harness now submits waves of size C in one `generate()` call.
 
 ### Sanity (Qwen3-4B)
