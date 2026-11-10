@@ -1,0 +1,47 @@
+{
+  "single": {
+    "wall_s": 446.33,
+    "executed_token_loops": 491204,
+    "peak_mem_gb": 59.161
+  },
+  "selfrev_pass2": {
+    "wall_s": 1337.1,
+    "executed_token_loops": 1272956,
+    "peak_mem_gb": 114.958
+  },
+  "mas_planner": {
+    "wall_s": 164.65,
+    "executed_token_loops": 229548,
+    "peak_mem_gb": 18.003
+  },
+  "mas_critic": {
+    "wall_s": 153.74,
+    "executed_token_loops": 405448,
+    "peak_mem_gb": 43.366
+  },
+  "mas_final": {
+    "wall_s": 1353.69,
+    "executed_token_loops": 1185672,
+    "peak_mem_gb": 100.117
+  },
+  "sc_sample0": {
+    "wall_s": 591.93,
+    "executed_token_loops": 498808,
+    "peak_mem_gb": 59.326
+  },
+  "sc_sample1": {
+    "wall_s": 636.03,
+    "executed_token_loops": 480392,
+    "peak_mem_gb": 59.02
+  },
+  "sc_sample2": {
+    "wall_s": 672.89,
+    "executed_token_loops": 507524,
+    "peak_mem_gb": 52.857
+  },
+  "sc_sample3": {
+    "wall_s": 534.08,
+    "executed_token_loops": 472144,
+    "peak_mem_gb": 32.959
+  }
+}

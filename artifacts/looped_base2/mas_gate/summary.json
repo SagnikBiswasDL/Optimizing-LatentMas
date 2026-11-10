@@ -1,0 +1,145 @@
+{
+  "n": 200,
+  "arms": {
+    "single": {
+      "acc": 0.845,
+      "acc_ci95": [
+        0.7884,
+        0.8886
+      ],
+      "mean_loop_tokens": 2434.8,
+      "mean_attn_kv_loop": 1208505.5,
+      "mean_gen_tokens": 507.4,
+      "mean_prompt_tokens": 102.3,
+      "batched_wall_s_total": 446.33
+    },
+    "selfrev": {
+      "acc": 0.88,
+      "acc_ci95": [
+        0.8277,
+        0.918
+      ],
+      "mean_loop_tokens": 7503.7,
+      "mean_attn_kv_loop": 6352423.1,
+      "mean_gen_tokens": 1322.0,
+      "mean_prompt_tokens": 555.9,
+      "batched_wall_s_total": 1783.43
+    },
+    "mas": {
+      "acc": 0.72,
+      "acc_ci95": [
+        0.6541,
+        0.7776
+      ],
+      "mean_loop_tokens": 8755.7,
+      "mean_attn_kv_loop": 8935037.2,
+      "mean_gen_tokens": 1291.1,
+      "mean_prompt_tokens": 900.8,
+      "batched_wall_s_total": 1672.08
+    },
+    "sc@1": {
+      "acc": 0.86,
+      "acc_ci95": [
+        0.8051,
+        0.9013
+      ],
+      "mean_loop_tokens": 2473.9,
+      "mean_attn_kv_loop": 1310471.1,
+      "mean_gen_tokens": 517.2,
+      "mean_prompt_tokens": 102.3,
+      "batched_wall_s_total": 591.93
+    },
+    "sc@2": {
+      "acc": 0.86,
+      "acc_ci95": [
+        0.8051,
+        0.9013
+      ],
+      "mean_loop_tokens": 4856.9,
+      "mean_attn_kv_loop": 2456191.8,
+      "mean_gen_tokens": 1011.7,
+      "mean_prompt_tokens": 204.6,
+      "batched_wall_s_total": 1227.96
+    },
+    "sc@3": {
+      "acc": 0.88,
+      "acc_ci95": [
+        0.8277,
+        0.918
+      ],
+      "mean_loop_tokens": 7374.2,
+      "mean_attn_kv_loop": 3730190.2,
+      "mean_gen_tokens": 1539.7,
+      "mean_prompt_tokens": 306.8,
+      "batched_wall_s_total": 1900.85
+    },
+    "sc@4": {
+      "acc": 0.89,
+      "acc_ci95": [
+        0.8391,
+        0.9262
+      ],
+      "mean_loop_tokens": 9715.6,
+      "mean_attn_kv_loop": 4740997.8,
+      "mean_gen_tokens": 2023.8,
+      "mean_prompt_tokens": 409.1,
+      "batched_wall_s_total": 2434.93
+    }
+  },
+  "sc_matched_m": 4,
+  "paired": {
+    "mas_minus_single": {
+      "n": 200,
+      "acc_a": 0.72,
+      "acc_b": 0.845,
+      "diff": -0.125,
+      "ci95": [
+        -0.19,
+        -0.065
+      ],
+      "only_a": 9,
+      "only_b": 34,
+      "mcnemar_p": 0.0002
+    },
+    "mas_minus_selfrev": {
+      "n": 200,
+      "acc_a": 0.72,
+      "acc_b": 0.88,
+      "diff": -0.16,
+      "ci95": [
+        -0.215,
+        -0.105
+      ],
+      "only_a": 3,
+      "only_b": 35,
+      "mcnemar_p": 0.0
+    },
+    "mas_minus_sc@4": {
+      "n": 200,
+      "acc_a": 0.72,
+      "acc_b": 0.89,
+      "diff": -0.17,
+      "ci95": [
+        -0.225,
+        -0.12
+      ],
+      "only_a": 1,
+      "only_b": 35,
+      "mcnemar_p": 0.0
+    },
+    "selfrev_minus_single": {
+      "n": 200,
+      "acc_a": 0.88,
+      "acc_b": 0.845,
+      "diff": 0.035,
+      "ci95": [
+        0.005,
+        0.07
+      ],
+      "only_a": 9,
+      "only_b": 2,
+      "mcnemar_p": 0.0654
+    }
+  },
+  "note": "wall_s is batched (same batch size for every arm): throughput, not request latency"
+}

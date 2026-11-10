@@ -1,0 +1,98 @@
+{
+  "subset": "09f20eefc2b22c80",
+  "depth": 4,
+  "planner_vs_solver": {
+    "planner": {
+      "closed_think": 1.0,
+      "adherent": 1.0,
+      "boxed": 0.0,
+      "mentions_gold": 0.44,
+      "mean_step_lines": 5.08,
+      "mean_gen_tokens": 129.5
+    },
+    "solver": {
+      "closed_think": 1.0,
+      "adherent": 0.0,
+      "boxed": 0.98,
+      "mentions_gold": 0.92,
+      "mean_step_lines": 3.64,
+      "mean_gen_tokens": 546.7,
+      "acc": 0.92
+    }
+  },
+  "critic_on_correct": {
+    "n": 50,
+    "critic": {
+      "verdict_ok": 1.0,
+      "answer_ok": 1.0,
+      "copied_candidate": 1.0,
+      "verdict_parsed": 1.0,
+      "first_error_parsed": 1.0
+    },
+    "solver": {
+      "verdict_ok": 0.92,
+      "answer_ok": 0.92,
+      "copied_candidate": 0.92
+    }
+  },
+  "critic_on_corrupted": {
+    "n": 50,
+    "critic": {
+      "verdict_ok": 0.3,
+      "answer_ok": 0.34,
+      "copied_candidate": 0.64,
+      "verdict_parsed": 1.0,
+      "first_error_parsed": 0.98,
+      "localised": 0.22
+    },
+    "solver": {
+      "verdict_ok": 0.84,
+      "answer_ok": 0.8,
+      "copied_candidate": 0.16
+    },
+    "paired_answer_ok_critic_minus_solver": {
+      "n": 50,
+      "acc_a": 0.34,
+      "acc_b": 0.8,
+      "diff": -0.46,
+      "ci95": [
+        -0.64,
+        -0.28
+      ],
+      "only_a": 4,
+      "only_b": 27,
+      "mcnemar_p": 0.0
+    },
+    "paired_verdict_ok_critic_minus_solver": {
+      "n": 50,
+      "acc_a": 0.3,
+      "acc_b": 0.84,
+      "diff": -0.54,
+      "ci95": [
+        -0.68,
+        -0.38
+      ],
+      "only_a": 1,
+      "only_b": 28,
+      "mcnemar_p": 0.0
+    }
+  },
+  "cost": {
+    "planner": {
+      "wall_s": 23.4,
+      "executed_token_loops": 54184
+    },
+    "solver": {
+      "wall_s": 175.6,
+      "executed_token_loops": 132924
+    },
+    "critic": {
+      "wall_s": 9.3,
+      "executed_token_loops": 126452
+    },
+    "solver_with_candidate": {
+      "wall_s": 239.3,
+      "executed_token_loops": 286924
+    }
+  }
+}

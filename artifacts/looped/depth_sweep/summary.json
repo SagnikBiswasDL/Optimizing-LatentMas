@@ -1,0 +1,102 @@
+{
+  "subset": "b8488b7fbc045f03",
+  "n": 200,
+  "depths": {
+    "1": {
+      "acc": 0.375,
+      "acc_ci95": [
+        0.3109,
+        0.4439
+      ],
+      "mean_prompt_tokens": 104.3,
+      "mean_gen_tokens": 1590.5,
+      "censored": 80,
+      "mean_loop_tokens": 1693.8,
+      "mean_attn_kv_loop": 2219607.2,
+      "executed_token_loops_incl_padding": 346718,
+      "batch_size": 100,
+      "batched_wall_s": 232.91,
+      "batched_tok_per_s": 1365.8,
+      "peak_mem_gb": 53.034,
+      "peak_mem_kind": "torch.cuda.max_memory_allocated",
+      "latency_probe": {
+        "n": 10,
+        "max_new": 256,
+        "median_s_per_token": 0.013219162250152294,
+        "mean_s": 3.249
+      }
+    },
+    "2": {
+      "acc": 0.84,
+      "acc_ci95": [
+        0.7829,
+        0.8843
+      ],
+      "mean_prompt_tokens": 104.3,
+      "mean_gen_tokens": 885.5,
+      "censored": 19,
+      "mean_loop_tokens": 1977.7,
+      "mean_attn_kv_loop": 1611536.9,
+      "executed_token_loops_incl_padding": 405750,
+      "batch_size": 64,
+      "batched_wall_s": 271.56,
+      "batched_tok_per_s": 652.2,
+      "peak_mem_gb": 51.932,
+      "peak_mem_kind": "torch.cuda.max_memory_allocated",
+      "latency_probe": {
+        "n": 10,
+        "max_new": 256,
+        "median_s_per_token": 0.025923627316387865,
+        "mean_s": 6.64
+      }
+    },
+    "3": {
+      "acc": 0.88,
+      "acc_ci95": [
+        0.8277,
+        0.918
+      ],
+      "mean_prompt_tokens": 104.3,
+      "mean_gen_tokens": 779.3,
+      "censored": 8,
+      "mean_loop_tokens": 2647.6,
+      "mean_attn_kv_loop": 1697469.1,
+      "executed_token_loops_incl_padding": 535089,
+      "batch_size": 42,
+      "batched_wall_s": 457.19,
+      "batched_tok_per_s": 340.9,
+      "peak_mem_gb": 77.239,
+      "peak_mem_kind": "torch.cuda.max_memory_allocated",
+      "latency_probe": {
+        "n": 10,
+        "max_new": 256,
+        "median_s_per_token": 0.038668175237944524,
+        "mean_s": 9.883
+      }
+    },
+    "4": {
+      "acc": 0.895,
+      "acc_ci95": [
+        0.8448,
+        0.9303
+      ],
+      "mean_prompt_tokens": 104.3,
+      "mean_gen_tokens": 745.3,
+      "censored": 6,
+      "mean_loop_tokens": 3394.3,
+      "mean_attn_kv_loop": 1995259.4,
+      "executed_token_loops_incl_padding": 683892,
+      "batch_size": 32,
+      "batched_wall_s": 600.19,
+      "batched_tok_per_s": 248.3,
+      "peak_mem_gb": 78.262,
+      "peak_mem_kind": "torch.cuda.max_memory_allocated",
+      "latency_probe": {
+        "n": 10,
+        "max_new": 256,
+        "median_s_per_token": 0.05102816851922398,
+        "mean_s": 13.056
+      }
+    }
+  }
+}

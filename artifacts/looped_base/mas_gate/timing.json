@@ -1,0 +1,27 @@
+{
+  "single": {
+    "wall_s": 3399.16,
+    "executed_token_loops": 2548956,
+    "peak_mem_gb": 32.406
+  },
+  "selfrev_pass2": {
+    "wall_s": 1316.63,
+    "executed_token_loops": 1793088,
+    "peak_mem_gb": 57.926
+  },
+  "mas_planner": {
+    "wall_s": 2115.09,
+    "executed_token_loops": 1750044,
+    "peak_mem_gb": 23.597
+  },
+  "mas_critic": {
+    "wall_s": 897.06,
+    "executed_token_loops": 1356784,
+    "peak_mem_gb": 39.596
+  },
+  "mas_final": {
+    "wall_s": 1459.77,
+    "executed_token_loops": 2025300,
+    "peak_mem_gb": 66.863
+  }
+}

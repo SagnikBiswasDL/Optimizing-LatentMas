@@ -1,0 +1,30 @@
+{
+  "r1": {
+    "slots": 96,
+    "wall_greedy_s": 281.96,
+    "wall_sampled_s": 2439.46,
+    "token_loops_greedy": 366476,
+    "token_loops_sampled": 1296140
+  },
+  "r2": {
+    "slots": 48,
+    "wall_greedy_s": 632.91,
+    "wall_sampled_s": 3807.61,
+    "token_loops_greedy": 717072,
+    "token_loops_sampled": 2606950
+  },
+  "r3": {
+    "slots": 32,
+    "wall_greedy_s": 1057.41,
+    "wall_sampled_s": 5492.42,
+    "token_loops_greedy": 1073907,
+    "token_loops_sampled": 4107825
+  },
+  "r4": {
+    "slots": 24,
+    "wall_greedy_s": 1615.09,
+    "wall_sampled_s": 7483.36,
+    "token_loops_greedy": 1558140,
+    "token_loops_sampled": 5965356
+  }
+}

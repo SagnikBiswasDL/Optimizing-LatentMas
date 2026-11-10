@@ -1,0 +1,367 @@
+{
+  "env": {
+    "model_id": "ByteDance/Ouro-1.4B-Thinking",
+    "model_revision": "3aaa2224253a92ca45cf2e3d427c360e1ef9c93d",
+    "dtype": "torch.bfloat16",
+    "attn_implementation": "sdpa",
+    "device": "mps",
+    "device_name": "arm",
+    "torch": "2.8.0",
+    "transformers": "4.57.6",
+    "python": "3.9.6",
+    "git_commit": "7a443d5cb6ca1382598e6c3070ad83de0ee6848b",
+    "git_dirty": true,
+    "args": {
+      "device": "mps",
+      "dtype": "bfloat16",
+      "n_questions": 2,
+      "planner_tokens": 64,
+      "latent_steps": 8,
+      "cont_tokens": 24,
+      "seed": 0,
+      "out": null
+    },
+    "time": "2026-10-29 16:08:51"
+  },
+  "questions": [
+    {
+      "idx": 1101,
+      "history_tokens": 175,
+      "planner_generated": 64,
+      "cont_tokens": 131,
+      "token": {
+        "1": {
+          "cache_reuse": {
+            "depth": 1,
+            "entries": 24,
+            "seq_len": 175,
+            "distinct_lengths": [
+              175
+            ],
+            "shapes": [
+              [
+                1,
+                16,
+                175,
+                128
+              ]
+            ],
+            "mb": 32.81
+          },
+          "cache_truncate": {
+            "depth": 1,
+            "entries": 24,
+            "seq_len": 175,
+            "distinct_lengths": [
+              175
+            ],
+            "shapes": [
+              [
+                1,
+                16,
+                175,
+                128
+              ]
+            ],
+            "mb": 32.81
+          },
+          "kv_reuse_vs_truncate": {
+            "per_loop_max_abs": [
+              0.0
+            ]
+          },
+          "logits_recompute_vs_reuse": {
+            "max_abs": 0.234375,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "logits_reuse_vs_truncate": {
+            "max_abs": 0.0,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "greedy_recompute_vs_reuse": {
+            "same_prefix_tokens": 4,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": false
+          },
+          "greedy_reuse_vs_truncate": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          }
+        },
+        "2": {
+          "cache_reuse": {
+            "depth": 2,
+            "entries": 48,
+            "seq_len": 175,
+            "distinct_lengths": [
+              175
+            ],
+            "shapes": [
+              [
+                1,
+                16,
+                175,
+                128
+              ]
+            ],
+            "mb": 65.62
+          },
+          "cache_truncate": {
+            "depth": 2,
+            "entries": 48,
+            "seq_len": 175,
+            "distinct_lengths": [
+              175
+            ],
+            "shapes": [
+              [
+                1,
+                16,
+                175,
+                128
+              ]
+            ],
+            "mb": 65.62
+          },
+          "kv_reuse_vs_truncate": {
+            "per_loop_max_abs": [
+              0.0,
+              0.0
+            ]
+          },
+          "logits_recompute_vs_reuse": {
+            "max_abs": 0.28125,
+            "top1_same": true,
+            "top5_overlap": 4
+          },
+          "logits_reuse_vs_truncate": {
+            "max_abs": 0.0,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "greedy_recompute_vs_reuse": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          },
+          "greedy_reuse_vs_truncate": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          }
+        },
+        "3": {
+          "cache_reuse": {
+            "depth": 3,
+            "entries": 72,
+            "seq_len": 175,
+            "distinct_lengths": [
+              175
+            ],
+            "shapes": [
+              [
+                1,
+                16,
+                175,
+                128
+              ]
+            ],
+            "mb": 98.44
+          },
+          "cache_truncate": {
+            "depth": 3,
+            "entries": 72,
+            "seq_len": 175,
+            "distinct_lengths": [
+              175
+            ],
+            "shapes": [
+              [
+                1,
+                16,
+                175,
+                128
+              ]
+            ],
+            "mb": 98.44
+          },
+          "kv_reuse_vs_truncate": {
+            "per_loop_max_abs": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "logits_recompute_vs_reuse": {
+            "max_abs": 0.3125,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "logits_reuse_vs_truncate": {
+            "max_abs": 0.0,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "greedy_recompute_vs_reuse": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          },
+          "greedy_reuse_vs_truncate": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          }
+        }
+      },
+      "latent": {
+        "1": {
+          "kv_replay_vs_truncate": {
+            "per_loop_max_abs": [
+              0.0
+            ]
+          },
+          "logits_replay_vs_truncate": {
+            "max_abs": 0.0,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "greedy_replay_vs_truncate": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          },
+          "latent_cos_fulldepth_vs_regen": [
+            0.7109,
+            -0.0998,
+            0.3379,
+            0.3211,
+            -0.1851,
+            -0.2412,
+            0.2658,
+            -0.2084
+          ],
+          "logits_truncate_vs_regen": {
+            "max_abs": 1.72265625,
+            "top1_same": true,
+            "top5_overlap": 4
+          },
+          "greedy_truncate_vs_regen": {
+            "same_prefix_tokens": 10,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": false
+          }
+        },
+        "2": {
+          "kv_replay_vs_truncate": {
+            "per_loop_max_abs": [
+              0.0,
+              0.0
+            ]
+          },
+          "logits_replay_vs_truncate": {
+            "max_abs": 0.0,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "greedy_replay_vs_truncate": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          },
+          "latent_cos_fulldepth_vs_regen": [
+            0.8557,
+            0.2955,
+            0.5336,
+            0.4782,
+            0.4233,
+            0.5417,
+            0.6454,
+            0.6182
+          ],
+          "logits_truncate_vs_regen": {
+            "max_abs": 1.75,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "greedy_truncate_vs_regen": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          }
+        },
+        "3": {
+          "kv_replay_vs_truncate": {
+            "per_loop_max_abs": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "logits_replay_vs_truncate": {
+            "max_abs": 0.0,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "greedy_replay_vs_truncate": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          },
+          "latent_cos_fulldepth_vs_regen": [
+            0.9611,
+            0.7409,
+            0.7889,
+            0.8967,
+            0.928,
+            0.9292,
+            0.9454,
+            0.96
+          ],
+          "logits_truncate_vs_regen": {
+            "max_abs": 0.640625,
+            "top1_same": true,
+            "top5_overlap": 5
+          },
+          "greedy_truncate_vs_regen": {
+            "same_prefix_tokens": 24,
+            "len_a": 24,
+            "len_b": 24,
+            "identical": true
+          }
+        }
+      },
+      "full_cache": {
+        "depth": 4,
+        "entries": 96,
+        "seq_len": 175,
+        "distinct_lengths": [
+          175
+        ],
+        "shapes": [
+          [
+            1,
+            16,
+            175,
+            128
+          ]
+        ],
+        "mb": 131.25
+      }
+    }
+  ]
+}

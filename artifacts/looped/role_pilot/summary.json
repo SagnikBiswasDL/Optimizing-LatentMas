@@ -1,0 +1,98 @@
+{
+  "subset": "09f20eefc2b22c80",
+  "depth": 4,
+  "planner_vs_solver": {
+    "planner": {
+      "closed_think": 0.84,
+      "adherent": 0.82,
+      "boxed": 0.0,
+      "mentions_gold": 0.12,
+      "mean_step_lines": 4.7,
+      "mean_gen_tokens": 1168.6
+    },
+    "solver": {
+      "closed_think": 1.0,
+      "adherent": 0.0,
+      "boxed": 1.0,
+      "mentions_gold": 0.92,
+      "mean_step_lines": 1.02,
+      "mean_gen_tokens": 668.1,
+      "acc": 0.9
+    }
+  },
+  "critic_on_correct": {
+    "n": 50,
+    "critic": {
+      "verdict_ok": 0.88,
+      "answer_ok": 0.88,
+      "copied_candidate": 0.88,
+      "verdict_parsed": 0.96,
+      "first_error_parsed": 0.94
+    },
+    "solver": {
+      "verdict_ok": 0.96,
+      "answer_ok": 0.96,
+      "copied_candidate": 0.96
+    }
+  },
+  "critic_on_corrupted": {
+    "n": 50,
+    "critic": {
+      "verdict_ok": 0.98,
+      "answer_ok": 0.9,
+      "copied_candidate": 0.06,
+      "verdict_parsed": 1.0,
+      "first_error_parsed": 0.92,
+      "localised": 0.82
+    },
+    "solver": {
+      "verdict_ok": 1.0,
+      "answer_ok": 0.94,
+      "copied_candidate": 0.0
+    },
+    "paired_answer_ok_critic_minus_solver": {
+      "n": 50,
+      "acc_a": 0.9,
+      "acc_b": 0.94,
+      "diff": -0.04,
+      "ci95": [
+        -0.12,
+        0.04
+      ],
+      "only_a": 1,
+      "only_b": 3,
+      "mcnemar_p": 0.625
+    },
+    "paired_verdict_ok_critic_minus_solver": {
+      "n": 50,
+      "acc_a": 0.98,
+      "acc_b": 1.0,
+      "diff": -0.02,
+      "ci95": [
+        -0.06,
+        0.0
+      ],
+      "only_a": 0,
+      "only_b": 1,
+      "mcnemar_p": 1.0
+    }
+  },
+  "cost": {
+    "planner": {
+      "wall_s": 226.5,
+      "executed_token_loops": 263468
+    },
+    "solver": {
+      "wall_s": 161.5,
+      "executed_token_loops": 158836
+    },
+    "critic": {
+      "wall_s": 269.0,
+      "executed_token_loops": 348472
+    },
+    "solver_with_candidate": {
+      "wall_s": 311.0,
+      "executed_token_loops": 432500
+    }
+  }
+}
