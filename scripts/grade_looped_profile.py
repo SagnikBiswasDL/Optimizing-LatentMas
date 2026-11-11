@@ -31,6 +31,34 @@ from looped import ensemble_state as es  # noqa: E402
 from looped import experiment_manifest as em  # noqa: E402
 
 
+# ``<think>`` in the pinned Ouro tokenizer. New candidate rows carry a ``think``
+# field; rows written before modes were recorded are classified by this id.
+THINK_TOKEN_ID = 3
+
+
+def opened_think(row) -> bool:
+    if row.get("think") is not None:
+        return bool(row["think"])
+    return bool(row["generated_token_ids"]) and row["generated_token_ids"][0] == THINK_TOKEN_ID
+
+
+def mode_stats(rows) -> dict:
+    """Share, cap rate, accuracy and length of reasoning and direct answers (cancelled ones excluded)."""
+    out = {}
+    done = [r for r in rows if r["finish_reason"] in ("eos", "length_cap")]
+    for name, sel in (("think", [r for r in done if opened_think(r)]), ("direct", [r for r in done if not opened_think(r)])):
+        out[name] = {
+            "share": len(sel) / len(done) if done else None,
+            "cap_rate": float(np.mean([r["finish_reason"] == "length_cap" for r in sel])) if sel else None,
+            "accuracy": float(np.mean([r["correct"] for r in sel])) if sel else None,
+            "accuracy_when_finished": (float(np.mean([r["correct"] for r in sel if r["finish_reason"] == "eos"]))
+                                       if any(r["finish_reason"] == "eos" for r in sel) else None),
+            "mean_gen_tokens": float(np.mean([r["gen_tokens"] for r in sel])) if sel else None,
+            "share_of_tokens": (sum(r["gen_tokens"] for r in sel) / max(1, sum(r["gen_tokens"] for r in done))),
+        }
+    return out
+
+
 # One KV block of one depth plane: 16 tokens x 24 layers x 16 heads x 128 dims x (K, V) x 2 bytes (bf16).
 BLOCK_BYTES = 16 * 24 * 16 * 128 * 2 * 2
 
@@ -80,7 +108,9 @@ def arm_table(name, rows, questions, summary, args):
     arm = summary["arm"]
     out = {
         "arm": name, "depth": arm["depth"], "width": arm["width"], "cap": arm["cap"], "run_id": summary["run_id"],
-        "policy": "greedy" if arm["width"] == 1 else f"SC@{arm['width']}",
+        "policy": ("greedy" if arm["width"] == 1 else f"SC@{arm['width']}")
+                  + ("" if arm.get("mode", "natural") == "natural" else f", {arm['mode']}"),
+        "mode": arm.get("mode", "natural"), "modes": mode_stats(rows),
         "questions": len(qids), "accuracy": float(np.mean(correct)),
         "accuracy_ci95": boot_ci(correct, args.iters, args.seed),
         "candidate_accuracy": float(np.mean([r["correct"] for r in rows])),
@@ -122,11 +152,23 @@ def policy_table(name, rows, questions, summary, args):
     correct = [bool(q["selected_candidate_id"] and by_id[q["selected_candidate_id"]]["correct"]) for q in questions]
     pol = summary["policy"]
     finished = [r for r in rows if r["finish_reason"] != "cancelled"]
+    depth = pol.get("depth", pol.get("direct_depth"))
+    width = pol.get("width", pol.get("direct_width", 4))
+    label = {"fixed_width": "SC@{width} (live driver)", "two_then_two": "two-then-two (live)",
+             "certificate_cancel": "SC@{width} + certificate cancel (live)",
+             "quorum_cancel": "{width} launched, stop at {quorum} agreeing (live)",
+             "fast_then_think": "{direct_width} direct (quorum {quorum}), then {think_width} think at depth "
+                                "{think_depth} (live)"}.get(pol["name"], pol["name"]).format(**pol)
+    if pol.get("mode", "natural") != "natural":
+        label += f", {pol['mode']}"
+    if pol.get("think_trumps"):
+        label += ", finished think answer wins"
+    if pol.get("fallback_depth", depth) != depth:
+        label += f", fallback depth {pol['fallback_depth']}"
     return {
-        "arm": name, "depth": pol["depth"], "width": pol.get("width", 4), "cap": summary["cap"], "run_id": summary["run_id"],
-        "policy": {"fixed_width": "SC@{width} (live driver)", "two_then_two": "two-then-two (live)",
-                   "certificate_cancel": "SC@{width} + certificate cancel (live)"}[pol["name"]].format(**{"width": pol.get("width")})
-                  + (f", fallback depth {pol['fallback_depth']}" if pol.get("fallback_depth", pol["depth"]) != pol["depth"] else ""),
+        "arm": name, "depth": depth, "width": width, "cap": summary["cap"], "run_id": summary["run_id"],
+        "policy": label, "mode": pol.get("mode", "natural"), "modes": mode_stats(rows),
+        "decision_reasons": summary.get("decision_reasons"),
         "questions": len(questions), "accuracy": float(np.mean(correct)),
         "accuracy_ci95": boot_ci(correct, args.iters, args.seed),
         "candidate_accuracy": float(np.mean([r["correct"] for r in finished])),
@@ -177,13 +219,14 @@ def fmt(x, d=1):
 
 
 def markdown(table, derived, ext) -> str:
-    lines = ["| depth | policy | accuracy % (95% CI) | candidates/q | answered % | capped % | loop-tokens/q (charged) | "
-             "latency mean s | p50 s | p95 s | tokens/s | questions/min | peak KV GB |",
-             "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    lines = ["| depth | policy | cap | accuracy % (95% CI) | candidates/q | think % | answered % | capped % | "
+             "loop-tokens/q (charged) | latency mean s | p50 s | p95 s | tokens/s | questions/min | peak KV GB |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in sorted(table, key=lambda r: (r["depth"], r["width"], r["policy"])):
         lines.append(
-            f"| {r['depth']} | {r['policy']} | {100 * r['accuracy']:.1f} ({100 * r['accuracy_ci95'][0]:.1f}, "
+            f"| {r['depth']} | {r['policy']} | {r['cap']} | {100 * r['accuracy']:.1f} ({100 * r['accuracy_ci95'][0]:.1f}, "
             f"{100 * r['accuracy_ci95'][1]:.1f}) | {r.get('candidates_per_question', r['width']):.2f} | "
+            f"{fmt(None if r['modes']['think']['share'] is None else 100 * r['modes']['think']['share'])} | "
             f"{100 * r['answered_rate']:.1f} | {100 * r['cap_rate']:.1f} | "
             f"{r['charged_loop_tokens_per_question']:.0f} | {fmt(r['latency_s'].get('mean'))} | "
             f"{fmt(r['latency_s'].get('p50'))} | {fmt(r['latency_s'].get('p95'))} | {r['tokens_per_s']:.0f} | "

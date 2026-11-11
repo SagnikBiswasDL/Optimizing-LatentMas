@@ -244,3 +244,59 @@ def test_percentiles(profile):
     assert profile.pct([4.0, 1.0, 3.0, 2.0], 1.0) == 4.0
     d = profile.dist([1.0, 2.0, 3.0])
     assert d["mean"] == 2.0 and d["max"] == 3.0 and profile.dist([]) == {}
+
+
+def test_arm_specs_and_mode_candidate_ids(profile):
+    assert profile.parse_arm("3x4", 2048) == {"depth": 3, "width": 4, "cap": 2048, "kind": "fixed", "mode": "natural"}
+    arm = profile.parse_arm("4x2:think@4096", 2048)
+    assert (arm["depth"], arm["width"], arm["mode"], arm["cap"]) == (4, 2, "think", 4096)
+    assert profile.arm_name(profile.parse_arm("3x4", 2048)) == "d3_w4_cap2048"          # unchanged for natural arms
+    assert profile.arm_name(arm) == "d4_w2_think_cap4096"
+    with pytest.raises(ValueError):
+        profile.parse_arm("3x4:sideways", 2048)
+    args = SimpleNamespace(run_seed=0, temperature=0.6, top_p=0.95)
+    natural = profile.candidates_for("q_x", 3, 4, args)
+    direct = profile.candidates_for("q_x", 3, 4, args, "direct")
+    assert [c[0] for c in direct] == [f"q_x:d3:s{s}:direct" for s in range(4)]
+    assert {c[4] for c in direct}.isdisjoint({c[4] for c in natural})
+
+
+def test_forced_modes_need_a_prompt_state_at_the_request_depth(profile):
+    be = SimpleNamespace(semantics={"prompt_mode": "boundary_shift", "full_depth": 4})
+    profile.check_mode_semantics(be, 3, "natural")
+    with pytest.raises(SystemExit):
+        profile.check_mode_semantics(be, 4, "think")
+    be = SimpleNamespace(semantics={"prompt_mode": "stock", "full_depth": 4})
+    profile.check_mode_semantics(be, 4, "direct")
+    with pytest.raises(SystemExit):
+        profile.check_mode_semantics(be, 3, "direct")
+    profile.check_mode_semantics(be, 3, "direct", allow_full_depth_prefix_state=True)
+
+
+def test_forced_prefix_is_reported_as_the_start_of_the_answer(profile):
+    comp = B.Completion("q:d3:s0:think", 3, 11, [50, 51, 0], "eos", 1.0, 1.5, 2.0, 3 * (11 + 3 - 1), 40)
+    row = profile.record("run", "q", ("q:d3:s0:think", 0, 0.6, 0.95, 7), comp, "text \\boxed{4}", 0.0, "think", (3,), 3)
+    assert row["generated_token_ids"] == [3, 50, 51, 0] and row["gen_tokens"] == 4
+    assert row["prompt_tokens"] == 10 and row["prefix_tokens"] == 1 and row["mode"] == "think" and row["think"] is True
+    assert row["logical_loop_tokens"] == 3 * (row["prompt_tokens"] + row["gen_tokens"] - 1)
+    natural = profile.record("run", "q", ("q:d3:s0", 0, 0.6, 0.95, 7), comp, "text", 0.0, think_token=3)
+    assert natural["think"] is False and natural["prefix_tokens"] == 0 and natural["prompt_tokens"] == 11
+
+
+def test_modes_prefixes():
+    from looped import modes as M
+
+    class Tok:
+        unk_token_id = 0
+
+        def convert_tokens_to_ids(self, t):
+            return {"<think>": 3}.get(t, 0)
+
+        def encode(self, text, add_special_tokens=False):
+            return {"To": [2068]}[text]
+
+    assert M.prefix_ids(Tok(), "natural") == () and M.prefix_ids(Tok(), "think") == (3,)
+    assert M.prefix_ids(Tok(), "direct") == (2068,)
+    assert M.observed_think([3, 9], 3) is True and M.observed_think([2068], 3) is False and M.observed_think([], 3) is None
+    with pytest.raises(ValueError):
+        M.prefix_ids(Tok(), "sideways")

@@ -8,8 +8,11 @@ policy really launches and cancels requests, so the latency columns are
 measurements of the policy, including the wait for a slot before a follow-up
 launch.
 
-Policy specs: ``fixed:<depth>x<width>``, ``two_then_two:<depth>[-><depth>]``,
-``cert:<depth>x<width>``.
+Policy specs (``looped.allocation.parse_policy``): ``fixed:<depth>x<width>[:<mode>]``,
+``two_then_two:<depth>[-><depth>]``, ``cert:<depth>x<width>``,
+``quorum:<depth>x<width>[/<quorum>][:<mode>][:trump]`` and
+``ftt:<depth>x<width>[/<quorum>]+<think depth>x<think width>[@<think cap>]``.
+A policy that forces an answer mode needs ``--prompt_mode stock``.
 
 Candidate ids and seeds are the ones ``looped_profile.py`` uses, so sample
 ``s0`` of a policy run is the same request as sample ``s0`` of a fixed arm. In
@@ -39,6 +42,7 @@ import looped_profile as LP  # noqa: E402
 from looped import allocation as al  # noqa: E402
 from looped import answer_identity as ai  # noqa: E402
 from looped import experiment_manifest as em  # noqa: E402
+from looped import modes as M  # noqa: E402
 from looped import prompts as P  # noqa: E402
 from serving.looped.backend import GenerationRequest, run_all, strip_stop  # noqa: E402
 from serving.looped.driver import run_closed_loop  # noqa: E402
@@ -49,7 +53,8 @@ GB = 1 << 30
 
 def run_policy(be, tok, items, policy: al.Policy, args, out_dir: str, manifest: em.RunManifest) -> dict:
     stop = set(be.semantics["stop_ids"])
-    rows, q_rows, texts = [], [], {}
+    rows, q_rows, texts, prefixes, reasons_final = [], [], {}, {}, {}
+    think_token = M.think_id(tok)
     peak_blocks = [0]
     torch.cuda.reset_peak_memory_stats()
     cand_f = open(os.path.join(out_dir, "candidates.jsonl"), "w")
@@ -57,13 +62,20 @@ def run_policy(be, tok, items, policy: al.Policy, args, out_dir: str, manifest: 
     t0 = time.perf_counter()
 
     def make_request(qid, prompt, l: al.Launch) -> GenerationRequest:
-        cid = em.candidate_id(qid, l.depth, l.sample)
+        cid = LP.mode_candidate_id(qid, l.depth, l.sample, l.mode)
         greedy = l.sample == al.GREEDY
-        return GenerationRequest(cid, tuple(prompt), l.depth, args.cap, 0.0 if greedy else args.temperature,
-                                 1.0 if greedy else args.top_p, em.candidate_seed(args.run_seed, qid, cid))
+        LP.check_mode_semantics(be, l.depth, l.mode, args.allow_full_depth_prefix_state)
+        prefix = M.prefix_ids(tok, l.mode)
+        prefixes[cid] = (l.mode, prefix)
+        return GenerationRequest(cid, tuple(prompt) + prefix, l.depth, (l.cap or args.cap) - len(prefix),
+                                 0.0 if greedy else args.temperature, 1.0 if greedy else args.top_p,
+                                 em.candidate_seed(args.run_seed, qid, cid))
+
+    def answer_text(comp):
+        return tok.decode(strip_stop(LP.answer_tokens(prefixes[comp.request_id][1], comp), stop), skip_special_tokens=True)
 
     def keyer(comp):
-        text = tok.decode(strip_stop(comp.token_ids, stop), skip_special_tokens=True)
+        text = answer_text(comp)
         texts[comp.request_id] = text
         if comp.finish_reason == "error":
             return None
@@ -74,8 +86,10 @@ def run_policy(be, tok, items, policy: al.Policy, args, out_dir: str, manifest: 
         req = q.candidates[sample]["request"]
         text = texts.pop(comp.request_id, None)
         if text is None:
-            text = tok.decode(strip_stop(comp.token_ids, stop), skip_special_tokens=True)
-        row = LP.record(manifest.run_id, q.question_id, (req.request_id, sample, None, None, req.seed), comp, text, t0)
+            text = answer_text(comp)
+        mode, prefix = prefixes[comp.request_id]
+        row = LP.record(manifest.run_id, q.question_id, (req.request_id, sample, None, None, req.seed), comp, text, t0,
+                        mode, prefix, think_token)
         if cancel_time is not None:
             row["cancel_time"] = round(cancel_time - t0, 4)
             row["answer_key"], row["parse_status"], row["pred"] = None, "cancelled", None
@@ -97,12 +111,15 @@ def run_policy(be, tok, items, policy: al.Policy, args, out_dir: str, manifest: 
         em.check_record(ev, em.DECISION_EVENT_FIELDS)
         em.assert_no_gold(ev)
         dec_f.write(json.dumps(ev) + "\n")
+        if decision.done:
+            reasons_final[q.question_id] = decision.reason
 
     def on_question(q, sel, now):
         q_rows.append({
             "question_id": q.question_id, "scheduled_arrival": round(q.arrival - t0, 4),
             "completion_time": round(now - t0, 4), "latency_s": round(now - q.arrival, 4),
-            "selected_candidate_id": None if sel is None else em.candidate_id(q.question_id, sel.depth, sel.sample),
+            "selected_candidate_id": None if sel is None else q.candidates[sel.sample]["request_id"],
+            "decision_reason": reasons_final.get(q.question_id),
             "selected_answer": None if sel is None else sel.answer_key,
             "all_candidate_ids": [c["request_id"] for _, c in sorted(q.candidates.items())],
             "candidates_launched": len(q.candidates),
@@ -111,6 +128,8 @@ def run_policy(be, tok, items, policy: al.Policy, args, out_dir: str, manifest: 
 
     stats = run_closed_loop(be, policy, [(it["question_id"], it["prompt"]) for it in items], slots=args.slots,
                             make_request=make_request, keyer=keyer, on_candidate=on_candidate,
+                            think_of=lambda comp, l: M.observed_think(
+                                LP.answer_tokens(prefixes[comp.request_id][1], comp), think_token),
                             on_decision=on_decision, on_question=on_question)
     torch.cuda.synchronize()
     wall = time.perf_counter() - t0
@@ -132,6 +151,8 @@ def run_policy(be, tok, items, policy: al.Policy, args, out_dir: str, manifest: 
         "finish_reasons": reasons, "mean_gen_tokens": toks / len(rows),
         "candidates_per_question": len(rows) / len(q_rows),
         "cancelled_candidates": stats["cancelled"],
+        "decision_reasons": {k: sum(v == k for v in reasons_final.values()) for k in sorted(set(reasons_final.values()), key=str)},
+        "think_share": sum(bool(r["think"]) for r in rows) / len(rows),
         "question_latency_s": LP.dist([r["latency_s"] for r in q_rows]),
         "candidate_latency_s": LP.dist([r["finish_time"] - r["submit_time"] for r in rows]),
         "first_token_s": LP.dist([r["first_token_time"] - r["submit_time"] for r in rows
@@ -167,6 +188,8 @@ def main() -> None:
     ap.add_argument("--max_num_batched_tokens", type=int, default=4096)
     ap.add_argument("--execution", default="{}")
     ap.add_argument("--exit_mode", default="ouro")
+    ap.add_argument("--total_ut_steps", type=int, default=0)
+    ap.add_argument("--allow_full_depth_prefix_state", action="store_true")
     ap.add_argument("--code_sha", default=open("CODE_SHA").read().strip() if os.path.exists("CODE_SHA") else "unknown")
     ap.add_argument("--splits", default="configs/looped_serving/splits.json")
     ap.add_argument("--tag", default="")
@@ -189,6 +212,7 @@ def main() -> None:
         attention_backend=args.attention, kv_layout=args.kv_layout, max_num_seqs=args.slots,
         max_num_batched_tokens=args.max_num_batched_tokens, scheduler_mode=args.scheduler_mode,
         kv_cache_memory_bytes=args.kv_gb * GB, execution=json.loads(args.execution), exit_mode=args.exit_mode,
+        total_ut_steps=args.total_ut_steps or None,
     )
     warm = [GenerationRequest(f"warm:{d}:{i}", tuple(items[i % len(items)]["prompt"]), d, 48, 0.6, 0.95, i)
             for d in range(1, be.full_depth + 1) for i in range(min(args.slots, 8))]
@@ -199,7 +223,8 @@ def main() -> None:
     for spec_str in [s for s in args.policies.split(",") if s]:
         policy = al.parse_policy(spec_str)
         arm = {"kind": "policy", "policy": policy.describe(), "spec": spec_str, "cap": args.cap}
-        name = "policy_" + spec_str.replace(":", "_").replace("->", "to") + f"_cap{args.cap}" + (f"_{args.tag}" if args.tag else "")
+        name = ("policy_" + spec_str.replace(":", "_").replace("->", "to").replace("/", "q").replace("+", "_then_")
+                .replace("@", "_cap") + f"_cap{args.cap}" + (f"_{args.tag}" if args.tag else ""))
         out_dir = os.path.join(args.out, name)
         manifest = LP.manifest_for(args, be, arm, prompt_hash, spec["split_hash"])
         if em.open_run_dir(out_dir, manifest) == "resume":

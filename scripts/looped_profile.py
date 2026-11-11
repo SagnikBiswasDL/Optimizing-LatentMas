@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 """Closed-loop latency/throughput profile of fixed-depth, fixed-width arms.
 
-Each arm ``<depth>x<width>`` answers every question of a frozen split with
-``width`` candidates at one depth (width 1 is the greedy candidate; wider arms
-are seeded samples ``s0..s{width-1}``). Questions are admitted first come, first
+Each arm ``<depth>x<width>[:<mode>][@<cap>]`` answers every question of a frozen
+split with ``width`` candidates at one depth (width 1 is the greedy candidate;
+wider arms are seeded samples ``s0..s{width-1}``). ``mode`` is ``natural``
+(default), ``direct`` or ``think`` (``looped/modes.py``); a forced mode needs
+``--prompt_mode stock`` and, to stay the uniform-depth computation, an engine
+whose depth equals the arm's (``--total_ut_steps``). Questions are admitted first come, first
 served whenever ``width`` of the ``--slots`` candidate slots are free, so every
 arm runs at the same candidate concurrency on the same engine. A question's
 latency is the time from its admission to the finish of its last candidate.
@@ -36,6 +39,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from looped import answer_identity as ai  # noqa: E402
 from looped import experiment_manifest as em  # noqa: E402
+from looped import modes as M  # noqa: E402
 from looped import prompts as P  # noqa: E402
 from serving.looped.backend import GenerationRequest, run_all, strip_stop  # noqa: E402
 from serving.looped.rlt_backend import ENGINE_SHA, RltBackend  # noqa: E402
@@ -69,14 +73,51 @@ def dist(xs) -> dict:
             "max": max(xs)} if xs else {}
 
 
-def candidates_for(qid: str, depth: int, width: int, args) -> list:
+def mode_candidate_id(qid: str, depth: int, sample: int, mode: str = M.NATURAL) -> str:
+    """Natural candidates keep the plain id; a forced mode is part of the id, so
+    its seed differs from the natural candidate with the same sample index."""
+    return em.candidate_id(qid, depth, sample) + ("" if mode == M.NATURAL else f":{mode}")
+
+
+def parse_arm(spec: str, default_cap: int) -> dict:
+    """``<depth>x<width>[:<mode>][@<cap>]``."""
+    body, _, cap = spec.partition("@")
+    shape, _, mode = body.partition(":")
+    d, w = (int(v) for v in shape.split("x"))
+    mode = mode or M.NATURAL
+    if mode not in M.MODES:
+        raise ValueError(f"unknown mode in arm {spec!r}")
+    return {"depth": d, "width": w, "cap": int(cap) if cap else default_cap, "kind": "fixed", "mode": mode}
+
+
+def arm_name(arm: dict, tag: str = "") -> str:
+    mode = arm.get("mode", M.NATURAL)
+    return (f"d{arm['depth']}_w{arm['width']}" + ("" if mode == M.NATURAL else f"_{mode}") + f"_cap{arm['cap']}"
+            + ("_extend" if arm["kind"] != "fixed" else "") + (f"_{tag}" if tag else ""))
+
+
+def check_mode_semantics(be, depth: int, mode: str, allow_full_depth_prefix_state: bool = False) -> None:
+    """A forced prefix is part of the engine's prompt, so the token after it is
+    read from the engine's prompt state."""
+    if mode == M.NATURAL:
+        return
+    if be.semantics["prompt_mode"] != "stock":
+        raise SystemExit("a forced mode needs --prompt_mode stock: boundary_shift would require the engine to "
+                         "emit the forced token itself")
+    if depth != be.semantics["full_depth"] and not allow_full_depth_prefix_state:
+        raise SystemExit(f"depth {depth} with a forced mode on a depth-{be.semantics['full_depth']} engine reads the "
+                         "token after the prefix from the full-depth state; use --total_ut_steps or pass "
+                         "--allow_full_depth_prefix_state")
+
+
+def candidates_for(qid: str, depth: int, width: int, args, mode: str = M.NATURAL) -> list:
     """(candidate_id, sample, temperature, top_p, seed) for one question."""
     if width == 1:
-        cid = em.candidate_id(qid, depth, -1)
+        cid = mode_candidate_id(qid, depth, -1, mode)
         return [(cid, -1, 0.0, 1.0, em.candidate_seed(args.run_seed, qid, cid))]
     out = []
     for s in range(width):
-        cid = em.candidate_id(qid, depth, s)
+        cid = mode_candidate_id(qid, depth, s, mode)
         out.append((cid, s, args.temperature, args.top_p, em.candidate_seed(args.run_seed, qid, cid)))
     return out
 
@@ -96,19 +137,28 @@ def manifest_for(args, be, arm: dict, prompt_hash: str, split_hash: str) -> em.R
         hardware=torch.cuda.get_device_name(0), seed_scheme=em.SEED_SCHEME, run_seed=args.run_seed,
         identity_version=ai.STRUCTURAL, grader={"name": "none", "note": "graded offline"},
         extra={"engine": {k: be.semantics[k] for k in ("scheduler_mode", "max_num_seqs", "max_num_batched_tokens",
-                                                       "kv_num_blocks", "execution", "exit_mode")},
+                                                       "kv_num_blocks", "execution", "exit_mode", "full_depth",
+                                                       "checkpoint_depth", "first_token_depth")},
                "driver": "closed loop, FIFO admission by free candidate slots"},
     )
 
 
-def record(run_id, qid, cand, comp, text, t0) -> dict:
+def answer_tokens(prefix, comp) -> list:
+    """The answer as the model would have written it: forced prefix, then what it generated."""
+    return list(prefix) + list(comp.token_ids)
+
+
+def record(run_id, qid, cand, comp, text, t0, mode: str = M.NATURAL, prefix=(), think_token=None) -> dict:
     cid, sample, _, _, seed = cand
+    tokens = answer_tokens(prefix, comp)
     ans, status = ai.extract_final_answer(text)
     ident = ai.identify(ans) if ans is not None else None
     rel = lambda t: None if t is None else round(t - t0, 4)  # noqa: E731
     return {
         "run_id": run_id, "question_id": qid, "candidate_id": cid, "depth": comp.depth, "sample": sample, "seed": seed,
-        "prompt_tokens": comp.prompt_tokens, "generated_token_ids": comp.token_ids, "gen_tokens": len(comp.token_ids),
+        "prompt_tokens": comp.prompt_tokens - len(prefix), "generated_token_ids": tokens, "gen_tokens": len(tokens),
+        "mode": mode, "prefix_tokens": len(prefix),
+        "think": None if think_token is None else M.observed_think(tokens, think_token),
         "finish_reason": FINISH[comp.finish_reason], "text": text, "pred": ans,
         "answer_key": ident.key if ident is not None else None,
         "parse_status": ident.status if ident is not None else status,
@@ -123,8 +173,13 @@ def record(run_id, qid, cand, comp, text, t0) -> dict:
 def run_arm(be, tok, questions, arm: dict, args, out_dir: str, manifest: em.RunManifest, work=None) -> dict:
     """``work`` overrides the candidate list: [(qid, prompt, [candidate tuples])]."""
     depth, width, cap = arm["depth"], arm["width"], arm["cap"]
+    mode = arm.get("mode", M.NATURAL)
+    prefix = M.prefix_ids(tok, mode)
+    think_token = M.think_id(tok)
+    check_mode_semantics(be, depth, mode, getattr(args, "allow_full_depth_prefix_state", False))
     if work is None:
-        work = [(q["question_id"], q["prompt"], candidates_for(q["question_id"], depth, width, args)) for q in questions]
+        work = [(q["question_id"], q["prompt"], candidates_for(q["question_id"], depth, width, args, mode))
+                for q in questions]
     pending = deque(work)
     stop = set(be.semantics["stop_ids"])
     live, q_open, q_rows, rows = {}, {}, [], []
@@ -138,14 +193,14 @@ def run_arm(be, tok, questions, arm: dict, args, out_dir: str, manifest: em.RunM
                 qid, prompt, cands = pending.popleft()
                 q_open[qid] = {"arrival": time.perf_counter(), "left": len(cands), "candidates": [c[0] for c in cands]}
                 for c in cands:
-                    be.submit(GenerationRequest(c[0], tuple(prompt), depth, cap, c[2], c[3], c[4]))
+                    be.submit(GenerationRequest(c[0], tuple(prompt) + prefix, depth, cap - len(prefix), c[2], c[3], c[4]))
                     live[c[0]] = (qid, c)
             if pending and not live:
                 raise RuntimeError(f"a question needs {len(pending[0][2])} slots but only {args.slots} exist")
             for comp in be.step():
                 qid, c = live.pop(comp.request_id)
-                text = tok.decode(strip_stop(comp.token_ids, stop), skip_special_tokens=True)
-                row = record(manifest.run_id, qid, c, comp, text, t0)
+                text = tok.decode(strip_stop(answer_tokens(prefix, comp), stop), skip_special_tokens=True)
+                row = record(manifest.run_id, qid, c, comp, text, t0, mode, prefix, think_token)
                 em.check_record(row, em.CANDIDATE_RECORD_FIELDS)
                 em.assert_no_gold(row)
                 rows.append(row)
@@ -176,6 +231,7 @@ def run_arm(be, tok, questions, arm: dict, args, out_dir: str, manifest: em.RunM
         "charged_loop_tokens": sum(r["executed_loop_tokens"] for r in rows),
         "charged_loop_tokens_per_s": sum(r["executed_loop_tokens"] for r in rows) / wall,
         "finish_reasons": reasons, "mean_gen_tokens": toks / len(rows),
+        "think_share": sum(bool(r["think"]) for r in rows) / len(rows),
         "question_latency_s": dist([r["latency_s"] for r in q_rows]),
         "candidate_latency_s": dist([r["finish_time"] - r["submit_time"] for r in rows]),
         "first_token_s": dist([r["first_token_time"] - r["submit_time"] for r in rows if r["first_token_time"] is not None]),
@@ -193,7 +249,10 @@ def main() -> None:
     ap.add_argument("--model", required=True)
     ap.add_argument("--items", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--arms", default="", help="comma list of <depth>x<width>")
+    ap.add_argument("--arms", default="", help="comma list of <depth>x<width>[:<mode>][@<cap>]")
+    ap.add_argument("--total_ut_steps", type=int, default=0,
+                    help="run a depth-limited engine: the same weights with this many loops everywhere")
+    ap.add_argument("--allow_full_depth_prefix_state", action="store_true")
     ap.add_argument("--extend_from", default="", help="arm directory whose capped candidates are rerun at --cap")
     ap.add_argument("--cap", type=int, default=2048)
     ap.add_argument("--slots", type=int, default=32)
@@ -232,6 +291,7 @@ def main() -> None:
         attention_backend=args.attention, kv_layout=args.kv_layout, max_num_seqs=args.slots,
         max_num_batched_tokens=args.max_num_batched_tokens, scheduler_mode=args.scheduler_mode,
         kv_cache_memory_bytes=args.kv_gb * GB, execution=json.loads(args.execution), exit_mode=args.exit_mode,
+        total_ut_steps=args.total_ut_steps or None,
     )
     # Warm every depth so kernel compilation is not charged to the first arm.
     warm = [GenerationRequest(f"warm:{d}:{i}", tuple(items[i % len(items)]["prompt"]), d, 48, 0.6, 0.95, i)
@@ -243,8 +303,9 @@ def main() -> None:
     os.makedirs(args.out, exist_ok=True)
     plan = []
     for a in [x for x in args.arms.split(",") if x]:
-        d, w = (int(v) for v in a.split("x"))
-        plan.append(({"depth": d, "width": w, "cap": args.cap, "kind": "fixed"}, None))
+        arm = parse_arm(a, args.cap)
+        check_mode_semantics(be, arm["depth"], arm["mode"], args.allow_full_depth_prefix_state)
+        plan.append((arm, None))
     if args.extend_from:
         src = [json.loads(line) for line in open(os.path.join(args.extend_from, "candidates.jsonl"))]
         src_manifest = json.load(open(os.path.join(args.extend_from, em.MANIFEST_FILE)))
@@ -261,8 +322,7 @@ def main() -> None:
                            {r["candidate_id"]: r["generated_token_ids"] for r in capped})))
 
     for arm, extra in plan:
-        name = (f"d{arm['depth']}_w{arm['width']}_cap{arm['cap']}" + ("_extend" if arm["kind"] != "fixed" else "")
-                + (f"_{args.tag}" if args.tag else ""))
+        name = arm_name(arm, args.tag)
         out_dir = os.path.join(args.out, name)
         manifest = manifest_for(args, be, arm, prompt_hash, spec["split_hash"])
         state = em.open_run_dir(out_dir, manifest)
@@ -279,7 +339,7 @@ def main() -> None:
             json.dump(summary, open(os.path.join(out_dir, "summary.json"), "w"), indent=1)
         print(f"{name}: " + json.dumps({k: (round(v, 2) if isinstance(v, float) else v) for k, v in summary.items()
                                         if k in ("wall_s", "candidates", "tokens_per_s", "questions_per_min",
-                                                 "finish_reasons", "mean_gen_tokens", "peak_used_blocks",
+                                                 "finish_reasons", "mean_gen_tokens", "think_share", "peak_used_blocks",
                                                  "prefix_reproduced")})
               + f" latency_p50={summary['question_latency_s'].get('p50'):.1f}s"
               + f" p95={summary['question_latency_s'].get('p95'):.1f}s", flush=True)

@@ -18,6 +18,25 @@
    "cap": 2048,
    "run_id": "run_e358130f544dd694",
    "policy": "greedy",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.31,
+     "cap_rate": 0.8709677419354839,
+     "accuracy": 0.16129032258064516,
+     "accuracy_when_finished": 1.0,
+     "mean_gen_tokens": 1896.774193548387,
+     "share_of_tokens": 0.6001224739742804
+    },
+    "direct": {
+     "share": 0.69,
+     "cap_rate": 0.014492753623188406,
+     "accuracy": 0.7101449275362319,
+     "accuracy_when_finished": 0.7205882352941176,
+     "mean_gen_tokens": 567.8260869565217,
+     "share_of_tokens": 0.3998775260257195
+    }
+   },
    "questions": 100,
    "accuracy": 0.54,
    "accuracy_ci95": [
@@ -58,6 +77,25 @@
    "cap": 2048,
    "run_id": "run_c057f3e2017b30b1",
    "policy": "SC@4",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.325,
+     "cap_rate": 0.7846153846153846,
+     "accuracy": 0.26153846153846155,
+     "accuracy_when_finished": 1.0,
+     "mean_gen_tokens": 1845.6923076923076,
+     "share_of_tokens": 0.5994363888916647
+    },
+    "direct": {
+     "share": 0.675,
+     "cap_rate": 0.014814814814814815,
+     "accuracy": 0.7518518518518519,
+     "accuracy_when_finished": 0.7631578947368421,
+     "mean_gen_tokens": 593.837037037037,
+     "share_of_tokens": 0.40056361110833527
+    }
+   },
    "questions": 100,
    "accuracy": 0.72,
    "accuracy_ci95": [
@@ -98,6 +136,25 @@
    "cap": 2048,
    "run_id": "run_c15700635e59d90b",
    "policy": "greedy",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.4,
+     "cap_rate": 0.7,
+     "accuracy": 0.325,
+     "accuracy_when_finished": 0.9166666666666666,
+     "mean_gen_tokens": 1818.15,
+     "share_of_tokens": 0.6835086136408492
+    },
+    "direct": {
+     "share": 0.6,
+     "cap_rate": 0.0,
+     "accuracy": 0.8166666666666667,
+     "accuracy_when_finished": 0.8166666666666667,
+     "mean_gen_tokens": 561.25,
+     "share_of_tokens": 0.31649138635915075
+    }
+   },
    "questions": 100,
    "accuracy": 0.62,
    "accuracy_ci95": [
@@ -138,6 +195,25 @@
    "cap": 2048,
    "run_id": "run_5bb670d87a178c6a",
    "policy": "SC@4",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.4075,
+     "cap_rate": 0.6871165644171779,
+     "accuracy": 0.38650306748466257,
+     "accuracy_when_finished": 1.0,
+     "mean_gen_tokens": 1811.3006134969326,
+     "share_of_tokens": 0.6923688450200857
+    },
+    "direct": {
+     "share": 0.5925,
+     "cap_rate": 0.008438818565400843,
+     "accuracy": 0.8481012658227848,
+     "accuracy_when_finished": 0.8553191489361702,
+     "mean_gen_tokens": 553.506329113924,
+     "share_of_tokens": 0.30763115497991433
+    }
+   },
    "questions": 100,
    "accuracy": 0.75,
    "accuracy_ci95": [
@@ -178,6 +254,25 @@
    "cap": 2048,
    "run_id": "run_c0521997bbf97ca3",
    "policy": "SC@8",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.40375,
+     "cap_rate": 0.6934984520123839,
+     "accuracy": 0.3560371517027864,
+     "accuracy_when_finished": 1.0,
+     "mean_gen_tokens": 1812.6687306501549,
+     "share_of_tokens": 0.6893258407123406
+    },
+    "direct": {
+     "share": 0.59625,
+     "cap_rate": 0.016771488469601678,
+     "accuracy": 0.8301886792452831,
+     "accuracy_when_finished": 0.8443496801705757,
+     "mean_gen_tokens": 553.2012578616352,
+     "share_of_tokens": 0.3106741592876594
+    }
+   },
    "questions": 100,
    "accuracy": 0.74,
    "accuracy_ci95": [
@@ -218,6 +313,25 @@
    "cap": 2048,
    "run_id": "run_ec3ca32d8ac22c6a",
    "policy": "greedy",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.56,
+     "cap_rate": 0.5892857142857143,
+     "accuracy": 0.48214285714285715,
+     "accuracy_when_finished": 1.0,
+     "mean_gen_tokens": 1671.125,
+     "share_of_tokens": 0.7656992775264075
+    },
+    "direct": {
+     "share": 0.44,
+     "cap_rate": 0.045454545454545456,
+     "accuracy": 0.7272727272727273,
+     "accuracy_when_finished": 0.7619047619047619,
+     "mean_gen_tokens": 650.8181818181819,
+     "share_of_tokens": 0.2343007224735925
+    }
+   },
    "questions": 100,
    "accuracy": 0.59,
    "accuracy_ci95": [
@@ -258,6 +372,25 @@
    "cap": 2048,
    "run_id": "run_f7088c5dd14e16c6",
    "policy": "SC@4",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.5,
+     "cap_rate": 0.605,
+     "accuracy": 0.465,
+     "accuracy_when_finished": 0.9873417721518988,
+     "mean_gen_tokens": 1690.185,
+     "share_of_tokens": 0.7359269378558133
+    },
+    "direct": {
+     "share": 0.5,
+     "cap_rate": 0.025,
+     "accuracy": 0.785,
+     "accuracy_when_finished": 0.8051282051282052,
+     "mean_gen_tokens": 606.49,
+     "share_of_tokens": 0.2640730621441867
+    }
+   },
    "questions": 100,
    "accuracy": 0.78,
    "accuracy_ci95": [
@@ -298,6 +431,26 @@
    "cap": 2048,
    "run_id": "run_29fa8038226071f7",
    "policy": "SC@4 + certificate cancel (live)",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.3888888888888889,
+     "cap_rate": 0.7894736842105263,
+     "accuracy": 0.2857142857142857,
+     "accuracy_when_finished": 0.9642857142857143,
+     "mean_gen_tokens": 1897.1278195488721,
+     "share_of_tokens": 0.6874531717856432
+    },
+    "direct": {
+     "share": 0.6111111111111112,
+     "cap_rate": 0.014354066985645933,
+     "accuracy": 0.861244019138756,
+     "accuracy_when_finished": 0.8737864077669902,
+     "mean_gen_tokens": 548.8755980861245,
+     "share_of_tokens": 0.31254682821435675
+    }
+   },
+   "decision_reasons": null,
    "questions": 100,
    "accuracy": 0.77,
    "accuracy_ci95": [
@@ -340,6 +493,26 @@
    "cap": 2048,
    "run_id": "run_82cfa51e979cbb88",
    "policy": "two-then-two (live)",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.4689655172413793,
+     "cap_rate": 0.7941176470588235,
+     "accuracy": 0.27941176470588236,
+     "accuracy_when_finished": 1.0,
+     "mean_gen_tokens": 1895.8823529411766,
+     "share_of_tokens": 0.7271271090606062
+    },
+    "direct": {
+     "share": 0.5310344827586206,
+     "cap_rate": 0.025974025974025976,
+     "accuracy": 0.7727272727272727,
+     "accuracy_when_finished": 0.7933333333333333,
+     "mean_gen_tokens": 628.3181818181819,
+     "share_of_tokens": 0.2728728909393939
+    }
+   },
+   "decision_reasons": null,
    "questions": 100,
    "accuracy": 0.74,
    "accuracy_ci95": [
@@ -382,6 +555,26 @@
    "cap": 2048,
    "run_id": "run_e17c9121bc26dd71",
    "policy": "two-then-two (live), fallback depth 4",
+   "mode": "natural",
+   "modes": {
+    "think": {
+     "share": 0.4793103448275862,
+     "cap_rate": 0.7410071942446043,
+     "accuracy": 0.30935251798561153,
+     "accuracy_when_finished": 1.0,
+     "mean_gen_tokens": 1868.7338129496402,
+     "share_of_tokens": 0.7242871562651617
+    },
+    "direct": {
+     "share": 0.5206896551724138,
+     "cap_rate": 0.019867549668874173,
+     "accuracy": 0.7483443708609272,
+     "accuracy_when_finished": 0.7635135135135135,
+     "mean_gen_tokens": 654.8344370860927,
+     "share_of_tokens": 0.2757128437348383
+    }
+   },
+   "decision_reasons": null,
    "questions": 100,
    "accuracy": 0.75,
    "accuracy_ci95": [
