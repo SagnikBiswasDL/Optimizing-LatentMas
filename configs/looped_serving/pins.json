@@ -1,0 +1,55 @@
+{
+  "recorded": "2026-11-10",
+  "repository": {
+    "remote": "git@github.com:SagnikBiswasDL/Optimizing-LatentMas.git",
+    "base_commit": "641d891fc4d879b98d15f5c46af9be2f2ed40109",
+    "base_branch": "perf/vllm-fork",
+    "work_branch": "research/looped-serving"
+  },
+  "reference_backend": {
+    "path": "looped/ouro_adapter.py",
+    "role": "correctness reference: Hugging Face model, one depth per pool, depth set through the instance attribute total_ut_steps",
+    "pod_versions_in_saved_runs": {"torch": "2.8.0+cu128", "transformers": "4.57.1", "python": "3.12.3"}
+  },
+  "engine": {
+    "repo": "https://github.com/InferMatrixLab/vllm-rlt",
+    "commit": "e0a5515ec970d634546d2e1d38b3ba3602072884",
+    "commit_date": "2026-11-06",
+    "package_version": "0.2.0",
+    "license": "Apache-2.0",
+    "requires": "Python >= 3.10, torch >= 2.5; GPU inference needs Linux and an NVIDIA GPU",
+    "status": "commit fetched and its documentation read on 2026-11-10; not installed, no test or inference run",
+    "contributor_instructions": ["CONTRIBUTING.md", "docs/developer-guide.md"],
+    "documented_behaviour_that_differs_from_the_reference": [
+      {
+        "topic": "prompt depth",
+        "reference": "OuroRunner.forward(depth=r) runs r loops over the prompt and over every decoded token",
+        "engine": "prompt prefill always runs the model's full depth; SamplingParams.max_loops only limits later decode, and the first generated token comes from the full-depth prefill",
+        "where": ["docs/runtime.md (WCPB section and exit-mode paragraph)", "docs/launching.md (batch results)", "vllm_rlt/engine/stage_engine.py:370"],
+        "consequence": "min_loops=max_loops=r is a different model from the saved depth-r candidates. Either add and test a per-request prefill depth, or redefine every baseline and regenerate the candidate pool under full-depth prefill."
+      },
+      {
+        "topic": "skipped KV planes",
+        "engine": "LAST_EXITED copies the last computed depth into the skipped deeper planes; storage_depths = max_loops",
+        "where": ["docs/kv_cache_walkthrough.md", "docs/kv_layout_computation.md section 4.1"],
+        "consequence": "a branch fixed at depth r must never be deepened later, and running fewer loops may not reserve less KV memory. Both need measurement."
+      }
+    ]
+  },
+  "models": {
+    "ByteDance/Ouro-1.4B": "574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "ByteDance/Ouro-1.4B-Thinking": "3aaa2224253a92ca45cf2e3d427c360e1ef9c93d"
+  },
+  "datasets": {
+    "EleutherAI/hendrycks_math": "21a5633873b6a120296cce3e2df9d5550074f4a3",
+    "gsm8k": "740312add88f781978c0658806c59bc2815b9866",
+    "HuggingFaceH4/MATH-500": "6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be"
+  },
+  "grader": {
+    "package": "math-verify",
+    "version": "0.9.0",
+    "evidence": "regrading the 4,282 Stage-0b answers that have a boxed prediction with this version reproduces every stored mv_ok verdict; the version used on the pod was not recorded at the time",
+    "note": "string matching disagrees with it on 67 of those 4,282 answers, so a silent fallback is not acceptable"
+  },
+  "splits": {"path": "configs/looped_serving/splits.json", "split_hash": "e5213c5b831e62ed"}
+}
