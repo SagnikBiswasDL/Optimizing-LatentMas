@@ -157,7 +157,9 @@ def manifest_for(args, be, arm: dict, prompt_hash: str, split_hash: str) -> em.R
         tokenizer_revision=f"{MODEL_ID}@{MODEL_REV}", dataset_revision=args.dataset_revision,
         prompt_hash=prompt_hash, split_hash=split_hash,
         decode_config={**arm, "temperature": args.temperature, "top_p": args.top_p, "stop_ids": be.semantics["stop_ids"],
-                       "slots": args.slots, "items_sha256": em.file_sha256(args.items), "limit": args.limit},
+                       "slots": args.slots, "items_sha256": em.file_sha256(args.items), "limit": args.limit,
+                       **({"question_subset_sha256": args.question_subset, "n_questions": args.n_questions}
+                          if getattr(args, "question_subset", None) else {})},
         cache_semantics=(f"prompt_mode={be.semantics['prompt_mode']}; prompt_depth={be.semantics['prompt_depth']}; "
                          f"kv_layout={be.semantics['kv_layout']} x{be.semantics['kv_storage_depths']} planes"),
         attention_backend=be.semantics["attention_backend"], dtype=be.semantics["dtype"],
@@ -382,6 +384,8 @@ def main() -> None:
     ap.add_argument("--cap", type=int, default=2048)
     ap.add_argument("--slots", type=int, default=32)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--only_questions", default="",
+                    help="file with one question id per line; the arms run on these questions only")
     ap.add_argument("--temperature", type=float, default=0.6)
     ap.add_argument("--top_p", type=float, default=0.95)
     ap.add_argument("--run_seed", type=int, default=0)
@@ -404,6 +408,13 @@ def main() -> None:
     items = [json.loads(line) for line in open(args.items)]
     if args.limit:
         items = items[: args.limit]
+    if args.only_questions:
+        keep = {line.strip() for line in open(args.only_questions) if line.strip()}
+        if keep - {it["question_id"] for it in items}:
+            raise SystemExit("--only_questions names questions that are not in --items")
+        items = [it for it in items if it["question_id"] in keep]
+    args.question_subset = em.file_sha256(args.only_questions) if args.only_questions else None
+    args.n_questions = len(items)
     for it in items:
         em.assert_no_gold(it)
         it["prompt"] = tok.apply_chat_template(P.msgs(P.solver(it["text"])), tokenize=True, add_generation_prompt=True)

@@ -110,8 +110,8 @@ def check_coverage(name, rows, questions, manifest, summary, gold) -> None:
         raise SystemExit(f"{name}: {len(set(qids) - set(gold))} questions are not in the gold file")
     if summary.get("arm", {}).get("kind") == "extend_capped":
         return
-    limit = manifest["decode_config"].get("limit") or 0
-    expected = limit or len(gold)
+    cfg = manifest["decode_config"]
+    expected = cfg.get("n_questions") or cfg.get("limit") or len(gold)      # a declared subset, a prefix, or the split
     if len(qids) != expected:
         raise SystemExit(f"{name}: {len(qids)} question outcomes for {expected} questions")
     listed = {c for q in questions for c in q["all_candidate_ids"]}
