@@ -212,3 +212,35 @@ def test_extension_table_counts_rescued_candidates(grade):
     assert t["extra_gen_tokens"] == 4 + 8
     # old vote: only "A" (wrong). new vote: A and B tie, lowest candidate (s0, correct) wins.
     assert (t["policy_accuracy_before"], t["policy_accuracy_after"], t["questions_changed"]) == (0.0, 1.0, 1)
+
+
+# ------------------------------------------------------------------ profile helpers
+
+@pytest.fixture(scope="module")
+def profile():
+    pytest.importorskip("torch")
+    return load_script("looped_profile")
+
+
+def test_candidates_are_stable_across_widths(profile):
+    args = SimpleNamespace(run_seed=0, temperature=0.6, top_p=0.95)
+    four = profile.candidates_for("q_x", 3, 4, args)
+    eight = profile.candidates_for("q_x", 3, 8, args)
+    assert eight[:4] == four                                   # a wider arm extends, never reshuffles
+    assert [c[1] for c in eight] == list(range(8))
+    assert len({c[4] for c in eight}) == 8                     # one seed per candidate
+    greedy = profile.candidates_for("q_x", 3, 1, args)
+    assert greedy == [("q_x:d3:s-1", -1, 0.0, 1.0, greedy[0][4])]
+    other_depth = profile.candidates_for("q_x", 4, 4, args)
+    assert {c[4] for c in other_depth}.isdisjoint({c[4] for c in four})
+    reseeded = profile.candidates_for("q_x", 3, 4, SimpleNamespace(run_seed=1, temperature=0.6, top_p=0.95))
+    assert {c[4] for c in reseeded}.isdisjoint({c[4] for c in four})
+
+
+def test_percentiles(profile):
+    assert profile.pct([], .5) is None
+    assert profile.pct([3.0], .95) == 3.0
+    assert profile.pct([1.0, 2.0, 3.0, 4.0], .5) == 2.5
+    assert profile.pct([4.0, 1.0, 3.0, 2.0], 1.0) == 4.0
+    d = profile.dist([1.0, 2.0, 3.0])
+    assert d["mean"] == 2.0 and d["max"] == 3.0 and profile.dist([]) == {}

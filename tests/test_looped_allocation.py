@@ -174,3 +174,16 @@ def test_driver_certificate_cancels_and_frees_slots_at_once():
 def test_driver_rejects_a_policy_that_cannot_fit():
     with pytest.raises(ValueError):
         drive(al.FixedWidth(3, 4), {}, 1, slots=2)
+
+
+def test_driver_handles_candidates_that_finish_in_the_same_step():
+    # s0..s2 agree and finish together with s3: the certificate must not try to
+    # cancel a candidate the backend has already returned.
+    script = {f"q0:d3:s{s}": (2, "A") for s in range(4)}
+    be, stats, answers, events = drive(al.CertificateCancel(3, 4), script, 1, slots=4)
+    assert stats["cancelled"] == 0 and answers == {"q0": ("A", 2.0)}
+    assert [a for _, a, _ in events] == ["answer"]            # one decision for the whole step
+    # Three finish together, the fourth is still running: it is cancelled once.
+    script = {f"q0:d3:s{s}": ((2, "A") if s < 3 else (9, "B")) for s in range(4)}
+    be, stats, answers, _ = drive(al.CertificateCancel(3, 4), script, 1, slots=4)
+    assert be.cancelled == ["q0:d3:s3"] and answers == {"q0": ("A", 2.0)}

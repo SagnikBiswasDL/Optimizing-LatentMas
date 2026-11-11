@@ -73,12 +73,19 @@ def run_closed_loop(
         stats["peak_live"] = max(stats["peak_live"], len(live))
         if not live:
             raise RuntimeError("nothing is running but work remains; slots too small for the policy")
+        # Record everything that finished in this step before deciding anything:
+        # two candidates of one question can finish together, and a decision made
+        # after the first must not treat the second as still running.
+        touched: List[QuestionState] = []
         for comp in backend.step():
             q, sample = live.pop(comp.request_id)
             c = q.candidates[sample]
             c.update(status=al.DONE, finish_reason=comp.finish_reason, gen_tokens=len(comp.token_ids),
                      answer_key=keyer(comp))
             on_candidate(q, sample, comp, None)
+            if q not in touched:
+                touched.append(q)
+        for q in touched:
             if q.done:
                 continue
             decision = policy.decide(q.views())

@@ -65,7 +65,8 @@ def free(*objs) -> None:
 def engine(args, dtype, **kw) -> RltBackend:
     kw.setdefault("kv_cache_memory_bytes", args.kv_gb * GB)
     kw.setdefault("max_num_seqs", 64)
-    return RltBackend(args.model, stop_ids=args.stop_ids, dtype=dtype, attention_backend=args.attention, **kw)
+    return RltBackend(args.model, stop_ids=args.stop_ids, dtype=dtype, attention_backend=args.attention,
+                      execution=json.loads(args.execution), exit_mode=args.exit_mode, **kw)
 
 
 def summarize(rows) -> dict:
@@ -320,6 +321,8 @@ def main() -> None:
     ap.add_argument("--cancel_after", type=int, default=48)
     ap.add_argument("--kv_gb", type=int, default=40)
     ap.add_argument("--attention", default="triton")
+    ap.add_argument("--execution", default="{}", help="JSON for vllm_rlt.ExecutionConfig, applied to every engine")
+    ap.add_argument("--exit_mode", default="ouro")
     ap.add_argument("--sections", default="depth,sequence,batching,cancel,kv")
     args = ap.parse_args()
     args.depths = [int(x) for x in args.depths.split(",")]

@@ -64,10 +64,11 @@ class RltBackend(Backend):
         incremental_allocation: bool = False,
         total_ut_steps: Optional[int] = None,
         execution: Optional[Dict] = None,
+        exit_mode: str = "ouro",
         clock=time.perf_counter,
     ) -> None:
         import torch
-        from vllm_rlt import CacheConfig, ExecutionConfig, SamplingParams, SchedulerConfig
+        from vllm_rlt import CacheConfig, ExecutionConfig, ExitConfig, SamplingParams, SchedulerConfig
         from vllm_rlt.engine.stage_engine import StageEngine
         from vllm_rlt.models import OuroConfig, OuroForCausalLM
 
@@ -94,6 +95,10 @@ class RltBackend(Backend):
                 mode=scheduler_mode, prefill_chunk_size=prefill_chunk_size,
             ),
             execution_config=ExecutionConfig(**(execution or {})),
+            # Every request pins min_loops == max_loops with exit_threshold 1, so the
+            # gate never decides anything; the mode only selects the scheduling path
+            # (async scheduling needs "ouro_delayed").
+            exit_config=ExitConfig(mode=exit_mode),
             attention_backend=attention_backend,
         )
         self.stop_ids = tuple(int(t) for t in stop_ids)
@@ -111,7 +116,7 @@ class RltBackend(Backend):
             "dtype": dtype, "attention_backend": attention_backend, "scheduler_mode": scheduler_mode,
             "max_num_seqs": max_num_seqs, "max_num_batched_tokens": max_num_batched_tokens,
             "full_depth": self.full_depth, "checkpoint_depth": self.checkpoint_depth,
-            "stop_ids": list(self.stop_ids), "execution": execution or {},
+            "stop_ids": list(self.stop_ids), "execution": execution or {}, "exit_mode": exit_mode,
         }
 
     # ------------------------------------------------------------------ contract
