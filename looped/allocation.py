@@ -18,6 +18,15 @@ engine (``serving/looped/driver.py``) and can be replayed on a saved pool.
                        (``c1 - c2 > unfinished``). With a strict lead the
                        unfinished candidates cannot change the winner, so the
                        answer key is the one the full pool would have returned.
+``QuorumCancel``       launch ``width``; answer and cancel the rest as soon as
+                       ``quorum`` finished candidates agree. Not a certificate:
+                       the unfinished candidates could have outvoted the quorum.
+``FastThenThink``      launch short direct answers first; answer on a direct
+                       quorum, otherwise launch reasoning candidates and return
+                       the first one that reaches an answer (see ``looped/modes.py``).
+
+A launch can force an answer mode and carry its own token cap. ``Decision.select``
+names the candidate whose answer is returned when that is not the plurality winner.
 """
 from __future__ import annotations
 
@@ -25,6 +34,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Sequence
 
 from . import ensemble_state as es
+from .modes import DIRECT, MODES, NATURAL, THINK
 
 RUNNING, DONE, CANCELLED = "running", "done", "cancelled"
 GREEDY = -1
@@ -33,7 +43,9 @@ GREEDY = -1
 @dataclass(frozen=True)
 class Launch:
     depth: int
-    sample: int          # GREEDY (-1) or a sample index
+    sample: int          # GREEDY (-1) or a sample index, unique within a question
+    mode: str = NATURAL  # looped.modes
+    cap: Optional[int] = None   # token cap for this candidate; None means the run's default
 
 
 @dataclass(frozen=True)
@@ -46,6 +58,8 @@ class CandidateView:
     answer_key: Optional[str] = None
     finish_reason: Optional[str] = None
     gen_tokens: int = 0
+    mode: str = NATURAL            # the mode that was requested
+    think: Optional[bool] = None   # whether the answer opened a reasoning block, once known
 
 
 @dataclass
@@ -55,6 +69,7 @@ class Decision:
     done: bool = False
     action: str = "wait"
     reason: Optional[str] = None
+    select: Optional[int] = None   # sample whose answer is returned; None means the plurality winner
 
 
 def votes_of(cands: Sequence[CandidateView]) -> List[es.Vote]:
@@ -73,6 +88,17 @@ def selected(cands: Sequence[CandidateView]) -> Optional[CandidateView]:
 
 def running(cands: Sequence[CandidateView]) -> List[CandidateView]:
     return [c for c in cands if c.status == RUNNING]
+
+
+def quorum_winner(cands: Sequence[CandidateView], quorum: int) -> Optional[CandidateView]:
+    """Lowest-indexed finished candidate whose answer at least ``quorum``
+    finished candidates share and no other answer matches in count."""
+    votes = votes_of(cands)
+    c1, c2 = es.lead(votes)
+    if c1 < quorum or c1 == c2:
+        return None
+    win = es.select(votes, es.LOWEST_CANDIDATE)
+    return next(c for c in cands if (c.depth, c.sample) == win.candidate)
 
 
 class Policy:
@@ -97,15 +123,17 @@ class Policy:
 class FixedWidth(Policy):
     name = "fixed_width"
 
-    def __init__(self, depth: int, width: int) -> None:
+    def __init__(self, depth: int, width: int, mode: str = NATURAL) -> None:
         if width < 1:
             raise ValueError("width must be positive")
-        self.depth, self.width = int(depth), int(width)
+        if mode not in MODES:
+            raise ValueError(f"unknown mode {mode!r}")
+        self.depth, self.width, self.mode = int(depth), int(width), mode
 
     def initial(self) -> List[Launch]:
         if self.width == 1:
-            return [Launch(self.depth, GREEDY)]
-        return [Launch(self.depth, s) for s in range(self.width)]
+            return [Launch(self.depth, GREEDY, self.mode)]
+        return [Launch(self.depth, s, self.mode) for s in range(self.width)]
 
     def decide(self, cands: Sequence[CandidateView]) -> Decision:
         if running(cands):
@@ -168,13 +196,121 @@ class CertificateCancel(Policy):
         return self.width
 
 
+class QuorumCancel(Policy):
+    name = "quorum_cancel"
+
+    def __init__(self, depth: int, width: int, quorum: int = 2, mode: str = NATURAL, think_trumps: bool = False) -> None:
+        if width < 2 or not 1 <= quorum <= width:
+            raise ValueError("need width >= 2 and 1 <= quorum <= width")
+        if mode not in MODES:
+            raise ValueError(f"unknown mode {mode!r}")
+        self.depth, self.width, self.quorum, self.mode = int(depth), int(width), int(quorum), mode
+        self.think_trumps = bool(think_trumps)
+
+    def initial(self) -> List[Launch]:
+        return [Launch(self.depth, s, self.mode) for s in range(self.width)]
+
+    def decide(self, cands: Sequence[CandidateView]) -> Decision:
+        live = running(cands)
+        stop = [c.sample for c in live]
+        if self.think_trumps:
+            thought = [c for c in cands if c.status == DONE and c.think and c.answer_key is not None]
+            if thought:
+                return Decision(cancel=stop, done=True, action="cancel_and_answer" if stop else "answer",
+                                reason="think_answer", select=min(c.sample for c in thought))
+        win = quorum_winner(cands, self.quorum)
+        if win is not None:
+            return Decision(cancel=stop, done=True, action="cancel_and_answer" if stop else "answer",
+                            reason="quorum", select=win.sample)
+        if not live:
+            return Decision(done=True, action="answer", reason="all_finished")
+        return Decision()
+
+    @property
+    def max_candidates(self) -> int:
+        return self.width
+
+
+class FastThenThink(Policy):
+    """Direct answers first, reasoning only when they do not settle the question.
+
+    ``direct_width`` direct candidates start together. As soon as ``quorum`` of
+    them agree the question is answered and the rest are cancelled. Once a
+    quorum can no longer form, ``think_width`` reasoning candidates are launched
+    (direct candidates still running keep going: they are short and feed the
+    fallback). The first reasoning candidate that finishes with an answer is
+    returned. If none does, the answer is the plurality of the direct answers.
+    """
+    name = "fast_then_think"
+    THINK_BASE = 100          # reasoning candidates use samples 100, 101, ...
+
+    def __init__(self, direct_depth: int, direct_width: int, think_depth: int, think_width: int,
+                 quorum: int = 2, think_cap: Optional[int] = None) -> None:
+        if direct_width < 1 or think_width < 0 or not 1 <= quorum <= max(direct_width, 1):
+            raise ValueError("need direct_width >= 1, think_width >= 0 and 1 <= quorum <= direct_width")
+        self.direct_depth, self.direct_width = int(direct_depth), int(direct_width)
+        self.think_depth, self.think_width = int(think_depth), int(think_width)
+        self.quorum, self.think_cap = int(quorum), (int(think_cap) if think_cap else None)
+
+    def initial(self) -> List[Launch]:
+        return [Launch(self.direct_depth, s, DIRECT) for s in range(self.direct_width)]
+
+    def decide(self, cands: Sequence[CandidateView]) -> Decision:
+        direct = [c for c in cands if c.mode == DIRECT]
+        think = [c for c in cands if c.mode == THINK]
+        live = running(cands)
+        stop = [c.sample for c in live]
+        thought = [c for c in think if c.status == DONE and c.answer_key is not None]
+        if thought:
+            return Decision(cancel=stop, done=True, action="cancel_and_answer" if stop else "answer",
+                            reason="think_answer", select=min(c.sample for c in thought))
+        win = quorum_winner(direct, self.quorum)
+        if win is not None:
+            return Decision(cancel=stop, done=True, action="cancel_and_answer" if stop else "answer",
+                            reason="direct_quorum", select=win.sample)
+        if not think:
+            c1, _ = es.lead(votes_of(direct))
+            if c1 + len(running(direct)) >= self.quorum:
+                return Decision()                              # a direct quorum is still possible
+            if self.think_width:
+                return Decision(launch=[Launch(self.think_depth, self.THINK_BASE + s, THINK, self.think_cap)
+                                        for s in range(self.think_width)],
+                                action="launch", reason="no_direct_quorum")
+        if not live:
+            fallback = selected(direct)
+            return Decision(done=True, action="answer", reason="fallback_direct_plurality",
+                            select=None if fallback is None else fallback.sample)
+        return Decision()
+
+    @property
+    def max_candidates(self) -> int:
+        return self.direct_width + self.think_width
+
+
 def parse_policy(spec: str) -> Policy:
-    """``fixed:<depth>x<width>``, ``two_then_two:<depth>[-><fallback depth>]``
-    or ``cert:<depth>x<width>``."""
+    """``fixed:<depth>x<width>[:<mode>]``, ``two_then_two:<depth>[-><fallback depth>]``,
+    ``cert:<depth>x<width>``, ``quorum:<depth>x<width>[/<quorum>][:<mode>][:trump]`` or
+    ``ftt:<depth>x<width>[/<quorum>]+<think depth>x<think width>[@<think cap>]``."""
     kind, _, arg = spec.partition(":")
+    if kind == "quorum":
+        head, *flags = arg.split(":")
+        shape, _, k = head.partition("/")
+        d, w = shape.split("x")
+        mode = next((f for f in flags if f in MODES), NATURAL)
+        if any(f not in MODES and f != "trump" for f in flags):
+            raise ValueError(f"unknown flag in policy spec {spec!r}")
+        return QuorumCancel(int(d), int(w), int(k) if k else 2, mode, "trump" in flags)
+    if kind == "ftt":
+        fast, _, slow = arg.partition("+")
+        shape, _, k = fast.partition("/")
+        d, w = shape.split("x")
+        slow, _, cap = slow.partition("@")
+        td, tw = slow.split("x")
+        return FastThenThink(int(d), int(w), int(td), int(tw), int(k) if k else min(2, int(w)), int(cap) if cap else None)
     if kind == "fixed":
-        d, w = arg.split("x")
-        return FixedWidth(int(d), int(w))
+        shape, _, mode = arg.partition(":")
+        d, w = shape.split("x")
+        return FixedWidth(int(d), int(w), mode or NATURAL)
     if kind == "two_then_two":
         d, _, f = arg.partition("->")
         return TwoThenTwo(int(d), int(f) if f else None)

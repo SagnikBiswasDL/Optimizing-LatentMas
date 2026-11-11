@@ -8,7 +8,9 @@ decision that fixes its answer; candidates cancelled by that decision stop at
 once and their slots are free for the next launch.
 
 The driver never sees gold. ``keyer`` turns a completion into the observable
-answer key the policy votes on.
+answer key the policy votes on; ``think_of`` says whether the answer opened a
+reasoning block. The answer returned is the plurality winner of the finished
+candidates unless the policy's final decision names a candidate.
 """
 from __future__ import annotations
 
@@ -32,7 +34,8 @@ class QuestionState:
 
     def views(self) -> List[al.CandidateView]:
         return [al.CandidateView(s, c["depth"], c["status"], c.get("answer_key"), c.get("finish_reason"),
-                                 c.get("gen_tokens", 0)) for s, c in sorted(self.candidates.items())]
+                                 c.get("gen_tokens", 0), c["mode"], c.get("think"))
+                for s, c in sorted(self.candidates.items())]
 
 
 def run_closed_loop(
@@ -43,6 +46,7 @@ def run_closed_loop(
     slots: int,
     make_request: Callable[[str, Sequence[int], al.Launch], GenerationRequest],
     keyer: Callable[[Completion], Optional[str]],
+    think_of: Callable[[Completion, al.Launch], Optional[bool]] = lambda comp, launch: None,
     on_candidate: Callable[[QuestionState, int, Completion, Optional[float]], None] = lambda *a: None,
     on_decision: Callable[[QuestionState, al.Decision, float, int], None] = lambda *a: None,
     on_question: Callable[[QuestionState, Optional[al.CandidateView], float], None] = lambda *a: None,
@@ -57,7 +61,10 @@ def run_closed_loop(
 
     def launch(q: QuestionState, l: al.Launch) -> None:
         req = make_request(q.question_id, q.prompt, l)
-        q.candidates[l.sample] = {"depth": l.depth, "status": al.RUNNING, "request_id": req.request_id, "request": req}
+        if l.sample in q.candidates:
+            raise ValueError(f"{q.question_id}: sample {l.sample} launched twice")
+        q.candidates[l.sample] = {"depth": l.depth, "status": al.RUNNING, "request_id": req.request_id, "request": req,
+                                  "mode": l.mode, "launch": l}
         backend.submit(req)
         live[req.request_id] = (q, l.sample)
         stats["launched"] += 1
@@ -81,7 +88,7 @@ def run_closed_loop(
             q, sample = live.pop(comp.request_id)
             c = q.candidates[sample]
             c.update(status=al.DONE, finish_reason=comp.finish_reason, gen_tokens=len(comp.token_ids),
-                     answer_key=keyer(comp))
+                     answer_key=keyer(comp), think=think_of(comp, c["launch"]))
             on_candidate(q, sample, comp, None)
             if q not in touched:
                 touched.append(q)
@@ -103,5 +110,12 @@ def run_closed_loop(
             if decision.done:
                 q.done = True
                 stats["questions"] += 1
-                on_question(q, al.selected(q.views()), now)
+                views = q.views()
+                if decision.select is None:
+                    chosen = al.selected(views)
+                else:
+                    chosen = next(v for v in views if v.sample == decision.select)
+                    if chosen.status != al.DONE or chosen.answer_key is None:
+                        raise ValueError(f"{q.question_id}: policy selected sample {decision.select}, which has no answer")
+                on_question(q, chosen, now)
     return stats
