@@ -331,3 +331,71 @@ def test_replay_backend_serves_saved_candidates_on_a_token_clock():
     assert c.finish_reason == B.CANCELLED and len(c.token_ids) == 2 and be.active() == 0
     with pytest.raises(ValueError):                           # the pool cannot say what happens past its own cap
         be.submit(B.GenerationRequest("b", (1,), 3, 10))
+
+
+# ------------------------------------------------------------------ lifecycle regressions (review of 2026-11-11)
+
+def test_fast_then_think_escalates_when_finished_direct_votes_tie():
+    p = al.FastThenThink(3, 4, 3, 1, quorum=2)
+    tie = [mview(0, "direct", "A"), mview(1, "direct", "B"), mview(2, "direct", "A"), mview(3, "direct", "B")]
+    d = p.decide(tie)                                        # no unique quorum winner and nothing left running
+    assert not d.done and d.launch == [al.Launch(3, 100, "think", None)] and d.reason == "no_direct_quorum"
+    # While a direct candidate is still running a tie can break: wait.
+    open_tie = [mview(0, "direct", "A"), mview(1, "direct", "B"), mview(2, "direct", None),
+                mview(3, "direct", status=al.RUNNING)]
+    assert al.quorum_winner(open_tie, 2) is None
+    d = p.decide(open_tie)
+    assert not d.done and not d.launch
+    # Without a reasoning stage the tie falls back to the direct plurality at once.
+    d = al.FastThenThink(3, 4, 3, 0, quorum=2).decide(tie)
+    assert d.done and d.reason == "fallback_direct_plurality" and d.select == 0
+
+
+def test_driver_answers_a_question_whose_direct_votes_tie_in_one_step():
+    script = {"q0:d3:s0": (2, "A"), "q0:d3:s1": (2, "B"), "q0:d3:s2": (2, "A"), "q0:d3:s3": (2, "B"),
+              "q0:d3:s100": (3, None)}
+    be, stats, answers, events = drive(al.FastThenThink(3, 4, 3, 1, quorum=2), script, 1, slots=4)
+    assert stats["questions"] == 1 and stats["launched"] == 5 and be.active() == 0
+    assert answers == {"q0": ("A", 5.0)}                     # the reasoning candidate had no answer: direct plurality
+    assert [a for _, a, _ in events] == ["launch", "answer"]
+
+
+def test_driver_never_runs_a_queued_launch_of_an_answered_question():
+    # Two slots. s0 finishes without an answer, which launches two reasoning candidates; only one
+    # fits beside s1. It answers, s1 is cancelled, and the second reasoning candidate must never start.
+    script = {"q0:d3:s0": (2, None), "q0:d3:s1": (40, "A"), "q0:d4:s100": (2, "B"), "q0:d4:s101": (40, "C")}
+    be, stats, answers, _ = drive(al.FastThenThink(3, 2, 4, 2), script, 1, slots=2)
+    assert answers == {"q0": ("B", 4.0)}
+    assert be.t == 4 and be.active() == 0                    # the backend stops with the answer
+    assert stats["launched"] == 3 and stats["dropped_queued"] == 1 and stats["cancelled"] == 1
+    assert be.cancelled == ["q0:d3:s1"]                      # the queued one was never submitted, so never cancelled
+
+
+def test_driver_shows_queued_launches_to_the_policy_and_charges_only_what_ran():
+    seen = []
+
+    class Spy(al.FastThenThink):
+        def decide(self, cands):
+            seen.append(sorted((c.sample, c.status) for c in cands))
+            return super().decide(cands)
+
+    script = {"q0:d3:s0": (2, None), "q0:d3:s1": (5, None), "q0:d4:s100": (9, "B"), "q0:d4:s101": (9, "C")}
+    be, stats, answers, _ = drive(Spy(3, 2, 4, 2), script, 1, slots=2)
+    # After s0 the launch of 100 and 101 is registered; when s1 finishes, 100 is running and 101
+    # still waits. The policy must see both, or it would escalate a second time.
+    assert seen[1] == [(0, al.DONE), (1, al.DONE), (100, al.RUNNING), (101, al.QUEUED)]
+    assert answers["q0"][0] == "B" and stats["launched"] == 4
+
+
+def test_driver_fails_when_a_policy_strands_a_question():
+    class Stuck(al.FixedWidth):
+        def decide(self, cands):
+            return al.Decision()                             # never answers, launches nothing
+    script = {"q0:d3:s0": (2, "A"), "q0:d3:s1": (2, "A")}
+    with pytest.raises(RuntimeError, match="neither answered nor left any work running"):
+        drive(Stuck(3, 2), script, 1, slots=2)
+
+
+def test_live_policies_cannot_request_nothink():
+    with pytest.raises(ValueError):
+        al.parse_policy("fixed:3x4:nothink")

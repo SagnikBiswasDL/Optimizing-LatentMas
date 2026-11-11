@@ -79,8 +79,7 @@ def run_policy(be, tok, items, policy: al.Policy, args, out_dir: str, manifest: 
         texts[comp.request_id] = text
         if comp.finish_reason == "error":
             return None
-        ans, _ = ai.extract_final_answer(text)
-        return ai.identify(ans).key if ans is not None else None
+        return ai.answer_from_text(text)[1].key
 
     def on_candidate(q, sample, comp, cancel_time):
         req = q.candidates[sample]["request"]

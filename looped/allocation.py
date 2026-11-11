@@ -34,9 +34,10 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Sequence
 
 from . import ensemble_state as es
-from .modes import DIRECT, MODES, NATURAL, THINK
+from .modes import DIRECT, NATURAL, THINK
+from .modes import POLICY_MODES as MODES
 
-RUNNING, DONE, CANCELLED = "running", "done", "cancelled"
+QUEUED, RUNNING, DONE, CANCELLED = "queued", "running", "done", "cancelled"
 GREEDY = -1
 
 
@@ -87,7 +88,9 @@ def selected(cands: Sequence[CandidateView]) -> Optional[CandidateView]:
 
 
 def running(cands: Sequence[CandidateView]) -> List[CandidateView]:
-    return [c for c in cands if c.status == RUNNING]
+    """Candidates that can still produce an answer: running, or launched by an
+    earlier decision and waiting for a slot."""
+    return [c for c in cands if c.status in (RUNNING, QUEUED)]
 
 
 def quorum_winner(cands: Sequence[CandidateView], quorum: int) -> Optional[CandidateView]:
@@ -268,14 +271,16 @@ class FastThenThink(Policy):
         if win is not None:
             return Decision(cancel=stop, done=True, action="cancel_and_answer" if stop else "answer",
                             reason="direct_quorum", select=win.sample)
-        if not think:
+        if running(direct):
             c1, _ = es.lead(votes_of(direct))
-            if c1 + len(running(direct)) >= self.quorum:
-                return Decision()                              # a direct quorum is still possible
-            if self.think_width:
-                return Decision(launch=[Launch(self.think_depth, self.THINK_BASE + s, THINK, self.think_cap)
-                                        for s in range(self.think_width)],
-                                action="launch", reason="no_direct_quorum")
+            if think or c1 + len(running(direct)) >= self.quorum:
+                return Decision()            # a direct quorum can still form, or reasoning is already on its way
+        if not think and self.think_width:
+            # No direct quorum can form any more: too few agreeing answers, or
+            # every direct candidate has finished and the leading answers tie.
+            return Decision(launch=[Launch(self.think_depth, self.THINK_BASE + s, THINK, self.think_cap)
+                                    for s in range(self.think_width)],
+                            action="launch", reason="no_direct_quorum")
         if not live:
             fallback = selected(direct)
             return Decision(done=True, action="answer", reason="fallback_direct_plurality",

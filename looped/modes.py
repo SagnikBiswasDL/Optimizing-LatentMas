@@ -9,10 +9,17 @@ anything else, almost always ``To``, starts a short worked solution
 ``think``    the answer is started with ``<think>``.
 ``direct``   the answer is started with ``To``, the opening of 96% of the
              model's own direct answers.
+``nothink``  the model picks its own first token, except that ``<think>`` is
+             not allowed: the first token is drawn from the model's own
+             first-token distribution with ``<think>`` removed. This separates
+             "no reasoning block" from "the word To".
 
 A forced mode is an assistant prefill: the prefix tokens are appended to the
 prompt and reported as the first tokens of the answer, so a forced candidate
 has the same record shape as a natural one that happened to start that way.
+``nothink`` has no fixed prefix; the caller draws the first token per candidate
+(``scripts/looped_profile.py``: one-token requests, redrawn while they return
+``<think>``) and then prefills it like any other prefix.
 The cap counts the prefix. The token after the prefix is read from whatever
 state the backend gives the last prompt token; on a backend with a full-depth
 prompt that differs from the uniform-depth computation unless the request runs
@@ -22,8 +29,9 @@ from __future__ import annotations
 
 from typing import Optional, Sequence, Tuple
 
-NATURAL, DIRECT, THINK = "natural", "direct", "think"
-MODES = (NATURAL, DIRECT, THINK)
+NATURAL, DIRECT, THINK, NOTHINK = "natural", "direct", "think", "nothink"
+MODES = (NATURAL, DIRECT, THINK, NOTHINK)
+POLICY_MODES = (NATURAL, DIRECT, THINK)     # modes a live policy can request: those with a fixed prefix
 THINK_TOKEN = "<think>"
 DIRECT_OPENER = "To"
 
@@ -46,6 +54,8 @@ def prefix_ids(tok, mode: str) -> Tuple[int, ...]:
         if len(ids) != 1:
             raise ValueError(f"{DIRECT_OPENER!r} is not a single token for this tokenizer")
         return (int(ids[0]),)
+    if mode == NOTHINK:
+        raise ValueError("nothink has no fixed prefix; its first token is drawn per candidate")
     raise ValueError(f"unknown mode {mode!r}")
 
 

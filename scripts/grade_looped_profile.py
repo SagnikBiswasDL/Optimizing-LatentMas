@@ -75,11 +75,49 @@ def read_jsonl(path):
         return [json.loads(line) for line in f]
 
 
+def reidentify(rows) -> int:
+    """Recompute answer, vote key and parse status from the saved text with the
+    current rule (only a complete box votes). Returns how many rows changed.
+    Rows cancelled by a policy keep their empty answer."""
+    changed = 0
+    for r in rows:
+        if r["finish_reason"] == "cancelled":
+            continue
+        ans, ident = ai.answer_from_text(r["text"])
+        new = (ans, ident.key, ident.status)
+        if new != (r["pred"], r["answer_key"], r["parse_status"]):
+            changed += 1
+            r["recorded_answer_key"] = r["answer_key"]
+            r["pred"], r["answer_key"], r["parse_status"] = new
+    return changed
+
+
 def grade_rows(rows, gold, grader: str):
     for r in rows:
         g = ai.grade(r["pred"], gold[r["question_id"]]["gold"], grader)
         r["correct"], r["grader_error"] = g["correct"], g["error"]
     return rows
+
+
+def check_coverage(name, rows, questions, manifest, summary, gold) -> None:
+    """Every question the run was given has exactly one outcome, and every
+    candidate row belongs to one of them. A question that never received a
+    decision must fail the grading, not shrink the denominator."""
+    qids = [q["question_id"] for q in questions]
+    if len(set(qids)) != len(qids):
+        raise SystemExit(f"{name}: a question has more than one outcome record")
+    if set(qids) - set(gold):
+        raise SystemExit(f"{name}: {len(set(qids) - set(gold))} questions are not in the gold file")
+    if summary.get("arm", {}).get("kind") == "extend_capped":
+        return
+    limit = manifest["decode_config"].get("limit") or 0
+    expected = limit or len(gold)
+    if len(qids) != expected:
+        raise SystemExit(f"{name}: {len(qids)} question outcomes for {expected} questions")
+    listed = {c for q in questions for c in q["all_candidate_ids"]}
+    stray = {r["candidate_id"] for r in rows} ^ listed
+    if stray:
+        raise SystemExit(f"{name}: {len(stray)} candidates are executed but not listed under a question, or the reverse")
 
 
 def vote(cands):
@@ -119,7 +157,8 @@ def arm_table(name, rows, questions, summary, args):
         "error_candidates": sum(r["finish_reason"] == "error" for r in rows),
         "mean_gen_tokens": summary["mean_gen_tokens"],
         "logical_loop_tokens_per_question": summary["logical_loop_tokens"] / len(qids),
-        "charged_loop_tokens_per_question": summary["charged_loop_tokens"] / len(qids),
+        "charged_loop_tokens_per_question": (summary["charged_loop_tokens"] + summary.get("probe_work", 0)) / len(qids),
+        "probe_work_per_question": summary.get("probe_work", 0) / len(qids),
         "latency_s": summary["question_latency_s"], "first_token_s": summary["first_token_s"],
         "tokens_per_s": summary["tokens_per_s"], "questions_per_min": summary["questions_per_min"],
         "wall_s": summary["wall_s"], "slots": summary["slots"],
@@ -261,20 +300,24 @@ def main() -> None:
     args = ap.parse_args()
     gold = {r["question_id"]: r for r in read_jsonl(args.gold)}
     info = ai.grader_info(args.grader)
-    arms = {}
+    arms, reidentified = {}, {}
     for name in sorted(os.listdir(args.runs)):
         d = os.path.join(args.runs, name)
         if not os.path.exists(os.path.join(d, "summary.json")):
             continue
-        rows = grade_rows(read_jsonl(os.path.join(d, "candidates.jsonl")), gold, args.grader)
+        rows = read_jsonl(os.path.join(d, "candidates.jsonl"))
+        reidentified[name] = reidentify(rows)
+        rows = grade_rows(rows, gold, args.grader)
+        questions = read_jsonl(os.path.join(d, "questions.jsonl"))
+        manifest = json.load(open(os.path.join(d, em.MANIFEST_FILE)))
+        check_coverage(name, rows, questions, manifest, json.load(open(os.path.join(d, "summary.json"))), gold)
         with open(os.path.join(d, "graded.jsonl"), "w") as f:
             for r in rows:
                 f.write(json.dumps({k: r[k] for k in ("run_id", "question_id", "candidate_id", "pred", "answer_key",
                                                       "parse_status", "finish_reason", "correct", "grader_error")},
                                    ensure_ascii=False) + "\n")
-        arms[name] = {"rows": rows, "questions": read_jsonl(os.path.join(d, "questions.jsonl")),
-                      "summary": json.load(open(os.path.join(d, "summary.json"))),
-                      "manifest": json.load(open(os.path.join(d, em.MANIFEST_FILE)))}
+        arms[name] = {"rows": rows, "questions": questions,
+                      "summary": json.load(open(os.path.join(d, "summary.json"))), "manifest": manifest}
     table, derived, ext, per_q = [], [], [], {}
     by_hash = {a["manifest"]["config_hash"]: n for n, a in arms.items()}
     for name, a in arms.items():
@@ -294,6 +337,7 @@ def main() -> None:
             ext.append(extension_table(name, a["rows"], a["summary"], src["rows"], src["questions"]))
     out = {"grader": info, "identity_version": ai.STRUCTURAL, "tie_rule": es.LOWEST_CANDIDATE,
            "gold_sha256": em.file_sha256(args.gold), "bootstrap": {"iters": args.iters, "seed": args.seed},
+           "rows_reidentified_from_text": reidentified,
            "arms": table, "replayed_policies": derived, "cap_extensions": ext, "per_question_correct": per_q}
     with open(os.path.join(args.runs, "table.json"), "w") as f:
         json.dump(out, f, indent=1)

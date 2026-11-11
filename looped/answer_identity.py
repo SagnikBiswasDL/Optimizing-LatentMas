@@ -330,6 +330,20 @@ def answer_key(ans: Optional[str], version: str = STRUCTURAL) -> Optional[str]:
     return identify(ans, version).key
 
 
+def answer_from_text(text: Optional[str], version: str = STRUCTURAL) -> Tuple[Optional[str], AnswerIdentity]:
+    """(answer, identity) of a whole generation.
+
+    Only a completely extracted box is an answer. A generation without a box,
+    or cut off inside one, returns ``(None, identity)`` with no key and the
+    extraction status (``no_boxed`` or ``unterminated_boxed``): it casts no vote
+    and is not graded. The partial content stays in the generation text.
+    """
+    ans, status = extract_final_answer(text)
+    if status != OK:
+        return None, AnswerIdentity(None, status, version)
+    return ans, identify(ans, version)
+
+
 # ------------------------------------------------------------------ pinned grading
 
 class GraderUnavailable(RuntimeError):

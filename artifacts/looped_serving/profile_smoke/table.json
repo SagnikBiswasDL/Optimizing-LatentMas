@@ -10,6 +10,19 @@
   "iters": 10000,
   "seed": 0
  },
+ "rows_reidentified_from_text": {
+  "d2_w1_cap2048": 0,
+  "d2_w4_cap2048": 0,
+  "d3_w1_cap2048": 0,
+  "d3_w4_cap2048": 0,
+  "d3_w4_cap4096_extend": 0,
+  "d3_w8_cap2048": 2,
+  "d4_w1_cap2048": 0,
+  "d4_w4_cap2048": 1,
+  "policy_cert_3x4_cap2048": 0,
+  "policy_two_then_two_3_cap2048": 0,
+  "policy_two_then_two_3to4_cap2048": 0
+ },
  "arms": [
   {
    "arm": "d2_w1_cap2048",
@@ -50,6 +63,7 @@
    "mean_gen_tokens": 979.8,
    "logical_loop_tokens_per_question": 2203.8,
    "charged_loop_tokens_per_question": 2448.0,
+   "probe_work_per_question": 0.0,
    "latency_s": {
     "mean": 26.588039,
     "p50": 16.835749999999997,
@@ -109,6 +123,7 @@
    "mean_gen_tokens": 1000.69,
    "logical_loop_tokens_per_question": 8982.32,
    "charged_loop_tokens_per_question": 9959.12,
+   "probe_work_per_question": 0.0,
    "latency_s": {
     "mean": 42.316649,
     "p50": 43.6215,
@@ -168,6 +183,7 @@
    "mean_gen_tokens": 1064.01,
    "logical_loop_tokens_per_question": 3558.33,
    "charged_loop_tokens_per_question": 3680.43,
+   "probe_work_per_question": 0.0,
    "latency_s": {
     "mean": 40.602188999999996,
     "p50": 27.4638,
@@ -227,6 +243,7 @@
    "mean_gen_tokens": 1066.0575,
    "logical_loop_tokens_per_question": 14257.89,
    "charged_loop_tokens_per_question": 14746.29,
+   "probe_work_per_question": 0.0,
    "latency_s": {
     "mean": 57.354753,
     "p50": 65.6561,
@@ -280,12 +297,13 @@
     0.82
    ],
    "candidate_accuracy": 0.63875,
-   "answered_rate": 0.73,
+   "answered_rate": 0.72875,
    "cap_rate": 0.29,
    "error_candidates": 0,
    "mean_gen_tokens": 1061.71125,
    "logical_loop_tokens_per_question": 28411.47,
    "charged_loop_tokens_per_question": 29388.27,
+   "probe_work_per_question": 0.0,
    "latency_s": {
     "mean": 59.90365,
     "p50": 75.6023,
@@ -345,6 +363,7 @@
    "mean_gen_tokens": 1222.19,
    "logical_loop_tokens_per_question": 5377.16,
    "charged_loop_tokens_per_question": 5377.16,
+   "probe_work_per_question": 0.0,
    "latency_s": {
     "mean": 56.550428000000004,
     "p50": 47.22825,
@@ -398,12 +417,13 @@
     0.86
    ],
    "candidate_accuracy": 0.625,
-   "answered_rate": 0.7225,
+   "answered_rate": 0.72,
    "cap_rate": 0.315,
    "error_candidates": 0,
    "mean_gen_tokens": 1148.3375,
    "logical_loop_tokens_per_question": 20327.0,
    "charged_loop_tokens_per_question": 20327.0,
+   "probe_work_per_question": 0.0,
    "latency_s": {
     "mean": 79.534098,
     "p50": 98.09110000000001,

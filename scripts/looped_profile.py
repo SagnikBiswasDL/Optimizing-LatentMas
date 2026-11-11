@@ -4,7 +4,7 @@
 Each arm ``<depth>x<width>[:<mode>][@<cap>]`` answers every question of a frozen
 split with ``width`` candidates at one depth (width 1 is the greedy candidate;
 wider arms are seeded samples ``s0..s{width-1}``). ``mode`` is ``natural``
-(default), ``direct`` or ``think`` (``looped/modes.py``); a forced mode needs
+(default), ``direct``, ``think`` or ``nothink`` (``looped/modes.py``); a forced mode needs
 ``--prompt_mode stock`` and, to stay the uniform-depth computation, an engine
 whose depth equals the arm's (``--total_ut_steps``). Questions are admitted first come, first
 served whenever ``width`` of the ``--slots`` candidate slots are free, so every
@@ -122,6 +122,35 @@ def candidates_for(qid: str, depth: int, width: int, args, mode: str = M.NATURAL
     return out
 
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_PINS = {}
+
+
+def verified_pins(model_path: str) -> dict:
+    """What is actually installed, read from disk rather than assumed: the
+    source tree's content hash, the model snapshot directory and the engine's
+    checked-out commit. Stops when one of them is not the pinned revision."""
+    if _PINS:
+        return _PINS
+    import subprocess
+
+    import vllm_rlt
+    snapshot = os.path.basename(os.path.realpath(model_path).rstrip("/"))
+    try:
+        head = subprocess.run(["git", "-C", os.path.dirname(os.path.dirname(os.path.abspath(vllm_rlt.__file__))),
+                               "rev-parse", "HEAD"], capture_output=True, text=True, timeout=20).stdout.strip() or None
+    except (OSError, subprocess.SubprocessError):
+        head = None
+    if len(snapshot) == 40 and snapshot != MODEL_REV:
+        raise SystemExit(f"the model directory is snapshot {snapshot}, not the pinned {MODEL_REV}")
+    if head is not None and head != ENGINE_SHA:
+        raise SystemExit(f"the installed engine is at {head}, not the pinned {ENGINE_SHA}")
+    _PINS.update(source_tree_sha256=em.source_tree_hash(ROOT),
+                 model_snapshot=snapshot if len(snapshot) == 40 else "unverified (not a snapshot directory)",
+                 engine_head=head or "unverified (no git checkout)")
+    return _PINS
+
+
 def manifest_for(args, be, arm: dict, prompt_hash: str, split_hash: str) -> em.RunManifest:
     return em.RunManifest(
         code_sha=args.code_sha, engine_sha=ENGINE_SHA, model_revision=f"{MODEL_ID}@{MODEL_REV}",
@@ -139,8 +168,57 @@ def manifest_for(args, be, arm: dict, prompt_hash: str, split_hash: str) -> em.R
         extra={"engine": {k: be.semantics[k] for k in ("scheduler_mode", "max_num_seqs", "max_num_batched_tokens",
                                                        "kv_num_blocks", "execution", "exit_mode", "full_depth",
                                                        "checkpoint_depth", "first_token_depth")},
-               "driver": "closed loop, FIFO admission by free candidate slots"},
+               "driver": "closed loop, FIFO admission by free candidate slots",
+               "verified": verified_pins(args.model)},
     )
+
+
+# What an extension may change relative to its source arm: the cap, and the
+# number of slots (a longer cap needs more KV per candidate). Everything else
+# that defines the candidates must be the source's.
+EXTENSION_MUST_MATCH = ("temperature", "top_p", "stop_ids", "items_sha256")
+
+
+def extension_arm(src_manifest: dict, cap: int) -> dict:
+    """The arm that reruns the capped candidates of ``src_manifest`` at ``cap``:
+    same depth, width and answer mode, so the old candidate ids and seeds still
+    name the same intervention."""
+    cfg = src_manifest["decode_config"]
+    if cfg.get("kind") != "fixed":
+        raise SystemExit("only a fixed arm can be extended")
+    if cap <= cfg["cap"]:
+        raise SystemExit(f"the extension cap {cap} is not above the source cap {cfg['cap']}")
+    return {"depth": cfg["depth"], "width": cfg["width"], "cap": cap, "kind": "extend_capped",
+            "mode": cfg.get("mode", M.NATURAL), "from_run": src_manifest["config_hash"], "from_cap": cfg["cap"]}
+
+
+def check_extension(src_manifest: dict, new: em.RunManifest) -> None:
+    """Refuse an extension whose generation settings differ from its source."""
+    cfg, now = src_manifest["decode_config"], new.payload()
+    diff = [f"decode_config.{k}: {cfg.get(k)!r} -> {now['decode_config'].get(k)!r}"
+            for k in EXTENSION_MUST_MATCH if cfg.get(k) != now["decode_config"].get(k)]
+    diff += [f"{k}: {src_manifest.get(k)!r} -> {now.get(k)!r}"
+             for k in ("engine_sha", "model_revision", "tokenizer_revision", "prompt_hash", "split_hash",
+                       "cache_semantics", "attention_backend", "dtype", "run_seed", "seed_scheme")
+             if src_manifest.get(k) != now.get(k)]
+    if diff:
+        raise SystemExit("the extension does not match its source arm: " + "; ".join(diff))
+
+
+def extension_plan(args, items):
+    """(arm, work, old tokens) for ``--extend_from``."""
+    src = [json.loads(line) for line in open(os.path.join(args.extend_from, "candidates.jsonl"))]
+    src_manifest = json.load(open(os.path.join(args.extend_from, em.MANIFEST_FILE)))
+    arm = extension_arm(src_manifest, args.cap)
+    capped = [r for r in src if r["finish_reason"] == "length_cap"]
+    if any(r.get("mode", M.NATURAL) != arm["mode"] for r in capped):
+        raise SystemExit("the source rows were not generated in the source manifest's mode")
+    by_q, prompts = {}, {it["question_id"]: it["prompt"] for it in items}
+    for r in capped:
+        by_q.setdefault(r["question_id"], []).append(
+            (r["candidate_id"], r["sample"], 0.0 if r["sample"] < 0 else args.temperature,
+             1.0 if r["sample"] < 0 else args.top_p, r["seed"]))
+    return arm, [(q, prompts[q], cs) for q, cs in by_q.items()], {r["candidate_id"]: r["generated_token_ids"] for r in capped}
 
 
 def answer_tokens(prefix, comp) -> list:
@@ -151,8 +229,7 @@ def answer_tokens(prefix, comp) -> list:
 def record(run_id, qid, cand, comp, text, t0, mode: str = M.NATURAL, prefix=(), think_token=None) -> dict:
     cid, sample, _, _, seed = cand
     tokens = answer_tokens(prefix, comp)
-    ans, status = ai.extract_final_answer(text)
-    ident = ai.identify(ans) if ans is not None else None
+    ans, ident = ai.answer_from_text(text)
     rel = lambda t: None if t is None else round(t - t0, 4)  # noqa: E731
     return {
         "run_id": run_id, "question_id": qid, "candidate_id": cid, "depth": comp.depth, "sample": sample, "seed": seed,
@@ -160,8 +237,7 @@ def record(run_id, qid, cand, comp, text, t0, mode: str = M.NATURAL, prefix=(), 
         "mode": mode, "prefix_tokens": len(prefix),
         "think": None if think_token is None else M.observed_think(tokens, think_token),
         "finish_reason": FINISH[comp.finish_reason], "text": text, "pred": ans,
-        "answer_key": ident.key if ident is not None else None,
-        "parse_status": ident.status if ident is not None else status,
+        "answer_key": ident.key, "parse_status": ident.status,
         "scalar_confidence_definition": None, "confidence_summary": None,
         "logical_loop_tokens": comp.logical_loop_tokens, "executed_loop_tokens": comp.charged_loop_tokens, "probe_work": 0,
         "submit_time": rel(comp.submit_time), "first_token_time": rel(comp.first_token_time),
@@ -170,16 +246,59 @@ def record(run_id, qid, cand, comp, text, t0, mode: str = M.NATURAL, prefix=(), 
     }
 
 
+def draw_openers(be, work, depth: int, banned: int, args, max_attempts: int = 64):
+    """First answer token of each candidate, drawn from the model's own
+    first-token distribution conditioned on not being ``banned``.
+
+    Each candidate gets one-token requests with independent seeds until one
+    returns another token (rejection sampling, so the accepted token has
+    exactly the conditional distribution). A greedy candidate cannot be redrawn
+    and is refused. Returns ``{candidate id: (token, attempts, charged loop-tokens)}``;
+    the work of every attempt is charged to the candidate as ``probe_work``.
+    """
+    todo = {c[0]: (qid, prompt, c) for qid, prompt, cands in work for c in cands}
+    if any(c[1] < 0 for _, _, c in todo.values()):
+        raise SystemExit("nothink needs sampled candidates: a greedy first token cannot be redrawn")
+    out = {cid: [None, 0, 0] for cid in todo}
+    for attempt in range(max_attempts):
+        if not todo:
+            break
+        ids = list(todo)
+        for i in range(0, len(ids), args.slots):
+            batch = []
+            for cid in ids[i:i + args.slots]:
+                qid, prompt, c = todo[cid]
+                rid = f"{cid}:opener{attempt}"
+                batch.append(GenerationRequest(rid, tuple(prompt), depth, 1, c[2], c[3],
+                                               em.candidate_seed(args.run_seed, qid, rid)))
+            for rid, comp in run_all(be, batch).items():
+                cid = rid.rsplit(":opener", 1)[0]
+                out[cid][1] += 1
+                out[cid][2] += comp.charged_loop_tokens
+                if comp.token_ids and int(comp.token_ids[0]) in be.semantics.get("stop_ids", ()):
+                    raise SystemExit(f"{cid}: the model's first token is a stop token; nothing to prefill")
+                if comp.token_ids and int(comp.token_ids[0]) != banned:
+                    out[cid][0] = int(comp.token_ids[0])
+                    del todo[cid]
+    if todo:
+        raise SystemExit(f"{len(todo)} candidates returned the banned first token {max_attempts} times")
+    return {cid: tuple(v) for cid, v in out.items()}
+
+
 def run_arm(be, tok, questions, arm: dict, args, out_dir: str, manifest: em.RunManifest, work=None) -> dict:
     """``work`` overrides the candidate list: [(qid, prompt, [candidate tuples])]."""
     depth, width, cap = arm["depth"], arm["width"], arm["cap"]
     mode = arm.get("mode", M.NATURAL)
-    prefix = M.prefix_ids(tok, mode)
     think_token = M.think_id(tok)
     check_mode_semantics(be, depth, mode, getattr(args, "allow_full_depth_prefix_state", False))
     if work is None:
         work = [(q["question_id"], q["prompt"], candidates_for(q["question_id"], depth, width, args, mode))
                 for q in questions]
+    t_open = time.perf_counter()
+    openers = draw_openers(be, work, depth, think_token, args) if mode == M.NOTHINK else {}
+    opener_wall = time.perf_counter() - t_open       # not part of the latency columns
+    fixed_prefix = () if mode == M.NOTHINK else M.prefix_ids(tok, mode)
+    prefix_of = lambda cid: (openers[cid][0],) if openers else fixed_prefix  # noqa: E731
     pending = deque(work)
     stop = set(be.semantics["stop_ids"])
     live, q_open, q_rows, rows = {}, {}, [], []
@@ -193,14 +312,18 @@ def run_arm(be, tok, questions, arm: dict, args, out_dir: str, manifest: em.RunM
                 qid, prompt, cands = pending.popleft()
                 q_open[qid] = {"arrival": time.perf_counter(), "left": len(cands), "candidates": [c[0] for c in cands]}
                 for c in cands:
+                    prefix = prefix_of(c[0])
                     be.submit(GenerationRequest(c[0], tuple(prompt) + prefix, depth, cap - len(prefix), c[2], c[3], c[4]))
                     live[c[0]] = (qid, c)
             if pending and not live:
                 raise RuntimeError(f"a question needs {len(pending[0][2])} slots but only {args.slots} exist")
             for comp in be.step():
                 qid, c = live.pop(comp.request_id)
+                prefix = prefix_of(c[0])
                 text = tok.decode(strip_stop(answer_tokens(prefix, comp), stop), skip_special_tokens=True)
                 row = record(manifest.run_id, qid, c, comp, text, t0, mode, prefix, think_token)
+                if openers:
+                    row["opener_attempts"], row["probe_work"] = openers[c[0]][1], openers[c[0]][2]
                 em.check_record(row, em.CANDIDATE_RECORD_FIELDS)
                 em.assert_no_gold(row)
                 rows.append(row)
@@ -230,6 +353,8 @@ def run_arm(be, tok, questions, arm: dict, args, out_dir: str, manifest: em.RunM
         "logical_loop_tokens": sum(r["logical_loop_tokens"] for r in rows),
         "charged_loop_tokens": sum(r["executed_loop_tokens"] for r in rows),
         "charged_loop_tokens_per_s": sum(r["executed_loop_tokens"] for r in rows) / wall,
+        "probe_work": sum(r["probe_work"] for r in rows),
+        "opener_attempts": sum(r.get("opener_attempts", 0) for r in rows), "opener_wall_s": round(opener_wall, 2),
         "finish_reasons": reasons, "mean_gen_tokens": toks / len(rows),
         "think_share": sum(bool(r["think"]) for r in rows) / len(rows),
         "question_latency_s": dist([r["latency_s"] for r in q_rows]),
@@ -307,24 +432,15 @@ def main() -> None:
         check_mode_semantics(be, arm["depth"], arm["mode"], args.allow_full_depth_prefix_state)
         plan.append((arm, None))
     if args.extend_from:
-        src = [json.loads(line) for line in open(os.path.join(args.extend_from, "candidates.jsonl"))]
-        src_manifest = json.load(open(os.path.join(args.extend_from, em.MANIFEST_FILE)))
-        capped = [r for r in src if r["finish_reason"] == "length_cap"]
-        by_q, prompts = {}, {it["question_id"]: it["prompt"] for it in items}
-        for r in capped:
-            by_q.setdefault(r["question_id"], []).append(
-                (r["candidate_id"], r["sample"], 0.0 if r["sample"] < 0 else args.temperature,
-                 1.0 if r["sample"] < 0 else args.top_p, r["seed"]))
-        depth = src_manifest["decode_config"]["depth"]
-        arm = {"depth": depth, "width": src_manifest["decode_config"]["width"], "cap": args.cap, "kind": "extend_capped",
-               "from_run": src_manifest["config_hash"], "from_cap": src_manifest["decode_config"]["cap"]}
-        plan.append((arm, ([(q, prompts[q], cs) for q, cs in by_q.items()],
-                           {r["candidate_id"]: r["generated_token_ids"] for r in capped})))
+        arm, work, old_tokens = extension_plan(args, items)
+        plan.append((arm, (work, old_tokens)))
 
     for arm, extra in plan:
         name = arm_name(arm, args.tag)
         out_dir = os.path.join(args.out, name)
         manifest = manifest_for(args, be, arm, prompt_hash, spec["split_hash"])
+        if extra:
+            check_extension(json.load(open(os.path.join(args.extend_from, em.MANIFEST_FILE))), manifest)
         state = em.open_run_dir(out_dir, manifest)
         if state == "resume":
             if os.path.exists(os.path.join(out_dir, "summary.json")):

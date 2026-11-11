@@ -300,3 +300,122 @@ def test_modes_prefixes():
     assert M.observed_think([3, 9], 3) is True and M.observed_think([2068], 3) is False and M.observed_think([], 3) is None
     with pytest.raises(ValueError):
         M.prefix_ids(Tok(), "sideways")
+
+
+# ------------------------------------------------------------------ review of 2026-11-11
+
+def test_only_a_complete_box_is_an_answer():
+    from looped import answer_identity as ai
+    ans, ident = ai.answer_from_text("so the answer is \\boxed{12}.")
+    assert (ans, ident.key, ident.status) == ("12", "Q(12/1)", "ok")
+    ans, ident = ai.answer_from_text("so the answer is \\boxed{12")          # cut off inside the box
+    assert (ans, ident.key, ident.status) == (None, None, "unterminated_boxed")
+    ans, ident = ai.answer_from_text("no box here")
+    assert (ans, ident.key, ident.status) == (None, None, "no_boxed")
+    assert ai.answer_from_text(None)[1].key is None
+
+
+def test_a_truncated_box_is_recorded_without_a_vote(profile):
+    comp = B.Completion("q:d3:s0", 3, 11, [50, 51], "length_cap", 1.0, 1.5, 2.0, 36, 40)
+    row = profile.record("run", "q", ("q:d3:s0", 0, 0.6, 0.95, 7), comp, "thus \\boxed{12", 0.0, think_token=3)
+    assert (row["pred"], row["answer_key"], row["parse_status"]) == (None, None, "unterminated_boxed")
+    assert row["text"].endswith("\\boxed{12")                # the partial content stays in the text
+
+
+def test_grader_reidentifies_saved_rows_from_their_text(grade):
+    rows = [{"finish_reason": "length_cap", "text": "x \\boxed{12", "pred": "12", "answer_key": "Q(12/1)", "parse_status": "ok"},
+            {"finish_reason": "eos", "text": "x \\boxed{12}", "pred": "12", "answer_key": "Q(12/1)", "parse_status": "ok"},
+            {"finish_reason": "cancelled", "text": "x \\boxed{12}", "pred": None, "answer_key": None, "parse_status": "cancelled"}]
+    assert grade.reidentify(rows) == 1
+    assert (rows[0]["pred"], rows[0]["answer_key"], rows[0]["parse_status"]) == (None, None, "unterminated_boxed")
+    assert rows[0]["recorded_answer_key"] == "Q(12/1)" and rows[1]["answer_key"] == "Q(12/1)"
+    assert rows[2]["answer_key"] is None                     # a cancelled candidate stays without a vote
+
+
+def test_grader_refuses_a_run_with_a_missing_question(grade):
+    gold = {"q1": {}, "q2": {}}
+    manifest = {"decode_config": {"limit": 0}}
+    rows = [{"candidate_id": "q1:d3:s0"}]
+    questions = [{"question_id": "q1", "all_candidate_ids": ["q1:d3:s0"]}]
+    with pytest.raises(SystemExit, match="1 question outcomes for 2 questions"):
+        grade.check_coverage("arm", rows, questions, manifest, {"arm": {"kind": "fixed"}}, gold)
+    both = questions + [{"question_id": "q2", "all_candidate_ids": ["q2:d3:s0"]}]
+    with pytest.raises(SystemExit, match="not listed"):
+        grade.check_coverage("arm", rows, both, manifest, {"arm": {"kind": "fixed"}}, gold)
+    grade.check_coverage("arm", rows + [{"candidate_id": "q2:d3:s0"}], both, manifest, {"arm": {"kind": "fixed"}}, gold)
+    grade.check_coverage("arm", rows, questions, {"decode_config": {"limit": 1}}, {"policy": {}}, gold)
+
+
+def test_extension_keeps_the_source_mode_and_refuses_changed_settings(profile):
+    from looped import experiment_manifest as em
+
+    def manifest(mode, **changes):
+        cfg = {"depth": 3, "width": 2, "cap": 2048, "kind": "fixed", "mode": mode, "temperature": 0.6, "top_p": 0.95,
+               "stop_ids": [0, 2], "items_sha256": "abc", "slots": 32, "limit": 0}
+        base = dict(code_sha="c", engine_sha="e", model_revision="m", tokenizer_revision="m", dataset_revision="d",
+                    prompt_hash="p", split_hash="s", decode_config=cfg, cache_semantics="stock", attention_backend="triton",
+                    dtype="bfloat16", dependency_versions={}, hardware="gpu", seed_scheme="x", run_seed=0,
+                    identity_version="structural-v2", grader={})
+        base.update(changes)
+        return em.RunManifest(**base)
+
+    for mode in ("direct", "think", "natural"):
+        src = manifest(mode).to_json()
+        arm = profile.extension_arm(src, 4096)
+        assert (arm["mode"], arm["depth"], arm["width"], arm["cap"], arm["from_cap"]) == (mode, 3, 2, 4096, 2048)
+        assert arm["from_run"] == src["config_hash"] and profile.arm_name(arm).endswith("_cap4096_extend")
+        new = manifest(mode)
+        new.decode_config.update(arm, slots=16)                # cap and slots may change
+        profile.check_extension(src, new)
+    with pytest.raises(SystemExit, match="not above"):
+        profile.extension_arm(manifest("think").to_json(), 2048)
+    hot = manifest("think")
+    hot.decode_config["temperature"] = 1.0
+    with pytest.raises(SystemExit, match="temperature"):
+        profile.check_extension(manifest("think").to_json(), hot)
+    with pytest.raises(SystemExit, match="dtype"):
+        profile.check_extension(manifest("think").to_json(), manifest("think", dtype="float32"))
+
+
+def test_nothink_openers_are_redrawn_until_they_are_not_think(profile):
+    class OneTokenBackend(B.Backend):
+        semantics = {"stop_ids": [0, 2]}
+
+        def __init__(self):
+            self.live, self.seen = [], []
+
+        def submit(self, r):
+            assert r.max_new_tokens == 1
+            self.live.append(r)
+            self.seen.append(r.request_id)
+
+        def active(self):
+            return len(self.live)
+
+        def step(self):
+            out = [B.Completion(r.request_id, r.depth, len(r.prompt_ids), [3 if ":opener0" in r.request_id else 2068 + r.seed % 2],
+                                "length_cap", 0.0, 0.0, 0.0, 0, 30) for r in self.live]
+            self.live = []
+            return out
+
+    args = SimpleNamespace(run_seed=0, temperature=0.6, top_p=0.95, slots=3)
+    work = [(f"q{i}", (1, 2, 3), profile.candidates_for(f"q{i}", 3, 2, args, "nothink")) for i in range(2)]
+    be = OneTokenBackend()
+    got = profile.draw_openers(be, work, 3, 3, args)
+    assert set(got) == {c[0] for _, _, cs in work for c in cs}
+    assert all(tok in (2068, 2069) and attempts == 2 and charged == 60 for tok, attempts, charged in got.values())
+    assert len(be.seen) == 8 and len(set(be.seen)) == 8          # every attempt is its own request and seed
+    with pytest.raises(SystemExit):
+        profile.draw_openers(be, [("q", (1,), profile.candidates_for("q", 3, 1, args, "nothink"))], 3, 3, args)
+
+
+def test_source_tree_hash_sees_every_edit(tmp_path):
+    from looped import experiment_manifest as em
+    (tmp_path / "looped").mkdir()
+    (tmp_path / "looped" / "a.py").write_text("x = 1\n")
+    (tmp_path / "looped" / "notes.txt").write_text("ignored\n")
+    h = em.source_tree_hash(str(tmp_path), ("looped", "missing"))
+    (tmp_path / "looped" / "notes.txt").write_text("still ignored\n")
+    assert em.source_tree_hash(str(tmp_path), ("looped", "missing")) == h
+    (tmp_path / "looped" / "a.py").write_text("x = 2\n")
+    assert em.source_tree_hash(str(tmp_path), ("looped", "missing")) != h

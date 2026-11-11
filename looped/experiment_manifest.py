@@ -42,6 +42,22 @@ def file_sha256(path: str) -> str:
     return h.hexdigest()
 
 
+def source_tree_hash(root: str, paths: Sequence[str] = ("looped", "serving/looped", "scripts", "configs/looped_serving/pins.json")) -> str:
+    """Content hash of the source a run executes: sha256 over the sorted
+    (relative path, file sha256) pairs of every ``.py`` and ``.sh`` file under
+    ``paths`` (a path may also name one file). Unlike a commit id typed into a
+    file, this is computed from what is on disk, so uncommitted edits show."""
+    found = []
+    for p in paths:
+        full = os.path.join(root, p)
+        if os.path.isfile(full):
+            found.append(p)
+            continue
+        for d, _, names in os.walk(full):
+            found += [os.path.relpath(os.path.join(d, n), root) for n in names if n.endswith((".py", ".sh"))]
+    return sha256_hex(canonical_json([[p.replace(os.sep, "/"), file_sha256(os.path.join(root, p))] for p in sorted(found)]))
+
+
 def normalize_question_text(text: str) -> str:
     """Unicode NFC, trimmed, runs of whitespace collapsed. Nothing else: two
     questions that differ in any visible character stay different."""
