@@ -1,0 +1,11 @@
+=== 2026-11-11T19:25:30Z start tests
+=== 2026-11-11T19:25:33Z end tests rc=0
+=== 2026-11-11T19:25:33Z start pilot_direct
+=== 2026-11-11T19:31:27Z end pilot_direct rc=0
+=== 2026-11-11T19:31:27Z start pilot_think
+=== 2026-11-11T19:46:37Z end pilot_think rc=0
+=== 2026-11-11T19:46:41Z start cal_d3_direct
+=== 2026-11-11T20:05:18Z end cal_d3_direct rc=0
+=== 2026-11-11T20:05:18Z start cal_d3_natural
+=== 2026-11-11T20:40:23Z end cal_d3_natural (queue restarted; status not captured)
+=== 2026-11-11T20:40:23Z start cal_d3_nothink

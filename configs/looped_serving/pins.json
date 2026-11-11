@@ -1,5 +1,6 @@
 {
   "recorded": "2026-11-10",
+  "updated": "2026-11-11",
   "repository": {
     "remote": "git@github.com:SagnikBiswasDL/Optimizing-LatentMas.git",
     "base_commit": "641d891fc4d879b98d15f5c46af9be2f2ed40109",
@@ -18,7 +19,13 @@
     "package_version": "0.2.0",
     "license": "Apache-2.0",
     "requires": "Python >= 3.10, torch >= 2.5; GPU inference needs Linux and an NVIDIA GPU",
-    "status": "commit fetched and its documentation read on 2026-11-10; not installed, no test or inference run",
+    "status": "installed on the pod on 2026-11-11 (editable, Python 3.12.3, torch 2.8.0+cu128); its own test suite: 916 passed, 633 skipped; driven unmodified, in process, through serving/looped/rlt_backend.py",
+    "measured_on_2026-11-11": {
+      "prompt_depth": "boundary_shift (withhold the last prompt token and let the engine emit it) and a depth-limited engine (total_ut_steps=r, stock prompt mode) both reproduce the reference exactly in fp32 at every depth; plain stock mode on the full engine differs from uniform depth only in the first generated token",
+      "kv": "last_exited reserves every depth plane whatever the request depth; a depth-limited engine reserves r planes",
+      "bf16": "tokens depend on batch composition, so equal seeds do not give equal candidates across runs",
+      "report": "artifacts/looped_serving/fidelity_gate/fidelity.json"
+    },
     "contributor_instructions": ["CONTRIBUTING.md", "docs/developer-guide.md"],
     "documented_behaviour_that_differs_from_the_reference": [
       {
