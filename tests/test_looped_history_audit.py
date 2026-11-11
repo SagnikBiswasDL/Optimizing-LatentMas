@@ -158,7 +158,9 @@ def test_saved_pool_reproduces_the_plan_diagnostics(saved):
     assert sig["3"]["mean_logprob"]["auroc"] == pytest.approx(0.659, abs=5e-4)
     assert sig["4"]["neg_delta_last"]["auroc"] == pytest.approx(0.591, abs=5e-4)
     assert sig["4"]["mean_logprob"]["auroc"] == pytest.approx(0.839, abs=5e-4)
-    assert (sig["3"]["mean_logprob"]["correct_incorrect_pairs"], sig["4"]["mean_logprob"]["correct_incorrect_pairs"]) == (276, 254)
+    assert sig["3"]["mean_logprob"]["correct_incorrect_pairs"] == 276      # pairs, from 82 questions
+    assert sig["4"]["mean_logprob"]["correct_incorrect_pairs"] == 254      # pairs, from 80 questions
+    assert (sig["3"]["mean_logprob"]["questions_contributing"], sig["4"]["mean_logprob"]["questions_contributing"]) == (82, 80)
     assert saved["timing"]["sampled_pass_gpu_hours_depths_2_3_4"] == pytest.approx(4.66, abs=0.005)
     assert rec["key_conflicts"]["question_keys_with_mixed_correctness"] == 0
 
@@ -170,3 +172,16 @@ def test_saved_gsm8k_pilots_reproduce(saved):
     assert (g["thinking_valid"]["mas"], g["thinking_valid"]["single"]) == (0.835, 0.895)
     assert (g["plain_valid"]["mas"], g["plain_valid"]["single"]) == (0.72, 0.845)
     assert (g["plain_valid"]["sc@4"], g["plain_valid"]["selfrev"]) == (0.89, 0.88)
+
+
+def test_saved_pool_identity_findings(saved):
+    ic = saved["identity_comparison"]
+    assert ic["pairs_merged_by_legacy_only"] == 0 and ic["pairs_merged_by_structural_only"] == 0
+    dropped = ic["sampled_votes_counted_by_legacy_but_not_structural"]
+    assert [d["pred"] for d in dropped] == ["\\dfrac{", "\\dfrac{"]          # truncated at the cap
+    assert not any(d["hit_eos"] or d["correct"] for d in dropped)
+    assert (ic["both_correct_sampled_pairs"], ic["both_correct_pairs_split_by_structural"]) == (3323, 4)
+    assert max(abs(v) for v in ic["policy_accuracy_change_structural_minus_legacy"].values()) < 0.002
+    stats = saved["cap_and_reuse"]
+    for d in ("2", "3", "4"):                             # capped traces almost never carry an answer
+        assert stats[d]["capped_sampled_traces_without_a_boxed_answer"] > 0.9

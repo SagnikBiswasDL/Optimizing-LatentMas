@@ -93,7 +93,45 @@
     }
   },
   "identity_comparison": {
+    "both_correct_pairs_split_by_legacy": 4,
+    "both_correct_pairs_split_by_structural": 4,
+    "both_correct_sampled_pairs": 3323,
     "examples_legacy_only": [],
+    "examples_split_by_legacy_only": [],
+    "examples_split_by_structural": [
+      {
+        "depth": 3,
+        "idx": 4191,
+        "preds": [
+          "1, 1, -2, -\\frac{1}{2}",
+          "1, 1, -\\frac{1}{2}, -2"
+        ]
+      },
+      {
+        "depth": 4,
+        "idx": 4191,
+        "preds": [
+          "1, 1, -\\frac{1}{2}, -2",
+          "-2, -\\frac{1}{2}, 1, 1"
+        ]
+      },
+      {
+        "depth": 4,
+        "idx": 4191,
+        "preds": [
+          "1, 1, -\\frac{1}{2}, -2",
+          "-2, -\\frac{1}{2}, 1, 1"
+        ]
+      },
+      {
+        "depth": 4,
+        "idx": 4191,
+        "preds": [
+          "-2, -\\frac{1}{2}, 1, 1",
+          "1, 1, -\\frac{1}{2}, -2"
+        ]
+      }
+    ],
     "examples_structural_only": [],
     "pairs_merged_by_legacy_only": 0,
     "pairs_merged_by_structural_only": 0,
@@ -102,6 +140,10 @@
       "portfolio_3_3_4_4": 0.0011111111111110628,
       "two_then_two_d2_fallback_d3": 0.0011111111111110628,
       "two_then_two_d3_fallback_d4": 0.0011111111111110628
+    },
+    "questions_with_a_split_correct_pair": {
+      "legacy-v1": 1,
+      "structural-v2": 1
     },
     "sampled_parse_status_structural": {
       "empty": 1,

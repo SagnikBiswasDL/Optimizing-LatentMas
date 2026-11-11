@@ -324,7 +324,28 @@ def identity_comparison(by, depths: Sequence[int]) -> Dict:
                     rec = {"idx": idx, "depth": d, "preds": [rows[a]["pred"], rows[b]["pred"]],
                            "correct": [rows[a]["correct"], rows[b]["correct"]]}
                     (merged_by_legacy_only if la else merged_by_structural_only).append(rec)
+    # Two answers both graded correct are the same answer, so a pair of them with
+    # different keys is a split vote: a lower bound on what a key fails to merge.
+    split = {LEGACY: [], STRUCTURAL: []}
+    correct_pairs = 0
+    for idx, dd in by.items():
+        for d in depths:
+            rows = [dd[d][s] for s in range(4)]
+            for a, b in PAIRS:
+                if not (rows[a]["correct"] and rows[b]["correct"]):
+                    continue
+                correct_pairs += 1
+                if rows[a]["key"] != rows[b]["key"]:
+                    split[LEGACY].append({"idx": idx, "depth": d, "preds": [rows[a]["pred"], rows[b]["pred"]]})
+                if identify(rows[a]["pred"], STRUCTURAL).key != identify(rows[b]["pred"], STRUCTURAL).key:
+                    split[STRUCTURAL].append({"idx": idx, "depth": d, "preds": [rows[a]["pred"], rows[b]["pred"]]})
     return {
+        "both_correct_sampled_pairs": correct_pairs,
+        "both_correct_pairs_split_by_legacy": len(split[LEGACY]),
+        "both_correct_pairs_split_by_structural": len(split[STRUCTURAL]),
+        "questions_with_a_split_correct_pair": {v: len({e["idx"] for e in split[v]}) for v in split},
+        "examples_split_by_structural": split[STRUCTURAL][:10],
+        "examples_split_by_legacy_only": [e for e in split[LEGACY] if e not in split[STRUCTURAL]][:10],
         "sampled_parse_status_structural": dict(statuses),
         "sampled_votes_counted_by_legacy_but_not_structural": votes_dropped,
         "pairs_merged_by_legacy_only": len(merged_by_legacy_only),
