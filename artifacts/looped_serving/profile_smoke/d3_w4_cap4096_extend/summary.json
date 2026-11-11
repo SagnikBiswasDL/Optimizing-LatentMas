@@ -1,0 +1,52 @@
+{
+ "run_id": "run_b0322f1f8d80dc4b",
+ "arm": {
+  "depth": 3,
+  "width": 4,
+  "cap": 4096,
+  "kind": "extend_capped",
+  "from_run": "5bb670d87a178c6a",
+  "from_cap": 2048
+ },
+ "questions": 45,
+ "candidates": 114,
+ "slots": 16,
+ "wall_s": 1026.9,
+ "generated_tokens": 394106,
+ "tokens_per_s": 383.7820530296433,
+ "questions_per_min": 2.6292711686197032,
+ "logical_loop_tokens": 1242855,
+ "charged_loop_tokens": 1263034,
+ "charged_loop_tokens_per_s": 1229.9477337727476,
+ "finish_reasons": {
+  "eos": 47,
+  "length_cap": 67
+ },
+ "mean_gen_tokens": 3457.0701754385964,
+ "question_latency_s": {
+  "mean": 129.17126222222223,
+  "p50": 148.6588,
+  "p90": 155.01098,
+  "p95": 156.59547999999998,
+  "max": 156.737
+ },
+ "candidate_latency_s": {
+  "mean": 127.07909736842105,
+  "p50": 148.54790000000003,
+  "p90": 155.07936,
+  "p95": 156.595435,
+  "max": 156.7369
+ },
+ "first_token_s": {
+  "mean": 0.30288245614035025,
+  "p50": 0.12015000000000953,
+  "p90": 1.4226,
+  "p95": 1.4231,
+  "max": 1.4391
+ },
+ "peak_used_blocks": 17864,
+ "num_blocks": 23893,
+ "peak_cuda_allocated_gb": 73.557053565979,
+ "used_blocks_after": 0,
+ "prefix_reproduced": 0
+}

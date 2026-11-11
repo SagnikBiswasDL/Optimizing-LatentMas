@@ -1,0 +1,61 @@
+{
+  "attention_backend": "triton",
+  "cache_semantics": "prompt_mode=boundary_shift; prompt_depth=request; kv_layout=last_exited x4 planes",
+  "code_sha": "225d4a723d903f537c99b466ee155e4390af5530",
+  "config_hash": "91bb78bd121acedc",
+  "dataset_revision": "EleutherAI/hendrycks_math@21a5633873b6a120296cce3e2df9d5550074f4a3",
+  "decode_config": {
+    "cap": 192,
+    "items_sha256": "a1217ffcceb767b88eaed641590be4b8c8e93b41c2f7c1a3a334a82fde7e0a42",
+    "kind": "policy",
+    "limit": 8,
+    "policy": {
+      "depth": 3,
+      "name": "certificate_cancel",
+      "version": "v1",
+      "width": 4
+    },
+    "slots": 8,
+    "spec": "cert:3x4",
+    "stop_ids": [
+      0,
+      2
+    ],
+    "temperature": 0.6,
+    "top_p": 0.95
+  },
+  "dependency_versions": {
+    "torch": "2.8.0+cu128",
+    "transformers": "4.57.1",
+    "triton": "3.4.0",
+    "vllm-rlt": "0.2.0"
+  },
+  "dtype": "bfloat16",
+  "engine_sha": "e0a5515ec970d634546d2e1d38b3ba3602072884",
+  "extra": {
+    "driver": "closed loop, FIFO admission by free candidate slots",
+    "engine": {
+      "execution": {
+        "cuda_graphs": true,
+        "static_buffers": true
+      },
+      "exit_mode": "ouro",
+      "kv_num_blocks": 2730,
+      "max_num_batched_tokens": 4096,
+      "max_num_seqs": 8,
+      "scheduler_mode": "refill"
+    }
+  },
+  "grader": {
+    "name": "none",
+    "note": "graded offline"
+  },
+  "hardware": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "identity_version": "structural-v2",
+  "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+  "prompt_hash": "29956fa181057884",
+  "run_seed": 0,
+  "seed_scheme": "sha256(json[run_seed,question_id,candidate_id])-63bit-v1",
+  "split_hash": "e5213c5b831e62ed",
+  "tokenizer_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1"
+}

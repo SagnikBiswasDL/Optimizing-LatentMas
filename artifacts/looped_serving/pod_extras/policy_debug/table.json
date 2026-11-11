@@ -1,0 +1,175 @@
+{
+ "grader": {
+  "grader": "math-verify",
+  "version": "0.9.0"
+ },
+ "identity_version": "structural-v2",
+ "tie_rule": "lowest_candidate",
+ "gold_sha256": "4544d0c09258d51974cfdd19f29cc0e78c00a81462cdd57e4da43cddefa0c35f",
+ "bootstrap": {
+  "iters": 200,
+  "seed": 0
+ },
+ "arms": [
+  {
+   "arm": "policy_cert_3x4_cap192",
+   "depth": 3,
+   "width": 4,
+   "cap": 192,
+   "run_id": "run_91bb78bd121acedc",
+   "policy": "SC@4 + certificate cancel (live)",
+   "questions": 8,
+   "accuracy": 0.125,
+   "accuracy_ci95": [
+    0.0,
+    0.375
+   ],
+   "candidate_accuracy": 0.03125,
+   "answered_rate": 0.03125,
+   "cap_rate": 0.96875,
+   "error_candidates": 0,
+   "mean_gen_tokens": 191.65625,
+   "candidates_per_question": 4.0,
+   "cancelled_candidates": 0,
+   "logical_loop_tokens_per_question": 3328.875,
+   "charged_loop_tokens_per_question": 3671.875,
+   "latency_s": {
+    "mean": 4.1435375,
+    "p50": 4.13835,
+    "p90": 4.165439999999999,
+    "p95": 4.16572,
+    "max": 4.166
+   },
+   "first_token_s": {
+    "mean": 0.11942499999999975,
+    "p50": 0.11779999999999946,
+    "p90": 0.13079,
+    "p95": 0.1308,
+    "max": 0.1309
+   },
+   "tokens_per_s": 369.9826681653609,
+   "questions_per_min": 28.956739070499466,
+   "wall_s": 16.58,
+   "slots": 8,
+   "peak_kv_gb": 1.53515625
+  },
+  {
+   "arm": "policy_fixed_3x4_cap192",
+   "depth": 3,
+   "width": 4,
+   "cap": 192,
+   "run_id": "run_7aa47fb8ab96624a",
+   "policy": "SC@4 (live driver)",
+   "questions": 8,
+   "accuracy": 0.125,
+   "accuracy_ci95": [
+    0.0,
+    0.375
+   ],
+   "candidate_accuracy": 0.03125,
+   "answered_rate": 0.03125,
+   "cap_rate": 0.96875,
+   "error_candidates": 0,
+   "mean_gen_tokens": 191.65625,
+   "candidates_per_question": 4.0,
+   "cancelled_candidates": 0,
+   "logical_loop_tokens_per_question": 3328.875,
+   "charged_loop_tokens_per_question": 3671.875,
+   "latency_s": {
+    "mean": 4.135375,
+    "p50": 4.13175,
+    "p90": 4.16268,
+    "p95": 4.16289,
+    "max": 4.1631
+   },
+   "first_token_s": {
+    "mean": 0.11301874999999982,
+    "p50": 0.1086999999999998,
+    "p90": 0.1301,
+    "p95": 0.1302,
+    "max": 0.1302
+   },
+   "tokens_per_s": 370.7231204340407,
+   "questions_per_min": 29.01469065846071,
+   "wall_s": 16.54,
+   "slots": 8,
+   "peak_kv_gb": 1.53515625
+  },
+  {
+   "arm": "policy_two_then_two_3_cap192",
+   "depth": 3,
+   "width": 4,
+   "cap": 192,
+   "run_id": "run_fc8fe25e850313df",
+   "policy": "two-then-two (live)",
+   "questions": 8,
+   "accuracy": 0.125,
+   "accuracy_ci95": [
+    0.0,
+    0.375
+   ],
+   "candidate_accuracy": 0.03125,
+   "answered_rate": 0.03125,
+   "cap_rate": 0.96875,
+   "error_candidates": 0,
+   "mean_gen_tokens": 191.65625,
+   "candidates_per_question": 4.0,
+   "cancelled_candidates": 0,
+   "logical_loop_tokens_per_question": 3328.875,
+   "charged_loop_tokens_per_question": 3671.875,
+   "latency_s": {
+    "mean": 8.391525,
+    "p50": 8.391549999999999,
+    "p90": 8.491330000000001,
+    "p95": 8.491365,
+    "max": 8.4914
+   },
+   "first_token_s": {
+    "mean": 0.11067187499999995,
+    "p50": 0.11115000000000008,
+    "p90": 0.11290000000000067,
+    "p95": 0.11294500000000056,
+    "max": 0.11300000000000043
+   },
+   "tokens_per_s": 365.3905000931713,
+   "questions_per_min": 28.597332471012916,
+   "wall_s": 16.78,
+   "slots": 8,
+   "peak_kv_gb": 1.46484375
+  }
+ ],
+ "replayed_policies": [],
+ "cap_extensions": [],
+ "per_question_correct": {
+  "policy_cert_3x4_cap192": {
+   "q_5f36b72681eed7867702": false,
+   "q_246458159af2c784f09d": false,
+   "q_d91d23bff39dae2a3774": false,
+   "q_da85e1c1e215ed51a66d": false,
+   "q_1156acc367271efc7a11": false,
+   "q_2265e71067a72a1eeacb": false,
+   "q_2e24b5bb99209a2ecb67": false,
+   "q_89b1570d069211ddc3aa": true
+  },
+  "policy_fixed_3x4_cap192": {
+   "q_5f36b72681eed7867702": false,
+   "q_246458159af2c784f09d": false,
+   "q_d91d23bff39dae2a3774": false,
+   "q_da85e1c1e215ed51a66d": false,
+   "q_1156acc367271efc7a11": false,
+   "q_2265e71067a72a1eeacb": false,
+   "q_2e24b5bb99209a2ecb67": false,
+   "q_89b1570d069211ddc3aa": true
+  },
+  "policy_two_then_two_3_cap192": {
+   "q_5f36b72681eed7867702": false,
+   "q_246458159af2c784f09d": false,
+   "q_d91d23bff39dae2a3774": false,
+   "q_da85e1c1e215ed51a66d": false,
+   "q_1156acc367271efc7a11": false,
+   "q_2265e71067a72a1eeacb": false,
+   "q_2e24b5bb99209a2ecb67": false,
+   "q_89b1570d069211ddc3aa": true
+  }
+ }
+}
