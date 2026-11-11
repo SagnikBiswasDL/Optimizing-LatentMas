@@ -1,15 +1,16 @@
 # Looped serving: evidence ledger
 
-Branch `research/looped-serving`, based on `641d891` (`perf/vllm-fork`). Last updated 2026-11-10.
+Branch `research/looped-serving`, based on `641d891` (`perf/vllm-fork`). Last updated 2026-11-11.
 
 This file records what the saved runs support, what was recomputed, and what has not been
-run. The project question is whether choosing recurrent depth, sampling width and launch
-timing jointly improves correct answers delivered within a latency target, beyond a strong
-adaptive-sampling policy on a strong looped-model engine. Nothing here tests that yet.
+run. The project question is whether choosing answer mode, recurrent depth, sampling width
+and launch timing jointly improves correct answers delivered within a latency target, beyond
+a strong adaptive-sampling policy on a strong looped-model engine. `HANDOFF.md` in this
+directory is the current state for someone continuing the work.
 
 ## Status
 
-Done in this session, on CPU, with no model inference:
+Done on 2026-11-10, on CPU, with no model inference:
 
 - The plan's replay of the saved Stage-0b candidates is reproduced. Every point estimate
   matches.
@@ -19,9 +20,12 @@ Done in this session, on CPU, with no model inference:
 - Run manifests refuse incompatible resumes.
 - The backend, models, datasets and grader are pinned.
 
-Not run: any GPU measurement, any backend fidelity test, any fresh candidate generation, any
-latency number. The supplied `looped_history_audit.py` was not on this machine, so the replay
+The supplied `looped_history_audit.py` was not on this machine, so the replay
 was rebuilt from the plan's description; agreement with the plan's numbers is the check.
+
+Since then, on GPU: the fidelity gate, the smoke profile and the first calibration arms.
+See the session reports below. Not run: any deadline or arrival-trace measurement, anything
+on the validation split, and anything on the locked confirmation reserve.
 
 ## Pins
 
@@ -31,7 +35,7 @@ Full detail in `configs/looped_serving/pins.json`.
 |---|---|
 | Base commit | `641d891fc4d879b98d15f5c46af9be2f2ed40109` |
 | Reference backend | `looped/ouro_adapter.py` (Hugging Face; depth via `total_ut_steps`) |
-| Serving engine | `InferMatrixLab/vllm-rlt` at `e0a5515ec970d634546d2e1d38b3ba3602072884` (v0.2.0); fetched and read, not installed |
+| Serving engine | `InferMatrixLab/vllm-rlt` at `e0a5515ec970d634546d2e1d38b3ba3602072884` (v0.2.0); installed unmodified on 2026-11-11, its own tests 916 passed / 633 skipped |
 | Model | `ByteDance/Ouro-1.4B` at `574fa66cb8bf5abdc979642d01cf2b79b16bfab1` |
 | MATH-Train | `EleutherAI/hendrycks_math` at `21a5633873b6a120296cce3e2df9d5550074f4a3` |
 | GSM8K | `gsm8k` (main) at `740312add88f781978c0658806c59bc2815b9866` |
@@ -190,3 +194,68 @@ parity test) `datasets` and `torch`. The audit takes about two seconds.
   and compare first-token logits and greedy continuations against `OuroRunner` at each depth.
   That decides between adding a per-request prefill depth and regenerating the candidate
   evidence under full-depth prefill. Then the 100-question smoke profile.
+
+## Session report, 2026-11-11
+
+Two pods, both `NVIDIA RTX PRO 6000 Blackwell Server Edition`, Secure Cloud, image
+`runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404`, bf16, temperature 0.6, top-p 0.95.
+The first (`ipm1mt8fwpq22x`) ran the fidelity gate and the smoke profile and was deleted
+after verification (about $29.5, of which about $22 was unattended idle). The second
+(`n89idixoif18c0`, $2.49/h, no persistent volume) is running the calibration queue; its
+raw output so far is in `artifacts/looped_serving/pod_out/`.
+
+**Fidelity.** In fp32 the engine matches `OuroRunner` at every depth in two configurations:
+withholding the last prompt token so the engine emits it (`boundary_shift`), and running
+the engine itself at depth r (`--total_ut_steps r`, stock prompt mode). Stock mode on the
+full engine differs from uniform depth only in the first generated token. bf16 tokens
+depend on the batch, so equal seeds do not reproduce a pool. The `last_exited` KV layout
+reserves all four planes whatever the request depth; only a depth-limited engine reserves
+fewer. Report: `artifacts/looped_serving/fidelity_gate/fidelity.json`.
+
+**The first answer token is an answer mode.** `<think>` opens a long reasoning block that
+uses most of the decode budget and usually hits the 2,048 cap without an answer; any other
+first token starts a short solution. Think share rises with depth (33% / 42% / 52% at
+depths 2 / 3 / 4 on the saved Stage-0b pool). Finished think answers are 98–100% correct,
+but they finish on the questions the short answers already get right.
+`artifacts/looped_serving/mode_audit/modes.md`.
+
+**Smoke profile, 100 questions** (`artifacts/looped_serving/profile_smoke/table.md`),
+four-plane engine, 32 slots, cap 2,048. Natural four-sample vote: depth 2 72%, depth 3
+75%, depth 4 78%, intervals about ±9 points. Certificate cancellation at depth 3: 77%,
+mean latency 49.0 s against 57.4 s for the fixed vote. Two-then-two: 74%, 17% less charged
+work, mean latency 89.7 s and p95 183 s against 88 s. Token savings and latency move in
+opposite directions. The 75% → 79% figure from rerunning 114 capped candidates at 4,096 is
+not a continuation: 0 of 114 reproduced its prefix and the slot count changed. It is not
+cited as a cap effect.
+
+**Calibration, 400 questions, depth-3 engine, 64 slots, cap 2,048**
+(`artifacts/looped_serving/pod_out/modes_calibration/`). Forcing the direct mode (the
+answer starts with `To`) against natural sampling, same engine and settings:
+
+| Arm | Accuracy (95% CI) | Capped | Charged loop-tokens/q | Mean / p50 / p95 latency |
+|---|---|---|---|---|
+| Natural, four samples | 77.5% (73.2, 81.5) | 29.9% | 14,628 | 101.6 / 118.7 / 162.4 s |
+| Direct, four samples | 83.8% (80.0, 87.2) | 2.2% | 9,118 | 49.3 / 36.0 / 129.2 s |
+
+Paired difference +6.25 points (bootstrap interval +3.0 to +9.5); 36 questions only direct
+gets right, 11 only natural; exact McNemar p = 0.00035. The gain is concentrated on the 92
+questions where every natural sample opened `<think>` (32% against 61%). One closed-loop
+run each, so the latency columns are unreplicated. "Direct" forces one lexical prefix; the
+queued `nothink` arm (the model's own first token with `<think>` excluded) is the control
+that separates the mode from the word.
+
+Replay of the direct pool on the token clock, which is a length proxy and not a latency:
+stopping at the first two agreeing answers keeps the full vote's accuracy exactly (0 of
+400 questions change correctness; the chosen answer differs on 1) and saves 5.5% of
+loop-tokens, because direct answers are already short. Early stopping is not where the
+gain is. `replay_direct.json` in the same directory.
+
+**Known confounds.** bf16 batch dependence; one run per arm; the natural and direct arms
+ran in that engine but not interleaved, so a slow drift in machine state is not averaged
+out; the smoke natural baseline used a different engine configuration and is only
+comparable on accuracy; no validation or confirmation number exists yet.
+
+**Next gate.** Finish the calibration controls (nothink, direct at depths 2 and 4, think
+on the 75 questions whose direct votes reach no quorum of 3, natural at cap 4,096), fit on
+calibration only, then one predeclared comparison live on the 200-question validation
+split. The confirmation reserve stays locked.

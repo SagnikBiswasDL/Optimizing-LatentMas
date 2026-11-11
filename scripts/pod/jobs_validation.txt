@@ -1,0 +1,12 @@
+# Validation split, 200 questions. Predeclared 2026-11-11 20:45 UTC, before the
+# calibration nothink arm had produced a candidate: the primary comparison is
+# direct SC@4 against natural SC@4 at cap 2048; nothink is the lexical-prefix
+# control, natural at cap 4096 is the truncation control, and quorum 2-of-4
+# direct is the early-stop policy (it tied the full vote on all 400 calibration
+# questions). Depth-3 engine, 32 slots, one run seed. Arm order is a shuffle
+# with seed 20261111.
+val_natural_cap4096 python scripts/looped_profile.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --out /root/out/modes_validation --total_ut_steps 3 --arms 3x4@4096 --slots 32 --prompt_mode stock --execution '{"cuda_graphs": true, "static_buffers": true}' --kv_gb 80
+val_natural python scripts/looped_profile.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --out /root/out/modes_validation --total_ut_steps 3 --arms 3x4 --cap 2048 --slots 32 --prompt_mode stock --execution '{"cuda_graphs": true, "static_buffers": true}' --kv_gb 80
+val_direct python scripts/looped_profile.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --out /root/out/modes_validation --total_ut_steps 3 --arms 3x4:direct --cap 2048 --slots 32 --prompt_mode stock --execution '{"cuda_graphs": true, "static_buffers": true}' --kv_gb 80
+val_nothink python scripts/looped_profile.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --out /root/out/modes_validation --total_ut_steps 3 --arms 3x4:nothink --cap 2048 --slots 32 --prompt_mode stock --execution '{"cuda_graphs": true, "static_buffers": true}' --kv_gb 80
+val_quorum_direct python scripts/eval_looped_policies.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --out /root/out/modes_validation --total_ut_steps 3 --policies quorum:3x4/2:direct --cap 2048 --slots 32 --prompt_mode stock --execution '{"cuda_graphs": true, "static_buffers": true}' --kv_gb 80
