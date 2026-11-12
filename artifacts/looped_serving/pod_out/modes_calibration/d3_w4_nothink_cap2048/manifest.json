@@ -1,8 +1,8 @@
 {
   "attention_backend": "triton",
   "cache_semantics": "prompt_mode=stock; prompt_depth=full; kv_layout=last_exited x3 planes",
-  "code_sha": "69bc41f0bb0c8c6b4354c9ca465f950b2c797ffd",
-  "config_hash": "a7739e2ec37edaff",
+  "code_sha": "e7963b32d8cf21577c3fd4e825fcbc5b83753c99 dirty working tree",
+  "config_hash": "0c94513d9a464edd",
   "dataset_revision": "EleutherAI/hendrycks_math@21a5633873b6a120296cce3e2df9d5550074f4a3",
   "decode_config": {
     "cap": 2048,
@@ -47,7 +47,7 @@
     "verified": {
       "engine_head": "e0a5515ec970d634546d2e1d38b3ba3602072884",
       "model_snapshot": "574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
-      "source_tree_sha256": "18785cf7e2d41e50724b256ab2b58624a88862ff47b711a1130f7c5d25691d57"
+      "source_tree_sha256": "82464b9d85688b72e6c9ba8fd735b65c2eba98ac9bf45d49102e6feab014bb99"
     }
   },
   "grader": {

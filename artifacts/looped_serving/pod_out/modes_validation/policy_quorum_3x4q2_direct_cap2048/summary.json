@@ -1,0 +1,61 @@
+{
+ "run_id": "run_b770c2f5cb3c1f6c",
+ "policy": {
+  "name": "quorum_cancel",
+  "version": "v1",
+  "depth": 3,
+  "width": 4,
+  "quorum": 2,
+  "mode": "direct",
+  "think_trumps": false
+ },
+ "questions": 200,
+ "candidates": 800,
+ "slots": 32,
+ "cap": 2048,
+ "wall_s": 545.83,
+ "generated_tokens": 486857,
+ "tokens_per_s": 891.9584705618814,
+ "questions_per_min": 21.984898331014193,
+ "logical_loop_tokens": 1749075,
+ "charged_loop_tokens": 1749075,
+ "finish_reasons": {
+  "eos": 450,
+  "cancelled": 331,
+  "length_cap": 19
+ },
+ "mean_gen_tokens": 608.57125,
+ "candidates_per_question": 4.0,
+ "cancelled_candidates": 331,
+ "decision_reasons": {
+  "all_finished": 19,
+  "quorum": 181
+ },
+ "think_share": 0.0,
+ "question_latency_s": {
+  "mean": 21.066609,
+  "p50": 14.78135,
+  "p90": 45.549819999999976,
+  "p95": 63.09670999999996,
+  "max": 72.3341
+ },
+ "candidate_latency_s": {
+  "mean": 19.356164999999997,
+  "p50": 14.328249999999997,
+  "p90": 38.88029000000001,
+  "p95": 50.09264499999996,
+  "max": 72.32960000000003
+ },
+ "first_token_s": {
+  "mean": 0.06269837499999854,
+  "p50": 0.037800000000004275,
+  "p90": 0.10799000000000432,
+  "p95": 0.19039999999999999,
+  "max": 1.0050999999999704
+ },
+ "peak_used_blocks": 13890,
+ "num_blocks": 27306,
+ "peak_live_candidates": 32,
+ "peak_cuda_allocated_gb": 83.44576501846313,
+ "used_blocks_after": 0
+}

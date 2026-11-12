@@ -9,8 +9,9 @@
 # at the end. Stopping an idle pod is the job of scripts/pod/watchdog.sh.
 set -u
 JOBS=${1:?jobs file}
-export HF_HOME=/root/hf HF_HUB_OFFLINE=1 PYTHONUNBUFFERED=1
-export M=${M:-/root/hf/hub/models--ByteDance--Ouro-1.4B/snapshots/574fa66cb8bf5abdc979642d01cf2b79b16bfab1}
+if [ -d /workspace/hf ]; then export HF_HOME=/workspace/hf; else export HF_HOME=/root/hf; fi
+export HF_HUB_OFFLINE=1 PYTHONUNBUFFERED=1
+export M=${M:-$HF_HOME/hub/models--ByteDance--Ouro-1.4B/snapshots/574fa66cb8bf5abdc979642d01cf2b79b16bfab1}
 source /root/venv/bin/activate
 cd /root/work/repo
 mkdir -p /root/out /root/logs
@@ -20,6 +21,7 @@ while IFS= read -r line || [ -n "$line" ]; do
   name=${line%% *}; cmd=${line#* }
   echo "=== $(date -u +%FT%TZ) start $name" | tee -a /root/out/queue_status.txt
   bash -c "$cmd" > "/root/logs/$name.log" 2>&1
-  echo "=== $(date -u +%FT%TZ) end $name rc=$?" | tee -a /root/out/queue_status.txt
+  rc=$?
+  echo "=== $(date -u +%FT%TZ) end $name rc=$rc" | tee -a /root/out/queue_status.txt
 done < "$JOBS"
 date -u +%FT%TZ > /root/out/QUEUE_DONE

@@ -1,12 +1,13 @@
 # Looped serving: evidence ledger
 
-Branch `research/looped-serving`, based on `641d891` (`perf/vllm-fork`). Last updated 2026-11-11.
+Branch `research/looped-serving`, based on `641d891` (`perf/vllm-fork`). Last updated 2026-11-12.
 
 This file records what the saved runs support, what was recomputed, and what has not been
 run. The project question is whether choosing answer mode, recurrent depth, sampling width
 and launch timing jointly improves correct answers delivered within a latency target, beyond
 a strong adaptive-sampling policy on a strong looped-model engine. `HANDOFF.md` in this
-directory is the current state for someone continuing the work.
+directory is the current state. `NEXT_AGENT.md` is the brief for deciding the next
+experiment without starting one.
 
 ## Status
 
@@ -23,9 +24,11 @@ Done on 2026-11-10, on CPU, with no model inference:
 The supplied `looped_history_audit.py` was not on this machine, so the replay
 was rebuilt from the plan's description; agreement with the plan's numbers is the check.
 
-Since then, on GPU: the fidelity gate, the smoke profile and the first calibration arms.
-See the session reports below. Not run: any deadline or arrival-trace measurement, anything
-on the validation split, and anything on the locked confirmation reserve.
+Since then, on GPU: the fidelity gate, the smoke profile, the calibration arms, and one
+held-out validation run. See the session reports below. The validation run did not
+replicate the calibration accuracy gain for forced direct answers. Not run: any deadline
+or arrival-trace measurement, and anything on the locked confirmation reserve. The
+`nothink` control aborted on both splits and has no candidate file.
 
 ## Pins
 
@@ -201,8 +204,10 @@ Two pods, both `NVIDIA RTX PRO 6000 Blackwell Server Edition`, Secure Cloud, ima
 `runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404`, bf16, temperature 0.6, top-p 0.95.
 The first (`ipm1mt8fwpq22x`) ran the fidelity gate and the smoke profile and was deleted
 after verification (about $29.5, of which about $22 was unattended idle). The second
-(`n89idixoif18c0`, $2.49/h, no persistent volume) is running the calibration queue; its
-raw output so far is in `artifacts/looped_serving/pod_out/`.
+(`n89idixoif18c0`, $2.49/h, no persistent volume) ran the first calibration arms. It was
+later stopped; the container disk was wiped, and every arm that had not been copied off
+was lost. The paragraph below records what had been copied by then. The 2026-11-12 report
+is the current reading.
 
 **Fidelity.** In fp32 the engine matches `OuroRunner` at every depth in two configurations:
 withholding the last prompt token so the engine emits it (`boundary_shift`), and running
@@ -250,12 +255,58 @@ stopping at the first two agreeing answers keeps the full vote's accuracy exactl
 loop-tokens, because direct answers are already short. Early stopping is not where the
 gain is. `replay_direct.json` in the same directory.
 
-**Known confounds.** bf16 batch dependence; one run per arm; the natural and direct arms
-ran in that engine but not interleaved, so a slow drift in machine state is not averaged
-out; the smoke natural baseline used a different engine configuration and is only
-comparable on accuracy; no validation or confirmation number exists yet.
+**Known confounds, as of this session.** bf16 batch dependence; one run per arm; the
+natural and direct arms ran in that engine but not interleaved, so a slow drift in machine
+state is not averaged out; the smoke natural baseline used a different engine
+configuration and is only comparable on accuracy. The "no validation number" line that
+used to close this report is superseded by the 2026-11-12 report.
 
-**Next gate.** Finish the calibration controls (nothink, direct at depths 2 and 4, think
-on the 75 questions whose direct votes reach no quorum of 3, natural at cap 4,096), fit on
-calibration only, then one predeclared comparison live on the 200-question validation
-split. The confirmation reserve stays locked.
+**Next gate, as written that day, and since done.** The calibration controls and the
+validation comparison were run on 2026-11-12. Do not follow this paragraph as a queue.
+
+## Session report, 2026-11-12
+
+Pod `d44xrnlfc8qhy5`, same GPU class, $2.49/h, network volume `s7ctgyb8b7` mounted at
+`/workspace` (EU-RO-1). The queue wrote `QUEUE_DONE` at 2026-11-12T05:29:15Z. Outputs were
+pulled, graded, and the pod was then stopped (`EXITED`). Uptime about 4.1 h. The volume
+remains and holds a second copy. Code SHA recorded on the pod is `e7963b3` with a dirty
+working tree (`scripts/pod/setup.sh`, `scripts/pod/run_queue.sh`).
+
+**Held-out validation, 200 questions, depth-3 engine, 32 slots, one seed**
+(`artifacts/looped_serving/pod_out/modes_validation/`).
+
+| Arm | Accuracy (95% CI) | Capped | Charged loop-tokens/q | Mean / p50 / p95 latency |
+|---|---|---|---|---|
+| Natural, four samples, cap 2,048 | 78.0% (72.0, 83.5) | 27.1% | 14,115 | 49.8 / 55.0 / 81.8 s |
+| Direct, four samples, cap 2,048 | 79.5% (74.0, 85.0) | 2.9% | 9,201 | 25.5 / 18.8 / 65.2 s |
+| Natural, four samples, cap 4,096 | 84.0% (79.0, 89.0) | 18.4% | 19,709 | 92.3 / 66.0 / 209.0 s |
+| Quorum 2-of-4, direct, live | 82.0% (76.5, 87.5) | 2.4% | 8,745 | 21.1 / 14.8 / 63.1 s |
+
+Paired on the same 200 questions, 10,000-draw bootstrap, seed 0, plus exact McNemar.
+Direct minus natural at cap 2,048: +1.5 points, interval −2.0 to +5.0, 8 against 5,
+p = 0.58. Natural 4,096 minus natural 2,048: +6.0, interval +2.0 to +10.0, 15 against 3,
+p = 0.0075. Natural 4,096 minus direct 2,048: +4.5, interval +1.0 to +8.0, 11 against 2,
+p = 0.022. The live quorum arm is a new bf16 sample, so it is not evidence about the
+stopping rule. The calibration direct-pool replay remains the stopping-rule result: same
+correctness, 5.5% fewer loop-tokens.
+
+**Calibration controls that completed on this pod** (32 slots,
+`artifacts/looped_serving/pod_out/modes_calibration/`). Natural cap 4,096: 82.5%
+(78.8, 86.0), paired +5.0 against natural 2,048 (p = 0.0029) and −1.25 against direct
+2,048 (p = 0.53). Direct depth 4: 83.8%, tied with depth-3 direct (p = 1) at more tokens.
+Direct depth 2: 75.0%, −8.75 against depth-3 direct (p = 1.2e-6). Think, two samples, cap
+4,096, on the 75 questions with no direct 3-of-4 quorum: 28.0% (18.7, 38.7), 82.7% capped,
+against 30.7% for direct SC@4 on those same 75.
+
+**`nothink` did not run.** Validation aborted after 57 candidates returned the banned
+first token 64 times; calibration after 162. No `candidates.jsonl`.
+
+**Reading.** The calibration "force direct" accuracy win was mostly the 2,048 cap cutting
+`<think>` traces off before they answered. A 4,096 cap recovers that accuracy and, on the
+fresh split, beats forced direct. Forced direct remains about twice as fast at the short
+cap. Depth 3 is enough for direct answers; depth 2 loses about 9 points; a think fallback
+on disagreement does not help. The serving claim (fixed arrivals, deadlines, correct
+answers by the deadline) has not been run. The confirmation reserve is untouched.
+
+**Withdrawn.** "Force direct answers" as an accuracy improvement that replicates on fresh
+questions at a matched short cap.

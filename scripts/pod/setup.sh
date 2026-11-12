@@ -2,11 +2,23 @@
 # Environment for the looped-serving runs on a fresh runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404 pod.
 # Pins: configs/looped_serving/pins.json. Run once; safe to rerun.
 set -ex
-export HF_HOME=/root/hf HF_HUB_ENABLE_HF_TRANSFER=0
+# A network volume at /workspace outlives the pod. Results, logs and the model
+# snapshot go there; /root/out and /root/logs are links, so the queue scripts
+# keep their paths. Without a volume everything stays on the container disk.
+if [ -d /workspace ]; then
+  mkdir -p /workspace/hf /workspace/out /workspace/logs
+  ln -sfn /workspace/out /root/out
+  ln -sfn /workspace/logs /root/logs
+  export HF_HOME=/workspace/hf
+else
+  mkdir -p /root/out /root/logs
+  export HF_HOME=/root/hf
+fi
+export HF_HUB_ENABLE_HF_TRANSFER=0
 [ -d /root/venv ] || python3 -m venv --system-site-packages /root/venv   # the image's system Python refuses pip installs (PEP 668)
 source /root/venv/bin/activate
 pip install -q --no-cache-dir transformers==4.57.1 datasets math-verify==0.9.0 pytest 2>&1 | tail -3
-mkdir -p /root/work /root/out /root/logs
+mkdir -p /root/work
 cd /root/work
 [ -d vllm-rlt ] || git clone -q https://github.com/InferMatrixLab/vllm-rlt
 cd vllm-rlt

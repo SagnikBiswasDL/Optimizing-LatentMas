@@ -1,11 +1,20 @@
-=== 2026-11-11T19:25:30Z start tests
-=== 2026-11-11T19:25:33Z end tests rc=0
-=== 2026-11-11T19:25:33Z start pilot_direct
-=== 2026-11-11T19:31:27Z end pilot_direct rc=0
-=== 2026-11-11T19:31:27Z start pilot_think
-=== 2026-11-11T19:46:37Z end pilot_think rc=0
-=== 2026-11-11T19:46:41Z start cal_d3_direct
-=== 2026-11-11T20:05:18Z end cal_d3_direct rc=0
-=== 2026-11-11T20:05:18Z start cal_d3_natural
-=== 2026-11-11T20:40:23Z end cal_d3_natural (queue restarted; status not captured)
-=== 2026-11-11T20:40:23Z start cal_d3_nothink
+=== 2026-11-12T02:23:22Z start val_natural
+=== 2026-11-12T02:41:03Z end val_natural rc=0
+=== 2026-11-12T02:41:03Z start val_direct
+=== 2026-11-12T02:51:23Z end val_direct rc=0
+=== 2026-11-12T02:51:24Z start val_nothink
+=== 2026-11-12T02:52:46Z end val_nothink rc=1
+=== 2026-11-12T02:52:46Z start val_quorum_direct
+=== 2026-11-12T03:02:08Z end val_quorum_direct rc=0
+=== 2026-11-12T03:02:09Z start val_natural_cap4096
+=== 2026-11-12T03:32:58Z end val_natural_cap4096 rc=0
+=== 2026-11-12T03:32:58Z start cal_d3_nothink
+=== 2026-11-12T03:36:53Z end cal_d3_nothink rc=1
+=== 2026-11-12T03:36:54Z start cal_d4_direct
+=== 2026-11-12T03:57:27Z end cal_d4_direct rc=0
+=== 2026-11-12T03:57:27Z start cal_d2_direct
+=== 2026-11-12T04:09:14Z end cal_d2_direct rc=0
+=== 2026-11-12T04:09:14Z start cal_d3_think_noquorum3
+=== 2026-11-12T04:26:17Z end cal_d3_think_noquorum3 rc=0
+=== 2026-11-12T04:26:17Z start cal_d3_natural_cap4096
+=== 2026-11-12T05:29:15Z end cal_d3_natural_cap4096 rc=0

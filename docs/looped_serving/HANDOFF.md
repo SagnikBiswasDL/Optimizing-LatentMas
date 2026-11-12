@@ -2,10 +2,12 @@
 
 For a research agent picking this work up. Branch `research/looped-serving`
 (remote `git@github.com:SagnikBiswasDL/Optimizing-LatentMas.git`), based on
-`641d891`. Last updated 2026-11-11, during the second GPU session.
+`641d891`. Last updated 2026-11-12, after the held-out run. The GPU is stopped.
 
 `docs/looped_serving/EVIDENCE.md` is the ledger of what the runs support.
-This file says where things stand, how to run them, and what to do next.
+This file says where things stand and how to run them.
+`docs/looped_serving/NEXT_AGENT.md` is the brief for an agent deciding the
+next experiment. That agent reads, recommends, and does not start a GPU.
 
 ## The question
 
@@ -48,13 +50,44 @@ a paper claim. No claim is established yet.
    vote certificate cut mean latency 15% at equal accuracy within noise.
    `artifacts/looped_serving/profile_smoke/table.md`.
 
-### Measured in the current session, not yet replicated
+### Held-out result (this is the current reading)
 
 Depth-limited depth-3 engine, bf16, stock prompt mode, CUDA graphs and static
-buffers, temperature 0.6, top-p 0.95. Accuracy intervals are question
-bootstraps.
+buffers, temperature 0.6, top-p 0.95, 32 slots, one seed. Validation split, 200
+questions the calibration comparison never saw
+(`artifacts/looped_serving/pod_out/modes_validation/`). Graded with
+`math-verify` 0.9.0. Paired intervals are 10,000-draw bootstraps, seed 0.
 
-Calibration split, 400 questions, depth 3, four samples, cap 2,048, 64 slots
+| Arm | Accuracy (95% CI) | Capped | Charged loop-tokens/q | Latency mean / p50 / p95 | Questions/min |
+|---|---|---|---|---|---|
+| Natural SC@4, cap 2,048 | 78.0% (72.0, 83.5) | 27.1% | 14,115 | 49.8 / 55.0 / 81.8 s | 11.5 |
+| Direct SC@4, cap 2,048 | 79.5% (74.0, 85.0) | 2.9% | 9,201 | 25.5 / 18.8 / 65.2 s | 20.4 |
+| Natural SC@4, cap 4,096 | 84.0% (79.0, 89.0) | 18.4% | 19,709 | 92.3 / 66.0 / 209.0 s | 6.5 |
+| Quorum 2-of-4, direct, live | 82.0% (76.5, 87.5) | 2.4% | 8,745 | 21.1 / 14.8 / 63.1 s | 22.0 |
+
+Paired, same 200 questions:
+
+- Direct minus natural at cap 2,048: **+1.5 points**, interval −2.0 to +5.0,
+  8 against 5, exact McNemar p = 0.58. The practice-set accuracy gain did not
+  replicate.
+- Natural at 4,096 minus natural at 2,048: **+6.0 points**, interval +2.0 to
+  +10.0, 15 against 3, p = 0.0075. This is the comparison that replicates.
+- Natural at 4,096 minus direct at 2,048: **+4.5 points**, interval +1.0 to
+  +8.0, 11 against 2, p = 0.022. The longer monologue is more accurate and
+  about three times slower (92 s against 26 s).
+- The live quorum run is a separate bf16 sample, not the direct pool with early
+  stopping. Its +2.5 against direct SC@4 is not a stopping-rule effect. On the
+  calibration direct pool, replayed on the token clock, stopping at two
+  agreeing answers kept correctness on all 400 questions and saved 5.5% of
+  loop-tokens.
+
+"Direct" means the answer starts with the token `To`. It does not turn
+reasoning off. One closed-loop run per arm, not interleaved, so the latency
+columns are unreplicated.
+
+### Practice set, where the withdrawn claim came from
+
+Calibration, 400 questions, same engine, cap 2,048, 64 slots
 (`artifacts/looped_serving/pod_out/modes_calibration/`, code `a95b3e1`):
 
 | Arm | Accuracy (95% CI) | Capped | Charged loop-tokens/q | Latency mean / p50 / p95 | Questions/min |
@@ -62,36 +95,39 @@ Calibration split, 400 questions, depth 3, four samples, cap 2,048, 64 slots
 | Natural SC@4 | 77.5% (73.2, 81.5) | 29.9% | 14,628 | 101.6 / 118.7 / 162.4 s | 11.5 |
 | Direct SC@4 | 83.8% (80.0, 87.2) | 2.2% | 9,118 | 49.3 / 36.0 / 129.2 s | 21.7 |
 
-Paired: direct +6.25 points (bootstrap 95% interval +3.0 to +9.5); 36 questions
-only direct gets right, 11 only natural; exact McNemar p = 0.00035. The gain
-sits on the 92 questions where all four natural samples opened `<think>`
-(natural 32%, direct 61%); on the other 308 the two arms are within a point.
-Latency and throughput are from one closed-loop run each on the same engine
-configuration, not repeated.
+Paired: direct +6.25 points (interval +3.0 to +9.5); 36 only direct, 11 only
+natural; p = 0.00035. The gain sat on the 92 questions where all four natural
+samples opened `<think>` (natural 32%, direct 61%). Do not cite this as the
+result. The 64-slot latencies are not comparable to the 32-slot validation run:
+throughput is about 700–900 tokens/s regardless of slots, so closed-loop latency
+follows tokens in flight.
 
-Smoke split, 100 questions, same engine (`pod_out/modes_smoke/`): direct SC@4
-82.0% against 75.0% for the first session's natural SC@4 (which ran on the
-four-plane engine with 32 slots, so only the accuracy is comparable; 9 against
-2 discordant, p = 0.065). Forced think, two samples, cap 4,096: 75.0%, 29.5%
-capped, mean latency 136.8 s.
+Controls on the same 400 questions, from the second GPU (32 slots):
 
-Reading, with its limits:
+- Natural cap 4,096: 82.5% (78.8, 86.0), 19.5% capped, 20,530 loop-tokens/q.
+  Paired against natural 2,048: +5.0 points (interval +2.0 to +8.2, 31 against
+  11, p = 0.0029). Paired against direct 2,048: −1.25 (interval −4.5 to +2.0,
+  p = 0.53). Once the monologue can finish, it ties the short answer here.
+- Direct depth 4: 83.8%, identical to depth-3 direct (15 against 15, p = 1),
+  at 12,059 loop-tokens/q against 9,118.
+- Direct depth 2: 75.0%, −8.75 points against depth-3 direct (interval −12.2
+  to −5.2, 9 against 44, p = 1.2e-6).
+- Think, two samples, cap 4,096, on the 75 questions whose direct votes never
+  reached a 3-of-4 quorum: 28.0% (18.7, 38.7), 82.7% capped, mean latency
+  198.7 s. Direct SC@4 on those same 75 is 30.7%. A monologue fallback does
+  not rescue them.
 
-- Forcing the direct mode is more accurate than the natural four-sample vote at
-  the 2,048-token cap and costs fewer loop-tokens. "Direct" here means the
-  answer is started with the token `To`; the answer can still contain a worked
-  derivation. The `nothink` arm (the model's own first token with `<think>`
-  excluded) tests whether the effect is the mode or the word.
-- This says nothing about reasoning given room. A natural arm at cap 4,096 is
-  queued; it is also the truncation control (each trajectory against its own
-  first 2,048 tokens).
-- On the smoke split, forced reasoning at cap 4,096 finished almost only on
-  questions the direct vote already got right: of the 18 questions direct SC@4
-  missed, a reasoning sample finished on 3 and was right on 2. If that holds on
-  calibration, "direct first, reasoning on disagreement" adds little. The
-  queued think arm runs exactly on the calibration questions whose direct votes
-  reach no 3-of-4 quorum (75 of 400), which is the population that fallback
-  would act on.
+The `nothink` control (the model's own first token with `<think>` banned, up
+to 64 redraws) aborted on both splits: 57 fresh-set candidates and 162
+practice-set candidates were still `<think>` after 64 draws. No candidate file
+was written. First-token mass on `<think>` is extreme. That control has not
+separated "block the monologue" from "start with the word To."
+
+Smoke split, 100 questions (`pod_out/modes_smoke/`): direct SC@4 82.0% against
+75.0% for an earlier natural SC@4 on a four-plane engine at 32 slots (accuracy
+only; 9 against 2, p = 0.065). Forced think, two samples, cap 4,096: 75.0%.
+Of 18 questions the direct vote missed, a think sample finished on 3 and was
+right on 2. Pilot only.
 
 ### Failed or weakened hypotheses (keep these)
 
@@ -107,7 +143,14 @@ Reading, with its limits:
 - The earlier cap-extension result (75% → 79% after rerunning 114 capped
   candidates at 4,096) is a selective rerun with new trajectories and a
   different slot count: none of the 114 reproduced its old prefix. It is not a
-  continuation and should not be cited as the effect of a longer cap.
+  continuation and should not be cited as the effect of a longer cap. The
+  fresh full-pool natural arms at cap 4,096 are the cap comparison.
+- Forcing direct answers as an accuracy improvement that replicates on fresh
+  questions at a matched 2,048 cap. It was +6.25 points on the 400-question
+  practice set and +1.5 points on the 200-question fresh set (p = 0.58).
+  Direct remains about twice as fast at that cap (25.5 s against 49.8 s).
+- A think fallback on the questions direct votes cannot settle: 28% against
+  30.7% direct on those 75 practice questions, with 83% of think samples capped.
 
 ## Review of 2026-11-11 and what was done about it
 
@@ -127,11 +170,15 @@ source tree and the installed model snapshot and engine commit
 (`225d4a7`) predates the script that produced them. Arms run before `3a894da`
 in this session carry `a95b3e1`, which is the code they ran.
 
-Open review points: the comparison must be repeated on fresh questions
-(validation, then the locked confirmation set); the serving claim needs fixed
-arrival traces and deadlines, not only the closed loop; related work to position
-against includes depth-portfolio methods (DPA) and adaptive-thinking methods
-("When to Continue Thinking", "Learning When to Think").
+Open review points: the fresh-question repeat is done, and the direct-mode
+accuracy claim did not survive it. The confirmation reserve is still locked.
+The serving claim needs fixed arrival traces and deadlines, not only the closed
+loop. Related work to position against includes depth-portfolio methods (DPA)
+and adaptive-thinking methods ("When to Continue Thinking", "Learning When to
+Think"); hold the runtime fixed, and acknowledge ExactLoop. The rerun manifests
+record code `e7963b3` with a dirty working tree, because `scripts/pod/setup.sh`
+and `scripts/pod/run_queue.sh` were edited after that commit and have not been
+committed.
 
 ## Layout
 
@@ -203,23 +250,38 @@ Operational notes:
 - KV per candidate is reserved for the full cap: about 413 blocks per 2,048
   tokens per depth plane at depth 3. With `--kv_gb 80`: 64 slots at cap 2,048,
   32 at cap 4,096 (depth 3); 48 slots at cap 2,048 at depth 4.
-- The pod has no persistent volume. Copy `/root/out` off it while it runs.
-- `scripts/pod/watchdog.sh` stops the pod after 40 idle GPU minutes; its stop
-  call has not been observed working (a read with the pod's own key was
-  refused). In the first session an unattended pod idled for about 9 hours.
+- Write outputs to a network volume mounted at `/workspace`, and pull them
+  before stopping. Container disk is wiped on stop. Pod `n89idixoif18c0`
+  (CA-MTL-3, no volume) lost the unpulled arms of the first validation attempt
+  that way; it is EXITED and was left unterminated. Pod `d44xrnlfc8qhy5`
+  (EU-RO-1) is EXITED. Its volume `s7ctgyb8b7` (`looped-serving-results`,
+  20 GB, about $1.40/month) still holds a copy. Do not delete either pod or
+  that volume unless asked, and do not touch the pre-existing volume
+  `hib98og0wy`.
+- `scripts/pod/watchdog.sh` cannot stop a pod. `runpodctl` inside the pod is
+  unauthorized. Stop from outside. In the first session an unattended pod
+  idled for about 9 hours.
+- A queue line must not be launched in parallel with setup. `bash` parses
+  `A && B & C` as `(A && B) & C`. Capture a job's exit code before `$(date)`,
+  which resets `$?`.
 
 ## Next steps
 
-1. Finish the calibration queue (running): `nothink`, direct at depths 4 and 2,
-   think on the no-quorum questions, natural at cap 4,096, greedy direct.
-2. From calibration only: pick depth, width, quorum and whether a reasoning
-   fallback earns its latency. Predeclare the primary comparison.
-3. Validation (200 questions), all policies live on one engine configuration
-   with the same slot count, arm order randomised, at least two run seeds:
-   natural SC@4 at caps 2,048 and 4,096, natural with certificate cancellation,
-   direct SC@4, a direct quorum policy, and direct-first with a reasoning
-   fallback if step 2 keeps it. Report paired question-level differences.
-4. Freeze, then one run on the confirmation reserve.
-5. Open-loop serving: fixed arrival traces and deadlines; correct answers
-   delivered by the deadline per second, queue-inclusive p95, charged work;
-   best static policy against a load-blind and a load-aware controller.
+The accuracy comparison is done. Do not rerun it, and do not touch the
+confirmation reserve until a policy is frozen.
+
+1. Serving measurement, which is the paper-shaped claim and has not been run.
+   Fix an arrival trace and a set of deadlines. The two policies that survived
+   are direct at cap 2,048 (about 26 s, 79.5% on the fresh set) and natural at
+   cap 4,096 (about 92 s, 84%). Report correct answers delivered by each
+   deadline, queue-inclusive p95, and charged work. One RTX PRO 6000 Blackwell
+   is $2.49/h. Do not start one without an explicit go.
+2. If the question is "block `<think>`" rather than "start with To," the
+   `nothink` arm needs a sampler that does not abort the run when 64 redraws
+   are still the think token (a logit penalty, or skip only the stubborn
+   candidates). Then run it on the validation split only, matched to the arms
+   above.
+3. An agent deciding between those, or deciding that neither is worth a GPU,
+   should follow `docs/looped_serving/NEXT_AGENT.md` and write the
+   recommendation before spending anything. The graded tables are in
+   `artifacts/looped_serving/pod_out/`.
