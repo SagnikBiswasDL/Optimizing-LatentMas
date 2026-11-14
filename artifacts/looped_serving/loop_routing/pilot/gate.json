@@ -1,0 +1,203 @@
+{
+ "n": 200,
+ "gate": {
+  "steps": {
+   "1->2": {
+    "needs_next_A": 97,
+    "needs_next_B": 101,
+    "both": 66,
+    "kappa": 0.3401979406178147,
+    "kappa_lo": 0.2049940110436176,
+    "kappa_hi": 0.46701528559935634,
+    "pass": true
+   },
+   "2->3": {
+    "needs_next_A": 30,
+    "needs_next_B": 23,
+    "both": 15,
+    "kappa": 0.5010845986984817,
+    "kappa_lo": 0.31622383252818015,
+    "kappa_hi": 0.6628621947185148,
+    "pass": true
+   }
+  },
+  "transfer": {
+   "margin": -0.04074652492035685,
+   "margin_lo": -0.07627675473937469,
+   "margin_hi": -0.006002343914679508,
+   "pass": false,
+   "A_to_B_acc": 0.79,
+   "A_to_B_cost": 24764.385,
+   "A_to_B_depths": [
+    36,
+    96,
+    32,
+    36
+   ]
+  },
+  "pass": false
+ },
+ "step_3_4_reported": {
+  "3->4": {
+   "needs_next_A": 10,
+   "needs_next_B": 7,
+   "both": 1,
+   "kappa": 0.0797546012269946,
+   "kappa_lo": -0.05263157894736725,
+   "kappa_hi": 0.3150684931506844,
+   "pass": false
+  }
+ },
+ "same_depth_disagreements": {
+  "1": 48,
+  "2": 22,
+  "3": 14,
+  "4": 15
+ },
+ "runs": {
+  "0": {
+   "fixed": {
+    "1": {
+     "acc": 0.285,
+     "loop_tokens": 11487.26,
+     "candidates": 800,
+     "cap_hit": 0.2775,
+     "think_share": 0.05625,
+     "wall_s": 2083.06,
+     "questions_per_min": 5.760763619855859,
+     "mean_gen_tokens": 2750.26
+    },
+    "2": {
+     "acc": 0.76,
+     "loop_tokens": 18987.35,
+     "candidates": 800,
+     "cap_hit": 0.17375,
+     "think_share": 0.345,
+     "wall_s": 2978.97,
+     "questions_per_min": 4.028242057139474,
+     "mean_gen_tokens": 2251.86375
+    },
+    "3": {
+     "acc": 0.875,
+     "loop_tokens": 29965.89,
+     "candidates": 800,
+     "cap_hit": 0.13375,
+     "think_share": 0.49125,
+     "wall_s": 4824.32,
+     "questions_per_min": 2.4873951767871194,
+     "mean_gen_tokens": 2375.6025
+    },
+    "4": {
+     "acc": 0.895,
+     "loop_tokens": 35406.42,
+     "candidates": 800,
+     "cap_hit": 0.0875,
+     "think_share": 0.53625,
+     "wall_s": 6123.35,
+     "questions_per_min": 1.9597120776806705,
+     "mean_gen_tokens": 2091.34625
+    }
+   },
+   "frontier": [
+    [
+     11487.26,
+     0.285
+    ],
+    [
+     18987.35,
+     0.76
+    ],
+    [
+     29965.89,
+     0.875
+    ],
+    [
+     35406.42,
+     0.895
+    ]
+   ],
+   "oracle_same_run": {
+    "acc": 0.935,
+    "cost": 17409.685,
+    "depths": [
+     49,
+     96,
+     32,
+     23
+    ]
+   }
+  },
+  "1": {
+   "fixed": {
+    "1": {
+     "acc": 0.285,
+     "loop_tokens": 11422.97,
+     "candidates": 800,
+     "cap_hit": 0.27375,
+     "think_share": 0.06625,
+     "wall_s": 2080.75,
+     "questions_per_min": 5.767143030802543,
+     "mean_gen_tokens": 2734.1875
+    },
+    "2": {
+     "acc": 0.78,
+     "loop_tokens": 17506.98,
+     "candidates": 800,
+     "cap_hit": 0.14125,
+     "think_share": 0.35125,
+     "wall_s": 2740.76,
+     "questions_per_min": 4.378350140711285,
+     "mean_gen_tokens": 2066.8175
+    },
+    "3": {
+     "acc": 0.865,
+     "loop_tokens": 28653.015,
+     "candidates": 800,
+     "cap_hit": 0.13375,
+     "think_share": 0.4675,
+     "wall_s": 4595.99,
+     "questions_per_min": 2.610972857468917,
+     "mean_gen_tokens": 2266.19625
+    },
+    "4": {
+     "acc": 0.88,
+     "loop_tokens": 35826.62,
+     "candidates": 800,
+     "cap_hit": 0.1025,
+     "think_share": 0.5425,
+     "wall_s": 6318.01,
+     "questions_per_min": 1.8993332744659048,
+     "mean_gen_tokens": 2117.60875
+    }
+   },
+   "frontier": [
+    [
+     11422.97,
+     0.285
+    ],
+    [
+     17506.98,
+     0.78
+    ],
+    [
+     28653.015,
+     0.865
+    ],
+    [
+     35826.62,
+     0.88
+    ]
+   ],
+   "oracle_same_run": {
+    "acc": 0.915,
+    "cost": 15887.77,
+    "depths": [
+     53,
+     100,
+     37,
+     10
+    ]
+   }
+  }
+ }
+}
