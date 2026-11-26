@@ -1,9 +1,16 @@
 # Next agent: decide what to do
 
-You are picking this up after the held-out run. Your job is to analyze the
-evidence and recommend the next experiment. Do not start a GPU, do not spend
-money, and do not commit unless the user asks. The confirmation reserve stays
-locked.
+Semantic loop routing on the saved pilot is a separate offline experiment. Protocol and result: `docs/looped_serving/SEMANTIC_ROUTING.md`. Artifacts: `artifacts/looped_serving/semantic_router/pilot_v1/`. It does not change the deadline-study decision in this file, and it does not open the confirmation reserve.
+
+
+The decision was made on 2026-11-12: run the deadline feasibility study in
+`docs/looped_serving/DEADLINE_STUDY.md`. It is implemented and has not been
+run. Do not start a GPU unless the user explicitly says to. Do not open the
+confirmation reserve. A pass of that study's 2-point gate is a development
+screen, not a paper claim of a new algorithm.
+
+The rest of this file is the brief that led to that decision. It is kept so
+the held-out numbers are not re-litigated.
 
 Read, in this order:
 

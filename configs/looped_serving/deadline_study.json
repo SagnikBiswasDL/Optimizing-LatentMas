@@ -1,0 +1,48 @@
+{
+  "name": "deadline_feasibility_2026_11_12",
+  "deadline_s": 240.0,
+  "depth": 3,
+  "width": 4,
+  "direct_cap": 2048,
+  "long_cap": 4096,
+  "direct_mode": "direct",
+  "long_mode": "natural",
+  "rates_per_min": [
+    4,
+    12
+  ],
+  "period_questions": 20,
+  "slots": 32,
+  "kv_gb": 80,
+  "repetitions": [
+    0,
+    1,
+    2
+  ],
+  "calibration_seed": 0,
+  "gate_points": 2.0,
+  "queue_aware": {
+    "long_slack_s": 120.0,
+    "max_other_unfinished": 0
+  },
+  "mixture_candidates": [
+    "p25",
+    "p50",
+    "p75",
+    "disagree"
+  ],
+  "mixture_p": {
+    "p25": 0.25,
+    "p50": 0.5,
+    "p75": 0.75
+  },
+  "temperature": 0.6,
+  "top_p": 0.95,
+  "prompt_mode": "stock",
+  "total_ut_steps": 3,
+  "dtype": "bfloat16",
+  "execution": {
+    "cuda_graphs": true,
+    "static_buffers": true
+  }
+}

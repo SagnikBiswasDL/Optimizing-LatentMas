@@ -1,0 +1,35 @@
+{
+  "study": "deadline_feasibility_2026_11_12",
+  "split": "math_train_calibration",
+  "chosen": "disagree",
+  "runs": [
+    {
+      "candidate": "disagree",
+      "hits": 329,
+      "n": 400,
+      "fraction": 0.8225,
+      "long_questions": 69
+    },
+    {
+      "candidate": "p25",
+      "hits": 329,
+      "n": 400,
+      "fraction": 0.8225,
+      "long_questions": 94
+    },
+    {
+      "candidate": "p50",
+      "hits": 328,
+      "n": 400,
+      "fraction": 0.82,
+      "long_questions": 187
+    },
+    {
+      "candidate": "p75",
+      "hits": 315,
+      "n": 400,
+      "fraction": 0.7875,
+      "long_questions": 298
+    }
+  ]
+}

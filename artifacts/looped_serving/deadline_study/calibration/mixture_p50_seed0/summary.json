@@ -1,0 +1,12 @@
+{
+  "run_id": "run_64adf5fb8a4750ee",
+  "wall_s": 4132.97,
+  "launched": 1600,
+  "cancelled": 35,
+  "dropped_queued": 0,
+  "expired": 13,
+  "peak_live": 32,
+  "questions": 400,
+  "deadline_met": 387,
+  "launched_long": 187
+}

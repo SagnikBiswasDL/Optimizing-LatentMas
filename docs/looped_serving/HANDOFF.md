@@ -6,8 +6,8 @@ For a research agent picking this work up. Branch `research/looped-serving`
 
 `docs/looped_serving/EVIDENCE.md` is the ledger of what the runs support.
 This file says where things stand and how to run them.
-`docs/looped_serving/NEXT_AGENT.md` is the brief for an agent deciding the
-next experiment. That agent reads, recommends, and does not start a GPU.
+`docs/looped_serving/DEADLINE_STUDY.md` is the study that was chosen.
+`docs/looped_serving/NEXT_AGENT.md` is the brief that led there.
 
 ## The question
 
@@ -267,21 +267,11 @@ Operational notes:
 
 ## Next steps
 
-The accuracy comparison is done. Do not rerun it, and do not touch the
-confirmation reserve until a policy is frozen.
+The accuracy comparison is done. The deadline study is implemented and has
+not been run. Do not touch the confirmation reserve. The protocol is
+`docs/looped_serving/DEADLINE_STUDY.md`. One RTX PRO 6000 Blackwell is
+$2.49/h; the job list is about 15–17 GPU-hours. Do not start a pod without
+an explicit go.
 
-1. Serving measurement, which is the paper-shaped claim and has not been run.
-   Fix an arrival trace and a set of deadlines. The two policies that survived
-   are direct at cap 2,048 (about 26 s, 79.5% on the fresh set) and natural at
-   cap 4,096 (about 92 s, 84%). Report correct answers delivered by each
-   deadline, queue-inclusive p95, and charged work. One RTX PRO 6000 Blackwell
-   is $2.49/h. Do not start one without an explicit go.
-2. If the question is "block `<think>`" rather than "start with To," the
-   `nothink` arm needs a sampler that does not abort the run when 64 redraws
-   are still the think token (a logit penalty, or skip only the stubborn
-   candidates). Then run it on the validation split only, matched to the arms
-   above.
-3. An agent deciding between those, or deciding that neither is worth a GPU,
-   should follow `docs/looped_serving/NEXT_AGENT.md` and write the
-   recommendation before spending anything. The graded tables are in
-   `artifacts/looped_serving/pod_out/`.
+The `nothink` control is not part of this study. It still needs a sampler
+that does not abort when 64 redraws return `<think>`.

@@ -1,0 +1,22 @@
+{
+  "source": "artifacts/looped_serving/delta_exit/gpu_merit_200/rows.partial.jsonl",
+  "note": "Interrupted 200-question run. 194 rows saved. Scored on the 48 questions that have all four settings: 40 MATH level 1 and 8 level 2. One level-2 question (idx 4981) had only fixed_4 and fixed_3 and is excluded. Unfinished answers at the 1024 cap count as wrong.",
+  "model": "Ouro-1.4B non-thinking",
+  "gpu": "RTX 4090",
+  "cap": 1024,
+  "epsilon": 0.1,
+  "n": 48,
+  "settings": {
+    "fixed_4": {"correct": 31, "finished": 32, "seconds_per_problem": 24.328, "ms_per_token": 35.43, "repeats_run": 4.0, "loop_read": 4.0},
+    "fixed_3": {"correct": 34, "finished": 37, "seconds_per_problem": 14.329, "ms_per_token": 26.68, "repeats_run": 3.0, "loop_read": 3.0},
+    "gate_0.5": {"correct": 34, "finished": 37, "seconds_per_problem": 21.180, "ms_per_token": 35.65, "repeats_run": 4.0, "loop_read": 2.805},
+    "kv_delta": {"correct": 29, "finished": 32, "seconds_per_problem": 21.346, "ms_per_token": 30.95, "repeats_run": 3.308, "loop_read": 3.308}
+  },
+  "level_1_correct": {"n": 40, "fixed_4": 26, "fixed_3": 28, "gate_0.5": 29, "kv_delta": 24},
+  "level_2_correct": {"n": 8, "fixed_4": 5, "fixed_3": 6, "gate_0.5": 5, "kv_delta": 5},
+  "all_four_finished": {"n": 25, "fixed_4": 24, "fixed_3": 23, "gate_0.5": 23, "kv_delta": 23},
+  "bootstrap_95_question_resample": {
+    "kv_delta_minus_fixed_4": [-8, 4],
+    "kv_delta_minus_fixed_3": [-11, 0]
+  }
+}

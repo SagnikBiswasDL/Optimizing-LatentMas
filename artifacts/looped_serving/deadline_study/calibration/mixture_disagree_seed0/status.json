@@ -1,0 +1,16 @@
+{
+  "study": "deadline_feasibility_2026_11_12",
+  "phase": "complete",
+  "arm": "mixture",
+  "candidate": "disagree",
+  "seed": 0,
+  "split": "math_train_calibration",
+  "smoke": false,
+  "updated_at": "2026-11-13T05:24:32Z",
+  "wall_s": 4225.1,
+  "outcomes": 400,
+  "n_questions": 400,
+  "deadline_met": 363,
+  "launched_long": 69,
+  "candidates_flushed": 1876
+}

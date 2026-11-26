@@ -1,0 +1,8 @@
+# Deadline study, calibration selection. Predeclared in looped/deadline.py.
+# Four mixture candidates, seed 0, 400 questions. Do not start the validation
+# list until grade_deadline_study.py --role select has written selection.json.
+# Gold is not on this machine. A failing job does not stop the queue.
+cal_mix_p25 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_calibration.items.jsonl --split math_train_calibration --arm mixture --candidate p25 --run-seed 0 --out /root/out/deadline_study/calibration
+cal_mix_p50 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_calibration.items.jsonl --split math_train_calibration --arm mixture --candidate p50 --run-seed 0 --out /root/out/deadline_study/calibration
+cal_mix_p75 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_calibration.items.jsonl --split math_train_calibration --arm mixture --candidate p75 --run-seed 0 --out /root/out/deadline_study/calibration
+cal_mix_disagree python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_calibration.items.jsonl --split math_train_calibration --arm mixture --candidate disagree --run-seed 0 --out /root/out/deadline_study/calibration

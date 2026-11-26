@@ -1,0 +1,53 @@
+{
+ "n_questions": 4,
+ "max_new_tokens": 96,
+ "depth": 4,
+ "epsilon": 0.1,
+ "note": "96-token cap; no answer finished, so correctness is not a result. Prompt tokens always run 4 loops.",
+ "questions": [
+  {
+   "idx": 6312,
+   "level": 1,
+   "gate1_matches_fixed": true,
+   "gate05_matches_fixed": false,
+   "delta_matches_fixed": false,
+   "gate05_mean_chosen": 2.7708333333333335,
+   "delta_mean_executed": 3.1979166666666665,
+   "fixed_loop_tokens": 688,
+   "delta_loop_tokens": 611
+  },
+  {
+   "idx": 2006,
+   "level": 2,
+   "gate1_matches_fixed": true,
+   "gate05_matches_fixed": true,
+   "delta_matches_fixed": true,
+   "gate05_mean_chosen": 2.7708333333333335,
+   "delta_mean_executed": 3.2604166666666665,
+   "fixed_loop_tokens": 800,
+   "delta_loop_tokens": 729
+  },
+  {
+   "idx": 1785,
+   "level": 3,
+   "gate1_matches_fixed": true,
+   "gate05_matches_fixed": true,
+   "delta_matches_fixed": true,
+   "gate05_mean_chosen": 2.96875,
+   "delta_mean_executed": 3.3854166666666665,
+   "fixed_loop_tokens": 708,
+   "delta_loop_tokens": 649
+  },
+  {
+   "idx": 7336,
+   "level": 4,
+   "gate1_matches_fixed": true,
+   "gate05_matches_fixed": false,
+   "delta_matches_fixed": false,
+   "gate05_mean_chosen": 2.8645833333333335,
+   "delta_mean_executed": 3.4791666666666665,
+   "fixed_loop_tokens": 844,
+   "delta_loop_tokens": 794
+  }
+ ]
+}

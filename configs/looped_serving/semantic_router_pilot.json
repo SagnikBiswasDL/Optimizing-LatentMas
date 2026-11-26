@@ -1,0 +1,61 @@
+{
+ "depths": [
+  1,
+  2,
+  3,
+  4
+ ],
+ "run_seeds": [
+  0,
+  1
+ ],
+ "encoder": "sentence-transformers/all-MiniLM-L6-v2",
+ "encoder_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+ "outer_folds": 5,
+ "inner_folds": 4,
+ "split_seed": 20261114,
+ "logistic_C_grid": [
+  0.01,
+  0.1,
+  1.0,
+  10.0,
+  100.0
+ ],
+ "ridge_alpha_grid": [
+  0.1,
+  1.0,
+  10.0,
+  100.0,
+  1000.0
+ ],
+ "logistic_max_iter": 2000,
+ "tfidf_min_df": 2,
+ "cost_unit_loop_tokens": 10000,
+ "lambda_grid": [
+  0.0,
+  0.0005,
+  0.001,
+  0.002,
+  0.005,
+  0.01,
+  0.02,
+  0.05,
+  0.1,
+  0.2,
+  0.5,
+  1.0,
+  2.0,
+  5.0,
+  10.0
+ ],
+ "budget_ratios": [
+  0.75,
+  0.9,
+  1.0
+ ],
+ "primary_budget_ratio": 0.9,
+ "budget_reference_depth": 3,
+ "bootstrap_replicates": 5000,
+ "bootstrap_seed": 20261115,
+ "shuffle_repeats": 200
+}

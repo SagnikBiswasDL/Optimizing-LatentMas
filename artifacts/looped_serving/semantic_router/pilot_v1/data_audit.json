@@ -1,0 +1,295 @@
+{
+ "n_questions": 200,
+ "n_candidate_answers": 6400,
+ "n_vote_outcomes": 1600,
+ "depths": [
+  1,
+  2,
+  3,
+  4
+ ],
+ "run_seeds": [
+  0,
+  1
+ ],
+ "source_files": {
+  "question_list": {
+   "path": "artifacts/looped_serving/splits/router_pilot_questions.txt",
+   "sha256": "300d480f99cf1e73108027575c0cf07180079bdf2671ee45ea5dc0f1b50a0bad"
+  },
+  "items": {
+   "path": "artifacts/looped_serving/splits/math_train_calibration.items.jsonl",
+   "sha256": "4542a815d0cde752a2a7c0286eaa898770c3e71ec0a919b9e08d6941ad0717f5"
+  },
+  "splits": {
+   "path": "configs/looped_serving/splits.json",
+   "sha256": "9b2eda4055c8b5866269cd50e3113c4fe9df064f9add26eaa62253e2af09c8ef"
+  },
+  "arms": {
+   "seed0/d1_w4_cap8192": {
+    "manifest_sha256": "2f19cad028e6f175666179f36ffa0faac9ae31bc9637ae53afdf0e0414a29f70",
+    "candidates_sha256": "9a44c5dd2b4e3a4f9f568fe10d7919c192cae86d3a059fe7de969bd2cf6494c5",
+    "graded_sha256": "241235450d41bf1402464dd5c3c7dda334ac88a3a5922bef9b2cad13324dbeeb"
+   },
+   "seed0/d2_w4_cap8192": {
+    "manifest_sha256": "5aff02afd5d39ddb207ec654969f2341781ffc11035f38695a7cbb8904ce2d35",
+    "candidates_sha256": "4ce38058b1b3e37528da3d19755e45c07f63847b98676ed9dd909e91a0842cdf",
+    "graded_sha256": "95b423ab1a69ad53131ef2b5cace5c738a6679d15dfd21744c9e77b872d2749d"
+   },
+   "seed0/d3_w4_cap8192": {
+    "manifest_sha256": "eaea481388b11879414fc7c51e32cf62515ccd03fa20f16184019c8c002fc4ab",
+    "candidates_sha256": "bacac31c39c2d98b378bdd7cdc85b864be99b54475c0d08d0961973dc6ef8e81",
+    "graded_sha256": "f771fb1f92f3def3db00970e6f782d997882e4b7708c0b0401d5ca9db0bcd94d"
+   },
+   "seed0/d4_w4_cap8192": {
+    "manifest_sha256": "a8cc776e079eea65608899c9360404d6122b360a631e5938ec4b953fedd759f3",
+    "candidates_sha256": "55b016c2d96faaa686163bea81d4e319f2fe31062b956d198a85c3dcd37ff811",
+    "graded_sha256": "195b29ea0b5d070101f7f33a993ae7b45d96736c394f85088d89af73f9c21153"
+   },
+   "seed1/d1_w4_cap8192": {
+    "manifest_sha256": "619b4366535275baf0d89db683f3176669646ef985ea83dd1a2361875f792369",
+    "candidates_sha256": "18cb3e3697eaacdba18052ddb4733a4987e3a4156cdcb79ef5578f14066eed47",
+    "graded_sha256": "3074e35975ab4faa8324fbda1110973704f8fa8123fbb86518bf65c0e5ffc086"
+   },
+   "seed1/d2_w4_cap8192": {
+    "manifest_sha256": "e3122776fdb87f3b3be754b77b52c36a632af092fd3dec1b163df03759797285",
+    "candidates_sha256": "f01a1a808a413078fd52ec80c7c6d9de104fe271bc76b93dffad06f6bf60d8e4",
+    "graded_sha256": "8147fb4e48eb9d8b48dcd529b0224e3122cd9c5a7872e998c6939226c57a9d52"
+   },
+   "seed1/d3_w4_cap8192": {
+    "manifest_sha256": "130b7e2b4cdb30f55c2c6e8acb14e0f4f3ebe6541c14afbd4f1f7e33838e6501",
+    "candidates_sha256": "83a0c6e790433aff254231db5565a01a44ad8c848791163130302eab8555f545",
+    "graded_sha256": "b8dbcbd0386c57d1d8bef057cc691fdf25f4072d64497e01fdec8471a2c61cdf"
+   },
+   "seed1/d4_w4_cap8192": {
+    "manifest_sha256": "6abbc044009632cf675b7dc2ac0699c4290d8320eccf1ec99f7e8697ec2d0797",
+    "candidates_sha256": "2cd0c27784b317f2ff79417e38c476cccb60604fcef7881aec0a49f548482dbc",
+    "graded_sha256": "fdd8be1b71c78e50a6e2fad5c0c6ef594e7602ba8e9185a22a9eb1380c2b7b34"
+   }
+  }
+ },
+ "manifests": {
+  "prompt_hash": "29956fa181057884",
+  "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+  "tokenizer_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+  "dtype": "bfloat16",
+  "temperature": 0.6,
+  "top_p": 0.95,
+  "cap": 8192,
+  "width": 4,
+  "mode": "natural",
+  "question_subset_sha256": "300d480f99cf1e73108027575c0cf07180079bdf2671ee45ea5dc0f1b50a0bad",
+  "allowed_differences": {
+   "cache_semantics": [
+    "\"prompt_mode=stock; prompt_depth=full; kv_layout=last_exited x1 planes\"",
+    "\"prompt_mode=stock; prompt_depth=full; kv_layout=last_exited x2 planes\"",
+    "\"prompt_mode=stock; prompt_depth=full; kv_layout=last_exited x3 planes\"",
+    "\"prompt_mode=stock; prompt_depth=full; kv_layout=last_exited x4 planes\""
+   ],
+   "config_hash": [
+    "\"335a0facc749babe\"",
+    "\"4d9c427f2cc4d419\"",
+    "\"546e21b472483a8f\"",
+    "\"6415704b07de654a\"",
+    "\"896487c6795ec0db\"",
+    "\"ac724820561504be\"",
+    "\"b8874fa6ab46fd72\"",
+    "\"dad68ef4b5529e01\""
+   ],
+   "decode_config.depth": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "decode_config.slots": [
+    "32",
+    "96"
+   ],
+   "extra.engine.full_depth": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "extra.engine.max_num_seqs": [
+    "32",
+    "96"
+   ],
+   "extra.verified.source_tree_sha256": [
+    "\"cc9300f7d7d4d3155085f245103a8eebca1afb2d153cde7c05d172fc8d4ed074\"",
+    "\"ffb5ef7e639b8af13ed9c81934f8d841babac31c3422ff664ac0902712fcb6dc\""
+   ],
+   "run_seed": [
+    "0",
+    "1"
+   ]
+  },
+  "arms": [
+   {
+    "arm": "seed0/d1_w4_cap8192",
+    "depth": 1,
+    "run_seed": 0,
+    "slots": 32,
+    "config_hash": "6415704b07de654a",
+    "source_tree_sha256": "ffb5ef7e639b8af13ed9c81934f8d841babac31c3422ff664ac0902712fcb6dc",
+    "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "prompt_hash": "29956fa181057884"
+   },
+   {
+    "arm": "seed0/d2_w4_cap8192",
+    "depth": 2,
+    "run_seed": 0,
+    "slots": 32,
+    "config_hash": "546e21b472483a8f",
+    "source_tree_sha256": "ffb5ef7e639b8af13ed9c81934f8d841babac31c3422ff664ac0902712fcb6dc",
+    "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "prompt_hash": "29956fa181057884"
+   },
+   {
+    "arm": "seed0/d3_w4_cap8192",
+    "depth": 3,
+    "run_seed": 0,
+    "slots": 32,
+    "config_hash": "ac724820561504be",
+    "source_tree_sha256": "ffb5ef7e639b8af13ed9c81934f8d841babac31c3422ff664ac0902712fcb6dc",
+    "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "prompt_hash": "29956fa181057884"
+   },
+   {
+    "arm": "seed0/d4_w4_cap8192",
+    "depth": 4,
+    "run_seed": 0,
+    "slots": 32,
+    "config_hash": "dad68ef4b5529e01",
+    "source_tree_sha256": "ffb5ef7e639b8af13ed9c81934f8d841babac31c3422ff664ac0902712fcb6dc",
+    "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "prompt_hash": "29956fa181057884"
+   },
+   {
+    "arm": "seed1/d1_w4_cap8192",
+    "depth": 1,
+    "run_seed": 1,
+    "slots": 32,
+    "config_hash": "896487c6795ec0db",
+    "source_tree_sha256": "cc9300f7d7d4d3155085f245103a8eebca1afb2d153cde7c05d172fc8d4ed074",
+    "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "prompt_hash": "29956fa181057884"
+   },
+   {
+    "arm": "seed1/d2_w4_cap8192",
+    "depth": 2,
+    "run_seed": 1,
+    "slots": 96,
+    "config_hash": "b8874fa6ab46fd72",
+    "source_tree_sha256": "ffb5ef7e639b8af13ed9c81934f8d841babac31c3422ff664ac0902712fcb6dc",
+    "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "prompt_hash": "29956fa181057884"
+   },
+   {
+    "arm": "seed1/d3_w4_cap8192",
+    "depth": 3,
+    "run_seed": 1,
+    "slots": 32,
+    "config_hash": "335a0facc749babe",
+    "source_tree_sha256": "cc9300f7d7d4d3155085f245103a8eebca1afb2d153cde7c05d172fc8d4ed074",
+    "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "prompt_hash": "29956fa181057884"
+   },
+   {
+    "arm": "seed1/d4_w4_cap8192",
+    "depth": 4,
+    "run_seed": 1,
+    "slots": 32,
+    "config_hash": "4d9c427f2cc4d419",
+    "source_tree_sha256": "cc9300f7d7d4d3155085f245103a8eebca1afb2d153cde7c05d172fc8d4ed074",
+    "model_revision": "ByteDance/Ouro-1.4B@574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
+    "prompt_hash": "29956fa181057884"
+   }
+  ],
+  "note": "Seed 1 at depths 1, 3, and 4 records a different engine source-tree hash from the other arms. Seed 1 at depth 2 used 96 slots; every other arm used 32. Wait times are not comparable. Prompt, model revision, temperature, top-p, cap, width, and natural mode match."
+ },
+ "groups": {
+  "normalization": "strip and collapse whitespace",
+  "n_distinct_normalized": 200,
+  "shared_groups": [],
+  "paraphrase_list": null
+ },
+ "reproduction": {
+  "primary_correct": {
+   "0": [
+    57,
+    152,
+    175,
+    179
+   ],
+   "1": [
+    57,
+    156,
+    173,
+    176
+   ]
+  },
+  "primary_mean_loop_tokens": {
+   "0": [
+    11487.26,
+    18987.35,
+    29965.89,
+    35406.42
+   ],
+   "1": [
+    11422.97,
+    17506.98,
+    28653.015,
+    35826.62
+   ]
+  },
+  "strict_correct": {
+   "0": [
+    57,
+    152,
+    175,
+    177
+   ],
+   "1": [
+    57,
+    155,
+    172,
+    175
+   ]
+  }
+ },
+ "level_counts": {
+  "1": 40,
+  "2": 40,
+  "3": 40,
+  "4": 40,
+  "5": 40
+ },
+ "features_excluded": [
+  "generated answer text",
+  "gold answer",
+  "answer key",
+  "generated length",
+  "parse status",
+  "finish reason",
+  "vote confidence",
+  "recorded wait"
+ ],
+ "cost_definition": "sum of logical_loop_tokens over all four candidates, including wrong, unparseable, and capped outputs",
+ "primary_vote": "parse_status ok with a structural answer key, including length_cap",
+ "strict_vote": "length_cap candidates cast no vote; their loop-tokens still count",
+ "repo": {
+  "head": "890702b8dfcb27031356a7e350bdf02f6e493bb3",
+  "inspected_commit": "890702b8dfcb27031356a7e350bdf02f6e493bb3",
+  "branch": "research/looped-serving",
+  "status_porcelain": "M docs/looped_serving/HANDOFF.md\n M docs/looped_serving/NEXT_AGENT.md\n?? artifacts/diag/14b/answer_probes/features.npz\n?? artifacts/looped.DONE\n?? artifacts/looped_serving/deadline_study/\n?? artifacts/looped_serving/logs/validation/\n?? configs/looped_serving/deadline_study.json\n?? configs/looped_serving/semantic_router_pilot.json\n?? docs/looped_serving/DEADLINE_STUDY.md\n?? docs/slides_deadline_calibration.pdf\n?? docs/slides_deadline_calibration.tex\n?? docs/slides_looped_overview.pdf\n?? docs/slides_looped_overview.tex\n?? docs/slides_looped_serving.pdf\n?? docs/slides_looped_serving.tex\n?? looped/deadline.py\n?? looped/routing_dataset.py\n?? looped/routing_evaluation.py\n?? looped/semantic_router.py\n?? requirements-router.txt\n?? scripts/eval_semantic_router.py\n?? scripts/grade_deadline_study.py\n?? scripts/pod/jobs_deadline_calibration.txt\n?? scripts/pod/jobs_deadline_validation.txt\n?? scripts/run_deadline_study.py\n?? serving/looped/deadline_driver.py\n?? tests/test_deadline_serving.py\n?? tests/test_routing_dataset.py\n?? tests/test_semantic_router.py"
+ },
+ "code_hashes": {
+  "looped/routing_dataset.py": "c9ad9f713f0922c48118cd8e6b6c70fe8aee94bf98fb43e12915e4c18d881aa8",
+  "looped/semantic_router.py": "df62c7b528c8665c54a8a24a334b7ccd04e5873afbed02ae0599f01487e89800",
+  "looped/routing_evaluation.py": "c6ee675c0f119ce33f66d7dc4c8205aa016337f7507b37f79bda7a2737460040",
+  "scripts/eval_semantic_router.py": "eff6f21985604f7b8178ea2eb2a8cd6edf22f66896c52635839d5d4f6af7e650"
+ },
+ "config_sha256": "ef54ab1d6e426132416f67ff3f15e7ebcfdcd065955ad87ddd4eb56d32afe4cd"
+}

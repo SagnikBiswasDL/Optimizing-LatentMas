@@ -1,0 +1,9 @@
+deadline_feasibility_2026_11_12
+phase: complete
+arm: mixture candidate disagree seed 0
+split: math_train_calibration
+updated: 2026-11-13T05:24:32Z
+wall_min: 70.4
+outcomes: 400/400  in_time: 363  long_launched: 69
+candidates_flushed: 1876
+partial outcomes: /root/out/deadline_study/calibration/mixture_disagree_seed0/outcomes.jsonl

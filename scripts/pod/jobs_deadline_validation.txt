@@ -1,0 +1,16 @@
+# Deadline study, validation. Seeds 0, 1, 2. The mixture arm reads
+# selection.json and refuses any other candidate. Copy that file to
+# /root/work/repo/selection.json before starting this list. 200 questions.
+# A failing job does not stop the queue.
+val_direct_s0 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm always_direct --run-seed 0 --out /root/out/deadline_study/validation
+val_long_s0 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm always_long --run-seed 0 --out /root/out/deadline_study/validation
+val_queue_s0 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm queue_aware --run-seed 0 --out /root/out/deadline_study/validation
+val_mix_s0 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm mixture --selection /root/work/repo/selection.json --run-seed 0 --out /root/out/deadline_study/validation
+val_direct_s1 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm always_direct --run-seed 1 --out /root/out/deadline_study/validation
+val_long_s1 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm always_long --run-seed 1 --out /root/out/deadline_study/validation
+val_queue_s1 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm queue_aware --run-seed 1 --out /root/out/deadline_study/validation
+val_mix_s1 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm mixture --selection /root/work/repo/selection.json --run-seed 1 --out /root/out/deadline_study/validation
+val_direct_s2 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm always_direct --run-seed 2 --out /root/out/deadline_study/validation
+val_long_s2 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm always_long --run-seed 2 --out /root/out/deadline_study/validation
+val_queue_s2 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm queue_aware --run-seed 2 --out /root/out/deadline_study/validation
+val_mix_s2 python scripts/run_deadline_study.py --model $M --items artifacts/looped_serving/splits/math_train_validation.items.jsonl --split math_train_validation --arm mixture --selection /root/work/repo/selection.json --run-seed 2 --out /root/out/deadline_study/validation
